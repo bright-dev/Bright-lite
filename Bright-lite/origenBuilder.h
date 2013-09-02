@@ -1,0 +1,6 @@
+#ifndef ORIGENBUILDER_H_INCLUDED
+#define ORIGENBUILDER_H_INCLUDED
+
+void OrigenTemplateBuilder();
+
+#endif // ORIGENBUILDER_H_INCLUDED
