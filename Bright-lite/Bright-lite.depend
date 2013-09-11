@@ -1,10 +1,19 @@
 # depslib dependency file v1.0
-1378148533 source:c:\users\robert\bright-lite\bright-lite\parser.cpp
+1378932281 source:c:\users\robert\bright-lite\bright-lite\parser.cpp
 	<iostream>
 	<vector>
 	<fstream>
 	<sstream>
+	<algorithm>
 	"origenBuilder.h"
 
 1378147975 c:\users\robert\bright-lite\bright-lite\origenbuilder.h
+
+1378164258 source:c:\users\robert\bright-lite\bright-lite\origenbuilder.cpp
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
 

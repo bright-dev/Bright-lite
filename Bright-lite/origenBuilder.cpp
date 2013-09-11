@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void OrigenTemplateBuilder(){
+void DataReader(){
     ifstream inf("C:/Users/Robert/Documents/tape5.fluence_stripper");
     ofstream outf("C:/Users/Robert/Desktop/test");
     if (!inf){
