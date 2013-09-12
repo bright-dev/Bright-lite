@@ -37,6 +37,12 @@
 		<Unit filename="parser.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="structures.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="structures.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />
