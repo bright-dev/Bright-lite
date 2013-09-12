@@ -4,22 +4,9 @@
 #include<sstream>
 #include<algorithm>
 #include "origenBuilder.h"
+#include "structures.h"
 
 using namespace std;
-
-struct daughter {
-    string name;
-    vector<double> mass;
-};
-
-struct isoInformation {
-    vector<double> neutron_prod;
-    vector<double> neutron_dest;
-    vector<double> k_inf;
-    vector<double> BUd;
-    vector<string> time;
-    vector<daughter> iso_vector;
-};
 
 double IssToDouble(istringstream &iss){
     double num1;
@@ -29,7 +16,7 @@ double IssToDouble(istringstream &iss){
 
 isoInformation ParseOriginFile(string file_location){
     string tape = "/TAPE6";
-    ifstream inf("C:/Users/Robert/Documents/U-238/TAPE6.out");
+    ifstream inf("C:/Users/Robert/Documents/U-235/TAPE6.out");
     ofstream outf;
     outf.open("C:/Users/Robert/Documents/TAPE61.out");
     // Read error message.
@@ -83,8 +70,9 @@ isoInformation ParseOriginFile(string file_location){
             getline(inf, line);
             getline(inf, line);
             istringstream iss(line);
-            string time_pass;
-            while(iss >> time_pass){
+            double time_pass;
+            string day;
+            while(iss >> time_pass >> day){
                 iso_info.time.push_back(time_pass);
             }
         }
@@ -163,6 +151,6 @@ int main(){
     isoInformation testVector;
     testVector = ParseOriginFile("C:/Users/Robert/Documents");
     double BUd_sum = 0;
-    //OrigenTemplateBuilder();
+    DataReader();
     return 0;
 }
