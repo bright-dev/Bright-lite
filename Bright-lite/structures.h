@@ -9,6 +9,7 @@ struct daughter {
 };
 
 struct isoInformation {
+    string name;
     vector<double> neutron_prod;
     vector<double> neutron_dest;
     vector<double> k_inf;

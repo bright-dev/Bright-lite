@@ -11,7 +11,7 @@
 1379007342 c:\users\robert\bright-lite\bright-lite\origenbuilder.h
 	"structures.h"
 
-1379009876 source:c:\users\robert\bright-lite\bright-lite\origenbuilder.cpp
+1379363234 source:c:\users\robert\bright-lite\bright-lite\origenbuilder.cpp
 	<iostream>
 	<vector>
 	<regex>
@@ -20,5 +20,5 @@
 	<algorithm>
 	"structures.h"
 
-1379007279 c:\users\robert\bright-lite\bright-lite\structures.h
+1379353444 c:\users\robert\bright-lite\bright-lite\structures.h
 
