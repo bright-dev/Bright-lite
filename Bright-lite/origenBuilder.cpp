@@ -62,22 +62,24 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values, double u235_mass)
             fuel.iso_vector[i].mass[k] = u235_mass*fuel.iso_vector[i].mass[k];
         }
     }
-    for (int i = 0; i < fuel_values[1].iso_vector.size(); i++){
-        bool iso_check = true;
-        for(int j = 0; j < fuel.iso_vector.size(); j++){
-            if (fuel_values[1].iso_vector[i].name == fuel.iso_vector[j].name){
-                for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
-                    for(int ii = 0; ii < fuel_values[1].iso_vector[i].mass.size(); ii ++){
-                        if ( k ==ii ){
-                            fuel.iso_vector[j].mass[k] = fuel.iso_vector[j].mass[k] + (1.0-u235_mass)*fuel_values[1].iso_vector[i].mass[ii];
+    for (int jj = 1; jj < fuel_values.size(); jj ++){
+        for (int i = 0; i < fuel_values[jj].iso_vector.size(); i++){
+            bool iso_check = true;
+            for(int j = 0; j < fuel.iso_vector.size(); j++){
+                if (fuel_values[jj].iso_vector[i].name == fuel.iso_vector[j].name){
+                    for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
+                        for(int ii = 0; ii < fuel_values[jj].iso_vector[i].mass.size(); ii ++){
+                            if ( k ==ii ){
+                                fuel.iso_vector[j].mass[k] = fuel.iso_vector[j].mass[k] + (1.0-u235_mass)*fuel_values[jj].iso_vector[i].mass[ii];
+                            }
                         }
                     }
                 }
+                iso_check = false;
             }
-            iso_check = false;
-        }
-        if (iso_check == true) {
-            fuel.iso_vector.push_back(fuel_values[1].iso_vector[i]);
+            if (iso_check == true) {
+                fuel.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
+            }
         }
     }
     return fuel;
