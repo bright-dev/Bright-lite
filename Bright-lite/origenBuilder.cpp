@@ -68,7 +68,9 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values, double u235_mass)
             if (fuel_values[1].iso_vector[i].name == fuel.iso_vector[j].name){
                 for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
                     for(int ii = 0; ii < fuel_values[1].iso_vector[i].mass.size(); ii ++){
-                        fuel.iso_vector[j].mass[k] = fuel.iso_vector[j].mass[k] + (1.0-u235_mass)*fuel_values[1].iso_vector[i].mass[ii];
+                        if ( k ==ii ){
+                            fuel.iso_vector[j].mass[k] = fuel.iso_vector[j].mass[k] + (1.0-u235_mass)*fuel_values[1].iso_vector[i].mass[ii];
+                        }
                     }
                 }
             }
@@ -101,7 +103,7 @@ void DataReader(){
 
     inf.close();
     inf1.close();
-    isoInformation test1 = FuelBuilder(mass_stream, 0.03);
+    isoInformation test1 = FuelBuilder(mass_stream, 0.05);
     outf << "TIME" << "    ";
     for(int i = 0; i < test1.time.size(); i++){
         outf << test1.time[i] << "   ";
@@ -129,22 +131,4 @@ void DataReader(){
         }
     }
     outf.close();
-    // This bit is for testing.
-    /*double neutron_prod;
-    double neutron_dest;
-    double mass;
-    for (int i = 0; i < mass_stream[0].neutron_prod.size(); i++){
-        neutron_prod = 0;
-        neutron_dest = 0;
-        for ( int j = 0; j < mass_stream.size(); j++){
-            if ( j == 0) {
-                mass = 0.03;
-            } else {
-                mass = 0.97;
-            }
-            neutron_prod += mass * mass_stream[j].neutron_prod[i];
-            neutron_dest += mass * mass_stream[j].neutron_dest[i];
-        }
-        cout << mass_stream[0].time[i]<< "     " <<neutron_prod / neutron_dest << "\n";
-    }*/
 }
