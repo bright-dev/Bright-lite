@@ -31,6 +31,12 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../../../../../../brightlite/burnupcalc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="burnupcalc.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="origenBuilder.cpp" />
 		<Unit filename="origenBuilder.h" />
 		<Unit filename="parser.cpp" />

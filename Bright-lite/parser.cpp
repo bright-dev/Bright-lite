@@ -5,6 +5,9 @@
 #include<algorithm>
 #include "origenBuilder.h"
 #include "structures.h"
+#include "burnupcalc.cpp"
+
+
 
 using namespace std;
 
@@ -147,10 +150,66 @@ isoInformation ParseOriginFile(string file_location){
     return iso_info;
 }
 
+
+
 int main(){
     isoInformation testVector;
-    testVector = ParseOriginFile("C:/Users/Robert/Documents");
+   // testVector = ParseOriginFile("C:/brightlite");
     double BUd_sum = 0;
-    DataReader();
-    return 0;
+    int N;
+    isoInformation test1;
+    double X = 0.05;
+    test1 = DataReader(test1, X);
+
+    double BU_end;
+
+int ip;
+cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
+
+cin >> ip;
+
+switch (ip)
+{
+case 1:
+    cout << "Enter enrichment in percent: ";
+    cin >> X;
+    X = X/100.0;
+    cout << "Enter number of bathces: ";
+    cin >> N;
+    cout << "Burnup is  " << burnupcalc(DataReader(test1,X), N, .01) << endl << endl ;
+    break;
+case 2:
+    cout << "Enter desired Burnup (0-200): ";
+    cin >> BU_end;
+    cout << "Enter number of batches: ";
+    cin >> N;
+    cout << "Desired enrichment is about:  " << enrichcalc(BU_end, 1)*100 << " %" << endl << endl;
+    break;
+default:
+    cout << endl<< "yeaah, no" << endl << endl;
+
 }
+
+
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

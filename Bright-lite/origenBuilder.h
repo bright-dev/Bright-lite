@@ -3,7 +3,8 @@
 
 #include "structures.h"
 
+
 isoInformation BuildIsotope(ifstream input);
-void DataReader();
+isoInformation DataReader(isoInformation test1, double X);
 
 #endif // ORIGENBUILDER_H_INCLUDED

@@ -83,13 +83,13 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values, double u235_mass)
     return fuel;
 }
 
-void DataReader(){
+isoInformation DataReader(isoInformation test1, double X){
     vector<isoInformation> mass_stream;
     isoInformation iso_info;
     isoInformation iso_info1;
-    ifstream inf("C:/Users/Robert/Documents/U-235/u235data.txt");
-    ifstream inf1("C:/Users/Robert/Documents/U-238/u238data.txt");
-    ofstream outf("C:/Users/Robert/Documents/test.txt");
+    ifstream inf("C:/brightlite/u235data.txt");
+    ifstream inf1("C:/brightlite/u238data.txt");
+    ofstream outf("C:/brightlite/test.txt");
     if (!inf){
         cerr << "Could not read file for U-235\n";
     }
@@ -103,7 +103,7 @@ void DataReader(){
 
     inf.close();
     inf1.close();
-    isoInformation test1 = FuelBuilder(mass_stream, 0.05);
+    test1 = FuelBuilder(mass_stream, X);
     outf << "TIME" << "    ";
     for(int i = 0; i < test1.time.size(); i++){
         outf << test1.time[i] << "   ";
@@ -131,4 +131,5 @@ void DataReader(){
         }
     }
     outf.close();
+    return test1;
 }
