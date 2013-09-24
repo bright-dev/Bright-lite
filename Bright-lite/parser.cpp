@@ -183,7 +183,7 @@ case 2:
     cin >> BU_end;
     cout << "Enter number of batches: ";
     cin >> N;
-    cout << "Desired enrichment is about:  " << enrichcalc(BU_end, 1)*100 << " %" << endl << endl;
+    cout << "Desired enrichment is about:  " << enrichcalc(BU_end, N, 1)*100 << " %" << endl << endl;
     break;
 default:
     cout << endl<< "yeaah, no" << endl << endl;

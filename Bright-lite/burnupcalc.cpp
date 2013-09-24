@@ -62,7 +62,7 @@ return BU_total;
 
 
 
-double enrichcalc(double BU_end, double tolerance)
+double enrichcalc(double BU_end, int N, double tolerance)
 {
 
 double X;
@@ -72,25 +72,25 @@ isoInformation test2;
 
 
 // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
-BU2 = burnupcalc(DataReader(test2, 0.02), 1, 0.01);
-BU7 = burnupcalc(DataReader(test2, 0.07), 1, 0.01);
+BU2 = burnupcalc(DataReader(test2, 0.02), N, 0.01);
+BU7 = burnupcalc(DataReader(test2, 0.07), N, 0.01);
 
 X = 0.02 + (BU_end - BU2)*(0.07 - 0.02)/(BU7 - BU2);
 
-BU_guess = burnupcalc(DataReader(test2, X), 1, 0.01);
+BU_guess = burnupcalc(DataReader(test2, X), N, 0.01);
 
 // enrichment iteration
 while (BU_end < BU_guess)
 {
     X = X - 0.001;
-    BU_guess = burnupcalc(DataReader(test2,X), 1, 0.01 );
+    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 );
 }
 
 
 while (BU_end > BU_guess)
 {
     X = X + 0.001;
-    BU_guess = burnupcalc(DataReader(test2,X), 1, 0.01 );
+    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 );
 }
     return X;
 
