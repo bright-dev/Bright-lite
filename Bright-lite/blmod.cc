@@ -57,7 +57,7 @@ using namespace cycamore {
         cyclus::Communicator* recipient = dynamic_cast<cyclus::Communicator*>(market);
 
         cyclus::GenericResource::Ptr request_res =
-            cyclus:: GenericResource::Create(Model::context(),
+            cyclus::GenericResource::Create(Model::context(),
                                              requestAmt,
                                              "kg",
                                              in_commods_[0]);
@@ -70,6 +70,18 @@ using namespace cycamore {
 
         cyclus::Message::Ptr request(new cyclus::Message(this, recipient, trans));
         request.SendOn();
+
+        market = cyclus::MarketModel::MarketForCommod(out_commods_[0]);
+        recipient = dynamic_cast<cyclus::Communicator*>(market);
+
+        trans = BuildTransaction();
+        cyclus::GenericResource::Ptr trade_res =
+            cyclus::GenericResource::Create(Model::context(),
+                                            trade_res,
+                                            "kg",
+                                            out_commods_[0]);
+        cyclus::Message::Ptr offer(new cyclus::Message(this, recipient, trans));
+        offer.SendOn();
     }
 
     /**
@@ -94,7 +106,7 @@ using namespace cycamore {
 
         cyclus::Transaction trans(this, cyclus::OFFER);
         trans.SetCommod(out_commod_);
-        trans.SetMinFrac(0);
+        trans.SetMinFrac(0.0);
         trans.SetPrice(commod_price_);
         trans.SetResource(trade_res);
 

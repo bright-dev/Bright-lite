@@ -1,6 +1,8 @@
 #ifndef STRUCTURES_H_INCLUDED
 #define STRUCTURES_H_INCLUDED
 
+#include <utility>
+
 using namespace std;
 
 struct daughter {
