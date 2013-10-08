@@ -8,6 +8,7 @@
 
 using namespace std;
 
+double intpol(double y0, double y1, double x0, double x1, double x);
 
 // need to add units
 
@@ -17,8 +18,16 @@ double burnupcalc(isoInformation tempone, int N, double tolerance)
 double mass = 1; //in kilograms
 double BU_f, time_f; // burnup and time when k reaches one, time in days
 double BU_total = 0;
-
+double BU_finder = 0;
+double BU_n = 0;    // estimated burnup of the n th batch
+double time_finder = 0;
+double k_total =0;
 int i =0;
+double k_batch [N];
+double t_batch;
+double x0=0;
+double x1=0;
+int m =0;
 while (i< tempone.neutron_prod.size())
 {
     tempone.k_inf.push_back(tempone.neutron_prod[i]/tempone.neutron_dest[i]);
@@ -27,8 +36,6 @@ while (i< tempone.neutron_prod.size())
 
 i=0;
 
-// at 4th entry time is at 460 days, one cycle time
-
 
 
 
@@ -36,11 +43,10 @@ while (tempone.k_inf[i] > 1)
     i++;            // finds the number of entry when k drops under 1
 
 
-BU_f = tempone.BUd[i-1] + (1 - tempone.k_inf[i-1])*(tempone.BUd[i] - tempone.BUd[i-1])/(tempone.k_inf[i] - tempone.k_inf[i-1]);
-// above line extrapolates the end point for burnup when k is one
+// below line interpolates the end point for burnup when k is one
+BU_f = intpol(tempone.BUd[i-1],tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
 
-time_f = tempone.time[i-1] + (1 - tempone.k_inf[i-1])*(tempone.time[i] - tempone.time[i-1])/(tempone.k_inf[i] - tempone.k_inf[i-1]);
-// same as BU_f but for time (days)
+time_f = intpol(tempone.time[i-1],tempone.time[i],tempone.k_inf[i-1],tempone.k_inf[i],1);
 
 
 int j=0;
@@ -52,9 +58,67 @@ while (j < i)
 
 BU_total = BU_total + BU_f; // adds the last value when k reaches one
 
-BU_total = 2*N*BU_total/(N+1);
+
+if (N == 1)
+    return BU_total; //doesnt complicate the code and returns the single batch BU
+
+BU_total = 2*N*BU_total/(N+1); //linear approximation of mutli batch burnup, used to find a good initial guess of the max burnup
 
 
+while (1)
+{
+
+    j = 0;
+    while (j<N)
+    {
+        BU_finder = 0;
+        BU_n = BU_total*(j+1)/N;
+
+            i=0;
+                    while (BU_finder + tempone.BUd[i] < BU_n)  // finds the discrete point i corresponding to the burnup
+                {
+                    BU_finder = BU_finder + tempone.BUd[i];
+                    i++;
+                }
+
+        while (m < i)
+        {
+            x0 = x0 + tempone.BUd[m];  // sums the burnup for total burnup
+            m++;
+        }
+        x1 = x0 + tempone.BUd[m];     // adds on more discrete point for linear interpolation
+
+        k_batch[j] = intpol(tempone.k_inf[i], tempone.k_inf[i+1], x0, x1, BU_n);  //finds the k of the batch
+
+
+        j++;
+        x0 = 0;
+        x1= 0;
+        m = 0;
+    }
+    j = 0;
+
+
+    while (j < N) //sums the k values of every batch
+    {
+        k_total = k_total + k_batch[j];
+        j++;
+    }
+    k_total = k_total/N;
+
+    //cout << k_total << endl;
+
+    if (abs(1 - k_total) < 0.0001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
+    break;
+
+
+    BU_total = intpol(0,BU_total,tempone.k_inf[0],k_total,1); // updates the guess using (k(0),0) and (k_total, BU_total)
+
+
+
+    k_total = 0;
+
+}
 
 return BU_total;
 
@@ -95,13 +159,16 @@ while (BU_end > BU_guess)
     return X;
 
 
-
-
 }
 
 
 
-
+double intpol(double y0, double y1, double x0, double x1, double x)
+{
+    // linear interpolation function
+    double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
+    return y;
+}
 
 
 
