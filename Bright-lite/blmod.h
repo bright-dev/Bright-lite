@@ -50,10 +50,17 @@ class blmod : public cyclus::FacilityModel {
     */
     virtual void HandleTock(int time);
 
-
+    /**
+    */
+    void SendOffer(cyclus::Transaction trans);
     /**
     */
     virtual void RecieveMessage(cyclus::Message::Ptr msg) {};
+
+    /**
+    */
+    protected:
+    cyclus::Transaction BuildTransaction();
 
     /* blmod methods! */
 
@@ -62,6 +69,7 @@ class blmod : public cyclus::FacilityModel {
     int batches;
     double burnup;
     cyclus::MatBuff inventory_;
+    std::string out_commod_;
 }
 
 #endif // BLMOD_H_INCLUDED

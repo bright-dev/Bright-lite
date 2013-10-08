@@ -17,6 +17,9 @@ using namespace cycamore {
         cyclus::QueryEngine* commodities = input->QueryElement("commodities");
         in_commods_.push_back(commodities->GetElementContent("incommodity"));
 
+        cyclus::QueryEngine* output = qe->QueryElement("output");
+        out_commods_.push_back(output->GetElementContent("outcommodity"));
+
         batches = atoi(input->GetElementContent("batches").c_str());
         burnup = atof(input->GetElementContent("burnup").c_str());
     }
@@ -38,6 +41,7 @@ using namespace cycamore {
         b.batches = batches;
         b.burnup = burnup;
         b->in_commods_ = InputCommodities();
+        b->out_commods_ = OutputCommodities();
 
         return b;
     }
@@ -76,7 +80,24 @@ using namespace cycamore {
     }
 
     /**
-    FOR RESOURCES!
+    FOR TRANSACTING!
     */
+    cyclus::Transaction blmod::BuildTransaction() {
+        using cyclus::Model;
+        using cyclus::Material;
+        std::map<int, double> isomap = std::map<int, double>();
+        cyclus::Composition::Ptr out = cyclus::Composition::CreateFromMass(isomap);
 
+
+        cyclus::Context* ctx = model::context();
+        Material::Ptr trade_res = Material::Create(ctx, offer_amt, out);
+
+        cyclus::Transaction trans(this, cyclus::OFFER);
+        trans.SetCommod(out_commod_);
+        trans.SetMinFrac(0);
+        trans.SetPrice(commod_price_);
+        trans.SetResource(trade_res);
+
+        return trans;
+    }
 }
