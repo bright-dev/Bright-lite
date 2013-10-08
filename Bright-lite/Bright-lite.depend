@@ -57,3 +57,47 @@
 	<algorithm>
 	"structures.h"
 
+1381180449 source:/home/robert/Bright-lite/Bright-lite/origenBuilder.cpp
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
+	"structures.h"
+
+1381178899 /home/robert/Bright-lite/Bright-lite/structures.h
+
+1381178891 source:/home/robert/Bright-lite/Bright-lite/parser.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<algorithm>
+	"origenBuilder.h"
+	"structures.h"
+	"burnupcalc.cpp"
+
+1381178899 /home/robert/Bright-lite/Bright-lite/origenBuilder.h
+	"structures.h"
+
+1381179450 /home/robert/Bright-lite/Bright-lite/burnupcalc.cpp
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
+	"structures.h"
+	"origenBuilder.h"
+
+1381179450 source:/home/robert/Bright-lite/Bright-lite/burnupcalc.cpp
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
+	"structures.h"
+	"origenBuilder.h"
+

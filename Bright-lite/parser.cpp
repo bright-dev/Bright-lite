@@ -3,8 +3,7 @@
 #include<fstream>
 #include<sstream>
 #include<algorithm>
-#include "origenBuilder.h"
-#include "structures.h"
+
 #include "burnupcalc.cpp"
 
 
@@ -19,7 +18,7 @@ double IssToDouble(istringstream &iss){
 
 isoInformation ParseOriginFile(string file_location){
     string tape = "/TAPE6";
-    ifstream inf("C:/Users/Robert/Documents/U-235/TAPE6.out");
+    ifstream inf("home/Robert/Bright-lite/U-235/TAPE6.out");
     ofstream outf;
     outf.open("C:/Users/Robert/Documents/TAPE61.out");
     // Read error message.
@@ -157,38 +156,37 @@ int main(){
    // testVector = ParseOriginFile("C:/brightlite");
     double BUd_sum = 0;
     int N;
+    double X;
     isoInformation test1;
-    double X = 0.05;
-    test1 = DataReader(test1, X);
 
     double BU_end;
 
-int ip;
-cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
+    int ip;
+    cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
 
-cin >> ip;
+    cin >> ip;
 
-switch (ip)
-{
-case 1:
-    cout << "Enter enrichment in percent: ";
-    cin >> X;
-    X = X/100.0;
-    cout << "Enter number of bathces: ";
-    cin >> N;
-    cout << "Burnup is  " << burnupcalc(DataReader(test1,X), N, .01) << endl << endl ;
-    break;
-case 2:
-    cout << "Enter desired Burnup (0-200): ";
-    cin >> BU_end;
-    cout << "Enter number of batches: ";
-    cin >> N;
-    cout << "Desired enrichment is about:  " << enrichcalc(BU_end, N, 1)*100 << " %" << endl << endl;
-    break;
-default:
-    cout << endl<< "yeaah, no" << endl << endl;
+    switch (ip)
+    {
+    case 1:
+        cout << "Enter enrichment in percent: ";
+        cin >> X;
+        X = X/100.0;
+        cout << "Enter number of bathces: ";
+        cin >> N;
+        cout << "Burnup is  " << burnupcalc(DataReader(test1,X), N, .01) << endl << endl ;
+        break;
+    case 2:
+        cout << "Enter desired Burnup (0-200): ";
+        cin >> BU_end;
+        cout << "Enter number of batches: ";
+        cin >> N;
+        cout << "Desired enrichment is about:  " << enrichcalc(BU_end, N, 1)*100 << " %" << endl << endl;
+        break;
+    default:
+        cout << endl<< "yeaah, no" << endl << endl;
 
-}
+    }
 
 
 
