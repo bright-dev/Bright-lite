@@ -89,14 +89,14 @@ isoInformation DataReader(isoInformation test1, double X){
     vector<isoInformation> mass_stream;
     isoInformation iso_info;
     isoInformation iso_info1;
-    ifstream inf("C:/brightlite/u235data.txt");
-    ifstream inf1("C:/brightlite/u238data.txt");
-    ofstream outf("C:/brightlite/test.txt");
+    ifstream inf("/home/robert/Bright-lite/u235data.txt");
+    ifstream inf1("/home/robert/Bright-lite/u238data.txt");
+    ofstream outf("/home/robert/Bright-lite/test.txt");
     if (!inf){
-        cerr << "Could not read file for U-235\n";
+        cerr << "Could not read file yo for U-235\n";
     }
     if (!inf1){
-        cerr << "Could not read file for U-238\n";
+        cerr << "Could not readdf file for U-238\n";
     }
     iso_info = BuildIsotope(inf);
     mass_stream.push_back(iso_info);

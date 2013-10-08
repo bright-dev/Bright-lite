@@ -5,6 +5,7 @@
 #include<fstream>
 #include<algorithm>
 #include "structures.h"
+#include "origenBuilder.h"
 
 using namespace std;
 
