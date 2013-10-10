@@ -31,9 +31,8 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="../../../../../../brightlite/burnupcalc.c">
-			<Option compilerVar="CC" />
-		</Unit>
+		<Unit filename="blmod.cc" />
+		<Unit filename="blmod.h" />
 		<Unit filename="burnupcalc.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
