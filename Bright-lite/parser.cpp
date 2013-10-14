@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "burnupcalc.cpp"
+
 
 
 
@@ -169,7 +169,7 @@ int main(){
         X = X/100.0;
         cout << "Enter number of bathces: ";
         cin >> N;
-        cout << "Burnup is  " << burnupcalc(DataReader(test1,X), N, .01) << endl << endl ;
+        cout << "Burnup is  " << burnupcalc(DataReader(test1,X), N, .01).first << endl << endl ;
         break;
     case 2:
         cout << "Enter desired Burnup (0-200): ";

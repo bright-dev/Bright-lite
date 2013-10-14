@@ -1,19 +1,36 @@
-#include<iostream>
-#include<vector>
-#include<regex>
-#include<iterator>
-#include<fstream>
-#include<algorithm>
-#include<map>
-#include "structures.h"
-#include "origenBuilder.h"
-#include "nucname.h"
+#include "burnupcalc.h"
 
 using namespace std;
 
-double intpol(double y0, double y1, double x0, double x1, double x);
+double intpol(double y0, double y1, double x0, double x1, double x)
+{
+    // linear interpolation function
+    double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
+    return y;
+}
+
+
 
 // need to add units
+
+map<int, double> tomass (int ti, double time, isoInformation isoinfo) {
+    map<int, double> out = map<int, double>();
+    double mass_i;
+    string name_i;
+    int nucid;
+    for (int i = 0; i < isoinfo.iso_vector.size(); i++){
+        name_i = isoinfo.iso_vector[i].name;
+        nucid = pyne::nucname::zzaaam(name_i)/10;
+        mass_i = intpol(isoinfo.iso_vector[i].mass[ti-1],
+                        isoinfo.iso_vector[i].mass[ti],
+                        isoinfo.time[ti-1],
+                        isoinfo.time[ti],
+                        time);
+        out[nucid] = mass_i;
+    }
+    return out;
+}
+
 
 pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double tolerance) {
     pair<double, map<int,double> > rtn(0, map<int, double>());
@@ -130,25 +147,25 @@ isoInformation test2;
 
 
 // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
-BU2 = burnupcalc(DataReader(test2, 0.02), N, 0.01);
-BU7 = burnupcalc(DataReader(test2, 0.07), N, 0.01);
+BU2 = burnupcalc(DataReader(test2, 0.02), N, 0.01).first;
+BU7 = burnupcalc(DataReader(test2, 0.07), N, 0.01).first;
 
 X = 0.02 + (BU_end - BU2)*(0.07 - 0.02)/(BU7 - BU2);
 
-BU_guess = burnupcalc(DataReader(test2, X), N, 0.01);
+BU_guess = burnupcalc(DataReader(test2, X), N, 0.01).first;
 
 // enrichment iteration
 while (BU_end < BU_guess)
 {
     X = X - 0.001;
-    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 );
+    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 ).first;
 }
 
 
 while (BU_end > BU_guess)
 {
     X = X + 0.001;
-    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 );
+    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 ).first;
 }
     return X;
 
@@ -157,30 +174,6 @@ while (BU_end > BU_guess)
 
 
 
-double intpol(double y0, double y1, double x0, double x1, double x)
-{
-    // linear interpolation function
-    double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
-    return y;
-}
-
-map<int, double> tomass (int ti, double time, isoInformation isoinfo) {
-    map<int, double> out();
-    double mass_i;
-    string name_i;
-    int nucid;
-    for (int i = 0; i < isoinfo.iso_vector.size(); i++){
-        name_i = isoinfo.iso_vector[i].name;
-        nucid = pyne::nucname::zzzaam(name_i)/10;
-        mass_i = intpol(isoinfo.iso_vector[i].mass[ti-1],
-                        isoinfo.iso_vector[i].mass[ti],
-                        isoinfo.time[ti-1],
-                        isoinfo.time[ti],
-                        time);
-        out[nucid] = mass_i;
-    }
-    return out;
-}
 
 
 

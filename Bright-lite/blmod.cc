@@ -111,13 +111,20 @@ FOR TRANSACTING!
 cyclus::Transaction blmod::BuildTransaction() {
     using cyclus::Model;
     using cyclus::Material;
+    Material::Ptr mat = inventory_.PopOne();
 
+<<<<<<< HEAD
     Material::Ptr mat = inventory_.PopOne();
 
     map<int, double> mass_fract = mat->comp()->mass();
 
     enrichment = mass_fract[92235]/(mat->quantity());
     std::map<int, double> isomap = burnupcalc(FuelBuilder(mass_stream, enrichment), batches, 0.000001).second;
+=======
+    map<int, double> mass_frac = mat->comp()->mass();
+    enrichment = mass_frac[92235]/mat->quantity();
+    std::map<int, double> isomap = burnupcalc( FuelBuilder(mass_stream, enrichment), batches, 0.00001).second;
+>>>>>>> 2e803ba461b8fcb84fea653b5a46a8be5eaff82e
     cyclus::Composition::Ptr out = cyclus::Composition::CreateFromMass(isomap);
 
     cyclus::Context* ctx = Model::context();
@@ -137,4 +144,24 @@ FOR RESOURCES!
 void blmod::AddResource(cyclus::Transaction trans, std::vector<cyclus::Resource::Ptr> manifest) {
     inventory_.PushAll(cyclus::MatBuff::ToMat(manifest));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
