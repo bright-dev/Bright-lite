@@ -1,9 +1,4 @@
-#include<iostream>
-#include<vector>
-#include<fstream>
-#include<sstream>
-#include<algorithm>
-
+#include "parser.h"
 #include "burnupcalc.cpp"
 
 

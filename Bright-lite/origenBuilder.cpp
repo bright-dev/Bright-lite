@@ -4,6 +4,7 @@
 #include<iterator>
 #include<fstream>
 #include<algorithm>
+
 #include "structures.h"
 
 using namespace std;

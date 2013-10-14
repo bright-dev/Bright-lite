@@ -3,7 +3,7 @@
 
 #include "origenBuilder.h"
 
-vector<double> ParseOriginFile(String file_location);
-vector<double> FindNeutronProduction(String line);
+vector<double> ParseOriginFile(string file_location);
+vector<double> FindNeutronProduction(string line);
 
 #endif // PARSER_H_INCLUDED

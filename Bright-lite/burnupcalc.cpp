@@ -59,6 +59,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
     if (N == 1){
         rtn.first = BU_total;
+        rtn.second = tomass(i, time_f, tempone);
         return rtn;
     }
     BU_total = 2*N*BU_total/(N+1); //linear approximation of mutli batch burnup, used to find a good initial guess of the max burnup
@@ -70,8 +71,8 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
             BU_finder = 0;
             BU_n = BU_total*(j+1)/N;
 
-                i=0;
-                        while (BU_finder + tempone.BUd[i] < BU_n)  // finds the discrete point i corresponding to the burnup
+            i=0;
+                    while (BU_finder + tempone.BUd[i] < BU_n)  // finds the discrete point i corresponding to the burnup
                     {
                         BU_finder = BU_finder + tempone.BUd[i];
                         i++;
@@ -111,7 +112,9 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
     }
 
-    return BU_total;
+        rtn.first = BU_total;
+        rtn.second = tomass(i, time_f, tempone);
+        return rtn;
 
 }
 

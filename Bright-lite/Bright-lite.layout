@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="burnupcalc.cpp" open="1" top="1" tabpos="6">
-		<Cursor position="4572" topLine="151" />
+	<File name="blmod.cc" open="1" top="1" tabpos="6">
+		<Cursor position="2813" topLine="76" />
 	</File>
-	<File name="origenBuilder.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="4501" topLine="79" />
+	<File name="blmod.h" open="1" top="0" tabpos="7">
+		<Cursor position="1193" topLine="46" />
 	</File>
-	<File name="origenBuilder.h" open="1" top="0" tabpos="5">
-		<Cursor position="0" topLine="0" />
+	<File name="burnupcalc.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="3257" topLine="99" />
+	</File>
+	<File name="origenBuilder.cpp" open="1" top="0" tabpos="3">
+		<Cursor position="195" topLine="1" />
+	</File>
+	<File name="origenBuilder.h" open="1" top="0" tabpos="4">
+		<Cursor position="229" topLine="0" />
 	</File>
 	<File name="parser.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="2822" topLine="60" />
+		<Cursor position="5418" topLine="153" />
 	</File>
-	<File name="parser.h" open="1" top="0" tabpos="4">
-		<Cursor position="79" topLine="0" />
+	<File name="parser.h" open="1" top="0" tabpos="2">
+		<Cursor position="23" topLine="0" />
 	</File>
-	<File name="structures.h" open="1" top="0" tabpos="3">
+	<File name="structures.h" open="0" top="0" tabpos="3">
 		<Cursor position="61" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>

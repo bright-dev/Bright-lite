@@ -22,9 +22,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="/home/robert/.local/include/cyclus" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add directory="/home/robert/.local/include/cyclus" />
 				</Linker>
 			</Target>
 		</Build>
@@ -36,10 +38,20 @@
 		<Unit filename="burnupcalc.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="nucname.cc" />
+		<Unit filename="nucname.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="origenBuilder.cpp" />
 		<Unit filename="origenBuilder.h" />
 		<Unit filename="parser.cpp" />
 		<Unit filename="parser.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="pyne.cc">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="pyne.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="structures.cpp">

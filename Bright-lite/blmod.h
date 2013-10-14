@@ -6,7 +6,7 @@
 
 #include "facility_model.h"
 #include "query_engine.h"
-#include "mat_buf.h"
+#include "mat_buff.h"
 #include "logger.h"
 
 #include "structures.h"
@@ -17,7 +17,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "sink_facility.h"
 
 #include "context.h"
 #include "logger.h"
@@ -30,6 +29,10 @@ class blmod : public cyclus::FacilityModel {
     public:
     blmod(cyclus::Context* ctx);
     virtual ~blmod();
+
+    /**
+    */
+    vector<isoInformation> mass_stream;
 
     virtual cyclus::Model* Clone();
     /**
@@ -52,10 +55,14 @@ class blmod : public cyclus::FacilityModel {
 
     /**
     */
+    virtual void AddResource(cyclus::Transaction trans,
+                           std::vector<cyclus::Resource::Ptr> manifest);
+    /**
+    */
     void SendOffer(cyclus::Transaction trans);
     /**
     */
-    virtual void RecieveMessage(cyclus::Message::Ptr msg) {};
+    virtual void ReceiveMessage(cyclus::Message::Ptr msg){};
 
     /**
     */
@@ -68,8 +75,11 @@ class blmod : public cyclus::FacilityModel {
     /* blmod attributes */
     int batches;
     double burnup;
+    double enrichment;
+    double commod_price_;
     cyclus::MatBuff inventory_;
+    std::vector<std::string> in_commods_;
     std::string out_commod_;
-}
+};
 
 #endif // BLMOD_H_INCLUDED
