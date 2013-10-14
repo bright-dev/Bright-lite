@@ -2,10 +2,10 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
 	<File name="blmod.cc" open="1" top="1" tabpos="6">
-		<Cursor position="2813" topLine="76" />
+		<Cursor position="3134" topLine="94" />
 	</File>
 	<File name="blmod.h" open="1" top="0" tabpos="7">
-		<Cursor position="1193" topLine="46" />
+		<Cursor position="1270" topLine="44" />
 	</File>
 	<File name="burnupcalc.cpp" open="1" top="0" tabpos="5">
 		<Cursor position="3257" topLine="99" />
