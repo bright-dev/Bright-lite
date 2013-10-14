@@ -85,15 +85,15 @@ void blmod::HandleTick(int time){
     cyclus::Message::Ptr request(new cyclus::Message(this, recipient, trans));
     request->SendOn();
 
-    market = cyclus::MarketModel::MarketForCommod(out_commods_[0]);
+    market = cyclus::MarketModel::MarketForCommod(out_commod_);
     recipient = dynamic_cast<cyclus::Communicator*>(market);
 
     trans = BuildTransaction();
     cyclus::GenericResource::Ptr trade_res =
         cyclus::GenericResource::Create(Model::context(),
-                                        trade_res,
+                                        1.0,
                                         "kg",
-                                        out_commods_[0]);
+                                        out_commod_);
     cyclus::Message::Ptr offer(new cyclus::Message(this, recipient, trans));
     offer->SendOn();
 }
@@ -111,13 +111,15 @@ FOR TRANSACTING!
 cyclus::Transaction blmod::BuildTransaction() {
     using cyclus::Model;
     using cyclus::Material;
+    Material::Ptr mat = inventory_.PopOne();
 
-    enrichment = inventory_.PopOne().comp()[92235]/inventory_.PopOne().quantity();
-    std::map<int, double> isomap = burnupcalc(FuelBuilder(mass_stream, enrichment)).second;
+    map<int, double> mass_frac = mat->comp()->mass();
+    enrichment = mass_frac[92235]/mat->quantity();
+    std::map<int, double> isomap = burnupcalc( FuelBuilder(mass_stream, enrichment), batches, 0.00001).second;
     cyclus::Composition::Ptr out = cyclus::Composition::CreateFromMass(isomap);
 
-    cyclus::Context* ctx = model::context();
-    Material::Ptr trade_res = Material::Create(ctx, offer_amt, out);
+    cyclus::Context* ctx = Model::context();
+    Material::Ptr trade_res = Material::Create(ctx, 1.0, out);
 
     cyclus::Transaction trans(this, cyclus::OFFER);
     trans.SetCommod(out_commod_);
@@ -133,4 +135,24 @@ FOR RESOURCES!
 void blmod::AddResource(cyclus::Transaction trans, std::vector<cyclus::Resource::Ptr> manifest) {
     inventory_.PushAll(cyclus::MatBuff::ToMat(manifest));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -90,9 +90,9 @@ isoInformation DataReader(isoInformation test1, double X){
     vector<isoInformation> mass_stream;
     isoInformation iso_info;
     isoInformation iso_info1;
-    ifstream inf("/home/robert/Bright-lite/u235data.txt");
-    ifstream inf1("/home/robert/Bright-lite/u238data.txt");
-    ofstream outf("/home/robert/Bright-lite/test.txt");
+    ifstream inf("/home/cem/Bright-lite/u235data.txt");
+    ifstream inf1("/home/cem/Bright-lite/u238data.txt");
+    ofstream outf("/home/cem/Bright-lite/test.txt");
     if (!inf){
         cerr << "Could not read file yo for U-235\n";
     }

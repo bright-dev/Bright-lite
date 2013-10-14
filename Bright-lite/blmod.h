@@ -25,6 +25,7 @@
 #include "cyc_limits.h"
 #include "market_model.h"
 
+
 class blmod : public cyclus::FacilityModel {
     public:
     blmod(cyclus::Context* ctx);

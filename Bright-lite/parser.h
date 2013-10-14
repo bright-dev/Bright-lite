@@ -2,8 +2,9 @@
 #define PARSER_H_INCLUDED
 
 #include "origenBuilder.h"
+#include "burnupcalc.h"
 
-vector<double> ParseOriginFile(string file_location);
+isoInformation ParseOriginFile(string file_location);
 vector<double> FindNeutronProduction(string line);
 
 #endif // PARSER_H_INCLUDED
