@@ -7,6 +7,22 @@ blmod::blmod(cyclus::Context* ctx) : cyclus::FacilityModel(ctx),
 blmod::~blmod() {}
 
 /**
+FOR SCHEMING Muhaha!
+*/
+std::string blmod::schema(){
+    return
+            "<element name=\"input\">"
+              "<element name=\"commodities\">"
+                "<ref name=\"incommodity\"/>"
+              "</element>"
+            "<element name=\"output\">"
+              "<ref name=\"outcommodity\"/>"
+            "</element>"
+            "<ref name=\"batches\"/>\n"
+            "<ref name=\"burnup\"/>\n";
+}
+
+/**
 FOR READING!
 */
 void blmod::InitModuleMembers(cyclus::QueryEngine* qe){
@@ -113,18 +129,10 @@ cyclus::Transaction blmod::BuildTransaction() {
     using cyclus::Material;
     Material::Ptr mat = inventory_.PopOne();
 
-<<<<<<< HEAD
-    Material::Ptr mat = inventory_.PopOne();
-
-    map<int, double> mass_fract = mat->comp()->mass();
-
-    enrichment = mass_fract[92235]/(mat->quantity());
-    std::map<int, double> isomap = burnupcalc(FuelBuilder(mass_stream, enrichment), batches, 0.000001).second;
-=======
     map<int, double> mass_frac = mat->comp()->mass();
     enrichment = mass_frac[92235]/mat->quantity();
     std::map<int, double> isomap = burnupcalc( FuelBuilder(mass_stream, enrichment), batches, 0.00001).second;
->>>>>>> 2e803ba461b8fcb84fea653b5a46a8be5eaff82e
+
     cyclus::Composition::Ptr out = cyclus::Composition::CreateFromMass(isomap);
 
     cyclus::Context* ctx = Model::context();

@@ -17,6 +17,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include "origenBuilder.h"
+#include "burnupcalc.h"
 
 #include "context.h"
 #include "logger.h"
@@ -40,6 +42,10 @@ class blmod : public cyclus::FacilityModel {
 
     */
     virtual void InitModuleMembers(cyclus::QueryEngine* qe);
+
+    /**
+    */
+    std::string schema();
 
     /**
     */
