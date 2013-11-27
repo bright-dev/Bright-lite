@@ -1,8 +1,5 @@
 #include "parser.h"
 
-
-
-
 using namespace std;
 
 double IssToDouble(istringstream &iss){
@@ -167,7 +164,7 @@ int main(){
         cout << "Enter enrichment in percent: ";
         cin >> X;
         X = X/100.0;
-        cout << "Enter number of bathces: ";
+        cout << "Enter number of batches: ";
         cin >> N;
         cout << "Burnup is  " << burnupcalc(DataReader(test1,X), N, .01).first << endl << endl ;
         break;
@@ -182,9 +179,6 @@ int main(){
         cout << endl<< "yeaah, no" << endl << endl;
 
     }
-
-
-
   return 0;
 }
 

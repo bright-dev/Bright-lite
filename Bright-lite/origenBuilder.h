@@ -11,7 +11,7 @@
 
 
 isoInformation BuildIsotope(std::ifstream &input);
-isoInformation DataReader(isoInformation test1, double X);
+isoInformation DataReader(isoInformation test1, int type, vector<isoInformation> input_stream);
 isoInformation FuelBuilder(vector<isoInformation> fuel_values, double u235_mass);
 
 #endif // ORIGENBUILDER_H_INCLUDED

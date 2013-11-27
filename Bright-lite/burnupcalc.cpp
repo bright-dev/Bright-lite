@@ -83,17 +83,16 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
 
     while (1) {
-
         for (j = 0; j<N; j++) {
             BU_finder = 0;
             BU_n = BU_total*(j+1)/N;
 
             i=0;
-                    while (BU_finder + tempone.BUd[i] < BU_n)  // finds the discrete point i corresponding to the burnup
-                    {
-                        BU_finder = BU_finder + tempone.BUd[i];
-                        i++;
-                    }
+            while (BU_finder + tempone.BUd[i] < BU_n)  // finds the discrete point i corresponding to the burnup
+                {
+                    BU_finder = BU_finder + tempone.BUd[i];
+                    i++;
+                }
 
             while (m < i) {
                 x0 = x0 + tempone.BUd[m];  // sums the burnup for total burnup
@@ -115,7 +114,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         }
         k_total = k_total/N;
 
-        //cout << k_total << endl;
+        cout << k_total << endl;
 
         if (abs(1 - k_total) < 0.0001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
         break;
@@ -137,7 +136,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
 
 
-double enrichcalc(double BU_end, int N, double tolerance)
+double enrichcalc(double BU_end, int N, double tolerance, int type, vector<isoInformation> input_stream)
 {
 
 double X;
@@ -147,32 +146,81 @@ isoInformation test2;
 
 
 // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
-BU2 = burnupcalc(DataReader(test2, 0.02), N, 0.01).first;
-BU7 = burnupcalc(DataReader(test2, 0.07), N, 0.01).first;
+BU2 = 20;
+BU7 = 100;
 
 X = 0.02 + (BU_end - BU2)*(0.07 - 0.02)/(BU7 - BU2);
 
-BU_guess = burnupcalc(DataReader(test2, X), N, 0.01).first;
+BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
 
 // enrichment iteration
 while (BU_end < BU_guess)
 {
     X = X - 0.001;
-    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 ).first;
+    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
 }
 
 
 while (BU_end > BU_guess)
 {
     X = X + 0.001;
-    BU_guess = burnupcalc(DataReader(test2,X), N, 0.01 ).first;
+    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
 }
     return X;
 
 
 }
 
+int main(){
+    isoInformation testVector;
+    double BUd_sum = 0;
+    int N;
+    double X;
+    isoInformation test1;
+    vector<isoInformation> input_stream;
+    ifstream inf("../inputFile.txt");
+    string line;
+    double mass_total;
+    while (getline(inf, line)) {
+        isoInformation temp_iso;
+        istringstream iss(line);
+        iss >> temp_iso.name;
+        iss >> temp_iso.fraction;
+        mass_total = mass_total + temp_iso.fraction;
+        input_stream.push_back(temp_iso);
+    }
+    for (int i = 0; i < input_stream.size(); i++){
+        input_stream[i].fraction = input_stream[i].fraction / mass_total;
+    }
+    int dips;
+    cout << "1. LWR" << endl << "2. DUPIC" << endl;
+    cin >> dips;
 
+    double BU_end;
+    int ip;
+    cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
+    cin >> ip;
+
+    switch (ip)
+    {
+    case 1:
+        cout << "Enter number of batches: ";
+        cin >> N;
+        cout << "Burnup is  " << burnupcalc(DataReader(test1, dips, input_stream), N, .01).first << endl << endl ;
+        break;
+    case 2:
+        cout << "Enter desired Burnup (0-200): ";
+        cin >> BU_end;
+        cout << "Enter number of batches: ";
+        cin >> N;
+        cout << "Desired enrichment is about:  " << enrichcalc(BU_end, N, 1, dips, input_stream)*100 << " %" << endl << endl;
+        break;
+    default:
+        cout << endl<< "yeaah, no" << endl << endl;
+
+    }
+  return 0;
+}
 
 
 
