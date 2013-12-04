@@ -1,5 +1,7 @@
 #include "burnupcalc.h"
 
+#define PL 0.98
+
 using namespace std;
 
 double intpol(double y0, double y1, double x0, double x1, double x)
@@ -49,7 +51,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     int m =0;
     while (i< tempone.neutron_prod.size())
     {
-        tempone.k_inf.push_back(tempone.neutron_prod[i]/tempone.neutron_dest[i]);
+        tempone.k_inf.push_back(tempone.neutron_prod[i]*PL/tempone.neutron_dest[i]);
         i++;
     }
 
@@ -191,22 +193,46 @@ int main(){
     }
     for (int i = 0; i < input_stream.size(); i++){
         input_stream[i].fraction = input_stream[i].fraction / mass_total;
+        cout << input_stream[i].name << "    " << input_stream[i].fraction << endl;
     }
     int dips;
     cout << "1. LWR" << endl << "2. DUPIC" << endl;
     cin >> dips;
-
+    map<int, double> test_mass;
+    map<int, double>::iterator Iter;
     double BU_end;
     int ip;
     cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
     cin >> ip;
-
+    ofstream outf1("../next_input.txt");
+    ofstream outf2("../outputIsos.txt");
     switch (ip)
     {
     case 1:
         cout << "Enter number of batches: ";
         cin >> N;
-        cout << "Burnup is  " << burnupcalc(DataReader(test1, dips, input_stream), N, .01).first << endl << endl ;
+        double BU_d;
+        BU_d = burnupcalc(DataReader(test1, dips, input_stream), N, .01).first;
+        test_mass = burnupcalc(DataReader(test1, dips, input_stream), N, .01).second;
+        cout << "Burnup is  " << BU_d << endl;
+        for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
+            string m = pyne::nucname::name((*Iter).first);
+            if ((*Iter).second > 0.01){
+                outf2 << m << "   " << (*Iter).second << endl;
+                /** STUPID UGLY UGLY CODE*/
+                if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
+                    outf1 << m << "  " << (*Iter).second << endl;
+                }
+                if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
+                    outf1 << m << "  " << (*Iter).second << endl;
+                }
+                if (m == "U236" || m == "U237" || m == "U238"){
+                    outf1 << m << "  " << (*Iter).second << endl;
+                }
+            }
+        }
+        outf1.close();
+        outf2.close();
         break;
     case 2:
         cout << "Enter desired Burnup (0-200): ";
@@ -217,8 +243,8 @@ int main(){
         break;
     default:
         cout << endl<< "yeaah, no" << endl << endl;
-
     }
+    outf1.close();
   return 0;
 }
 

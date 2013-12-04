@@ -16,11 +16,11 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="obj/Release/Bright-lite" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/" />
-				<Option type="3" />
+				<Option output="Bright-lite" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../Bright-lite" />
+				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option createStaticLib="1" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-O2" />
 					<Add directory="/home/robert/.local/include/cyclus" />
@@ -49,8 +49,12 @@
 			<Add library="/home/robert/.local/lib/libcycluscore.so" />
 			<Add directory="/home/robert/Bright-lite/Bright-lite/" />
 		</Linker>
-		<Unit filename="blmod.cc" />
-		<Unit filename="blmod.h" />
+		<Unit filename="blmod.cc">
+			<Option target="Debug" />
+		</Unit>
+		<Unit filename="blmod.h">
+			<Option target="Debug" />
+		</Unit>
 		<Unit filename="burnupcalc.cpp">
 			<Option target="Release" />
 		</Unit>

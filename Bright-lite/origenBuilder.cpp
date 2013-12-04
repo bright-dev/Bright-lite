@@ -121,7 +121,6 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     }
 
     ofstream outf("../test.txt");
-    ofstream outf1("../next_input.txt");
     test1 = FuelBuilder(mass_stream);
     outf << "TIME" << "    ";
     for(int i = 0; i < test1.time.size(); i++){
@@ -143,17 +142,6 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     for (int i = 0; i < test1.iso_vector.size(); i++){
         if (test1.iso_vector[i].mass[11] > 0.01){
             outf << test1.iso_vector[i].name << "    ";
-            string m = test1.iso_vector[i].name;
-            /** STUPID UGLY UGLY CODE */
-            if (m == "AM241" || m == "AM243" || m == "CM242" || m == "CM244" || m == "NP237" || m == "NP238" || m == "NP239"){
-                outf1 << m << "  " << test1.iso_vector[i].mass[test1.iso_vector[i].mass.size()-1] << endl;
-            }
-            if (m == "PU238" || m == "PU239" || m == "PU240" || m == "PU241" || m == "PU242" || m == "U234" || m == "U235"){
-                outf1 << m << "  " << test1.iso_vector[i].mass[test1.iso_vector[i].mass.size()-1] << endl;
-            }
-            if (m == "U236" || m == "U237" || m == "U238"){
-                outf1 << m << "  " << test1.iso_vector[i].mass[test1.iso_vector[i].mass.size()-1] << endl;
-            }
             for (int j = 0; j < test1.iso_vector[i].mass.size(); j++){
                 outf << test1.iso_vector[i].mass[j] << "    ";
             }
@@ -161,6 +149,5 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         }
     }
     outf.close();
-    outf1.close();
     return test1;
 }
