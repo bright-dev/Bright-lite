@@ -22,7 +22,7 @@
 
 1379353444 c:\users\robert\bright-lite\bright-lite\structures.h
 
-1380042330 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.cpp
+1383237030 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.cpp
 	<iostream>
 	<vector>
 	<regex>
@@ -31,24 +31,22 @@
 	<algorithm>
 	"structures.h"
 
-1379539235 c:\users\cb39852\documents\github\bright-lite\bright-lite\structures.h
+1379535635 c:\users\cb39852\documents\github\bright-lite\bright-lite\structures.h
 
-1380039649 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\parser.cpp
+1381258045 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\parser.cpp
 	<iostream>
 	<vector>
 	<fstream>
 	<sstream>
 	<algorithm>
-	"origenBuilder.h"
-	"structures.h"
 	"burnupcalc.cpp"
 
-1379701283 c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.h
+1379697683 c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.h
 	"structures.h"
 
-1379626732 source:c:\brightlite\burnupcalc.c
+1379623132 source:c:\brightlite\burnupcalc.c
 
-1381167937 c:\users\cb39852\documents\github\bright-lite\bright-lite\burnupcalc.cpp
+1386255233 c:\users\cb39852\documents\github\bright-lite\bright-lite\burnupcalc.cpp
 	<iostream>
 	<vector>
 	<regex>
@@ -56,6 +54,7 @@
 	<fstream>
 	<algorithm>
 	"structures.h"
+	"origenBuilder.h"
 
 1381180449 source:/home/robert/Bright-lite/Bright-lite/origenBuilder.cpp
 	<iostream>
