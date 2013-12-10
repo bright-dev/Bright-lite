@@ -22,7 +22,7 @@
 
 1379353444 c:\users\robert\bright-lite\bright-lite\structures.h
 
-1383237030 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.cpp
+1386273289 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.cpp
 	<iostream>
 	<vector>
 	<regex>
@@ -31,7 +31,8 @@
 	<algorithm>
 	"structures.h"
 
-1379535635 c:\users\cb39852\documents\github\bright-lite\bright-lite\structures.h
+1386273289 c:\users\cb39852\documents\github\bright-lite\bright-lite\structures.h
+	<utility>
 
 1381258045 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\parser.cpp
 	<iostream>
@@ -41,7 +42,12 @@
 	<algorithm>
 	"burnupcalc.cpp"
 
-1379697683 c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.h
+1386273289 c:\users\cb39852\documents\github\bright-lite\bright-lite\origenbuilder.h
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<algorithm>
 	"structures.h"
 
 1379623132 source:c:\brightlite\burnupcalc.c
@@ -56,7 +62,7 @@
 	"structures.h"
 	"origenBuilder.h"
 
-1381180449 source:/home/robert/Bright-lite/Bright-lite/origenBuilder.cpp
+1381777159 source:/home/robert/Bright-lite/Bright-lite/origenBuilder.cpp
 	<iostream>
 	<vector>
 	<regex>
@@ -65,19 +71,18 @@
 	<algorithm>
 	"structures.h"
 
-1381178899 /home/robert/Bright-lite/Bright-lite/structures.h
+1381260677 /home/robert/Bright-lite/Bright-lite/structures.h
+	<utility>
 
-1381178891 source:/home/robert/Bright-lite/Bright-lite/parser.cpp
+1381777159 source:/home/robert/Bright-lite/Bright-lite/parser.cpp
+	"parser.h"
+
+1381434753 /home/robert/Bright-lite/Bright-lite/origenBuilder.h
 	<iostream>
 	<vector>
 	<fstream>
 	<sstream>
 	<algorithm>
-	"origenBuilder.h"
-	"structures.h"
-	"burnupcalc.cpp"
-
-1381178899 /home/robert/Bright-lite/Bright-lite/origenBuilder.h
 	"structures.h"
 
 1381179450 /home/robert/Bright-lite/Bright-lite/burnupcalc.cpp
@@ -90,7 +95,228 @@
 	"structures.h"
 	"origenBuilder.h"
 
-1381179450 source:/home/robert/Bright-lite/Bright-lite/burnupcalc.cpp
+1381777159 source:/home/robert/Bright-lite/Bright-lite/burnupcalc.cpp
+	"burnupcalc.h"
+
+1381770408 source:/home/cem/Bright-lite/Bright-lite/blmod.cc
+	"blmod.h"
+
+1381771510 /home/cem/Bright-lite/Bright-lite/blmod.h
+	<string>
+	<stdlib.h>
+	"facility_model.h"
+	"query_engine.h"
+	"mat_buff.h"
+	"logger.h"
+	"structures.h"
+	"parser.h"
+	<sstream>
+	<limits>
+	<boost/lexical_cast.hpp>
+	"context.h"
+	"logger.h"
+	"generic_resource.h"
+	"error.h"
+	"cyc_limits.h"
+	"market_model.h"
+
+1381766221 /home/cem/.local/include/cyclus/facility_model.h
+	<string>
+	<vector>
+	"model.h"
+	"time_agent.h"
+	"communicator.h"
+
+1381766221 /home/cem/.local/include/cyclus/model.h
+	<map>
+	<set>
+	<string>
+	<vector>
+	<boost/shared_ptr.hpp>
+	"dynamic_module.h"
+	"transaction.h"
+	"query_engine.h"
+
+1381766221 /home/cem/.local/include/cyclus/dynamic_module.h
+	<string>
+
+1381766221 /home/cem/.local/include/cyclus/transaction.h
+	"resource.h"
+
+1381766221 /home/cem/.local/include/cyclus/resource.h
+	<string>
+	<vector>
+	<boost/shared_ptr.hpp>
+
+1381766221 /home/cem/.local/include/cyclus/query_engine.h
+	<string>
+	<set>
+	<boost/lexical_cast.hpp>
+
+1381766221 /home/cem/.local/include/cyclus/time_agent.h
+	<string>
+	"context.h"
+	"model.h"
+
+1381766221 /home/cem/.local/include/cyclus/context.h
+	<map>
+	<string>
+	"composition.h"
+	"event_manager.h"
+	"model.h"
+
+1381766221 /home/cem/.local/include/cyclus/composition.h
+	<map>
+	<boost/shared_ptr.hpp>
+
+1381766221 /home/cem/.local/include/cyclus/event_manager.h
+	<list>
+	<string>
+	<vector>
+	<boost/uuid/uuid.hpp>
+	"error.h"
+	"event.h"
+
+1381766221 /home/cem/.local/include/cyclus/error.h
+	<exception>
+	<string>
+
+1381766221 /home/cem/.local/include/cyclus/event.h
+	<list>
+	<string>
+	<boost/pool/singleton_pool.hpp>
+	"any.hpp"
+	"event_manager.h"
+
+1381766221 /home/cem/.local/include/cyclus/any.hpp
+	<boost/config.hpp>
+	<boost/type_traits/remove_reference.hpp>
+	<boost/type_traits/is_reference.hpp>
+	<boost/throw_exception.hpp>
+	<boost/static_assert.hpp>
+	<boost/mpl/bool.hpp>
+	<boost/assert.hpp>
+	<boost/detail/sp_typeinfo.hpp>
+	<stdexcept>
+	<typeinfo>
+	<algorithm>
+	<iosfwd>
+
+1381766221 /home/cem/.local/include/cyclus/communicator.h
+	<set>
+	"message.h"
+	"logger.h"
+
+1381766221 /home/cem/.local/include/cyclus/message.h
+	<vector>
+	<string>
+	"intrusive_base.h"
+	"transaction.h"
+
+1381766221 /home/cem/.local/include/cyclus/intrusive_base.h
+	<boost/intrusive_ptr.hpp>
+	<boost/assert.hpp>
+	"logger.h"
+
+1381766221 /home/cem/.local/include/cyclus/logger.h
+	<iostream>
+	<string>
+	<sstream>
+	<vector>
+	<map>
+
+1381766221 /home/cem/.local/include/cyclus/mat_buff.h
+	"resource_buff.h"
+	"material.h"
+	<vector>
+
+1381766221 /home/cem/.local/include/cyclus/resource_buff.h
+	"resource.h"
+	<list>
+	<vector>
+	<set>
+	<limits>
+
+1381766221 /home/cem/.local/include/cyclus/material.h
+	<list>
+	<boost/shared_ptr.hpp>
+	"composition.h"
+	"cyc_limits.h"
+	"resource.h"
+	"res_tracker.h"
+
+1381766221 /home/cem/.local/include/cyclus/cyc_limits.h
+
+1381766221 /home/cem/.local/include/cyclus/res_tracker.h
+	<string>
+	<vector>
+	<boost/shared_ptr.hpp>
+	"context.h"
+	"resource.h"
+
+1381765997 /home/cem/Bright-lite/Bright-lite/structures.h
+	<utility>
+
+1381771541 /home/cem/Bright-lite/Bright-lite/parser.h
+	"origenBuilder.h"
+	"burnupcalc.h"
+
+1381765997 /home/cem/Bright-lite/Bright-lite/origenBuilder.h
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<algorithm>
+	"structures.h"
+
+1381771510 /home/cem/Bright-lite/Bright-lite/burnupcalc.cpp
+	"burnupcalc.h"
+
+1381765997 /home/cem/Bright-lite/Bright-lite/nucname.h
+	<iostream>
+	<string>
+	<map>
+	<set>
+	<exception>
+	<stdlib.h>
+	<stdio.h>
+	"pyne.h"
+
+1381770530 /home/cem/Bright-lite/Bright-lite/pyne.h
+	<string>
+	<string.h>
+	<sstream>
+	<cctype>
+	<stdlib.h>
+	<iostream>
+	<cmath>
+	<exception>
+	<sys/stat.h>
+	<sys/types.h>
+	<cstdlib>
+	<vector>
+	<algorithm>
+	<cmath>
+	<math.h>
+
+1381766221 /home/cem/.local/include/cyclus/generic_resource.h
+	<boost/shared_ptr.hpp>
+	"context.h"
+	"resource.h"
+	"res_tracker.h"
+
+1381766221 /home/cem/.local/include/cyclus/market_model.h
+	<deque>
+	<set>
+	<list>
+	"communicator.h"
+	"model.h"
+	"query_engine.h"
+
+1381765997 source:/home/cem/Bright-lite/Bright-lite/nucname.cc
+	"nucname.h"
+
+1381768063 source:/home/cem/Bright-lite/Bright-lite/origenBuilder.cpp
 	<iostream>
 	<vector>
 	<regex>
@@ -98,5 +324,292 @@
 	<fstream>
 	<algorithm>
 	"structures.h"
+
+1381771200 source:/home/cem/Bright-lite/Bright-lite/parser.cpp
+	"parser.h"
+
+1381771510 /home/cem/Bright-lite/Bright-lite/burnupcalc.h
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
+	<map>
+	"structures.h"
 	"origenBuilder.h"
+	"nucname.h"
+
+1381771510 source:/home/cem/Bright-lite/Bright-lite/burnupcalc.cpp
+	"burnupcalc.h"
+
+1381765997 source:/home/cem/Bright-lite/Bright-lite/pyne.cc
+	"pyne.h"
+
+1381780278 source:/home/robert/Bright-lite/Bright-lite/blmod.cc
+	"blmod.h"
+
+1381780939 /home/robert/Bright-lite/Bright-lite/blmod.h
+	<string>
+	<stdlib.h>
+	"facility_model.h"
+	"query_engine.h"
+	"mat_buff.h"
+	"logger.h"
+	"structures.h"
+	"parser.h"
+	<sstream>
+	<limits>
+	<boost/lexical_cast.hpp>
+	"origenBuilder.h"
+	"burnupcalc.h"
+	"context.h"
+	"logger.h"
+	"generic_resource.h"
+	"error.h"
+	"cyc_limits.h"
+	"market_model.h"
+
+1381767892 /home/robert/.local/include/cyclus/facility_model.h
+	<string>
+	<vector>
+	"model.h"
+	"time_agent.h"
+	"communicator.h"
+
+1381767892 /home/robert/.local/include/cyclus/model.h
+	<map>
+	<set>
+	<string>
+	<vector>
+	<boost/shared_ptr.hpp>
+	"dynamic_module.h"
+	"transaction.h"
+	"query_engine.h"
+
+1381767892 /home/robert/.local/include/cyclus/dynamic_module.h
+	<string>
+
+1381176985 /home/robert/.local/include/cyclus/transaction.h
+	"resource.h"
+
+1381176985 /home/robert/.local/include/cyclus/resource.h
+	<string>
+	<vector>
+	<boost/shared_ptr.hpp>
+
+1381176985 /home/robert/.local/include/cyclus/query_engine.h
+	<string>
+	<set>
+	<boost/lexical_cast.hpp>
+
+1381176985 /home/robert/.local/include/cyclus/time_agent.h
+	<string>
+	"context.h"
+	"model.h"
+
+1381176985 /home/robert/.local/include/cyclus/context.h
+	<map>
+	<string>
+	"composition.h"
+	"event_manager.h"
+	"model.h"
+
+1381176985 /home/robert/.local/include/cyclus/composition.h
+	<map>
+	<boost/shared_ptr.hpp>
+
+1381176985 /home/robert/.local/include/cyclus/event_manager.h
+	<list>
+	<string>
+	<vector>
+	<boost/uuid/uuid.hpp>
+	"error.h"
+	"event.h"
+
+1381176985 /home/robert/.local/include/cyclus/error.h
+	<exception>
+	<string>
+
+1381176985 /home/robert/.local/include/cyclus/event.h
+	<list>
+	<string>
+	<boost/pool/singleton_pool.hpp>
+	"any.hpp"
+	"event_manager.h"
+
+1381176985 /home/robert/.local/include/cyclus/any.hpp
+	<boost/config.hpp>
+	<boost/type_traits/remove_reference.hpp>
+	<boost/type_traits/is_reference.hpp>
+	<boost/throw_exception.hpp>
+	<boost/static_assert.hpp>
+	<boost/mpl/bool.hpp>
+	<boost/assert.hpp>
+	<boost/detail/sp_typeinfo.hpp>
+	<stdexcept>
+	<typeinfo>
+	<algorithm>
+	<iosfwd>
+
+1381176985 /home/robert/.local/include/cyclus/communicator.h
+	<set>
+	"message.h"
+	"logger.h"
+
+1381176985 /home/robert/.local/include/cyclus/message.h
+	<vector>
+	<string>
+	"intrusive_base.h"
+	"transaction.h"
+
+1381176985 /home/robert/.local/include/cyclus/intrusive_base.h
+	<boost/intrusive_ptr.hpp>
+	<boost/assert.hpp>
+	"logger.h"
+
+1381767892 /home/robert/.local/include/cyclus/logger.h
+	<iostream>
+	<string>
+	<sstream>
+	<vector>
+	<map>
+
+1381176985 /home/robert/.local/include/cyclus/mat_buff.h
+	"resource_buff.h"
+	"material.h"
+	<vector>
+
+1381176985 /home/robert/.local/include/cyclus/resource_buff.h
+	"resource.h"
+	<list>
+	<vector>
+	<set>
+	<limits>
+
+1381176985 /home/robert/.local/include/cyclus/material.h
+	<list>
+	<boost/shared_ptr.hpp>
+	"composition.h"
+	"cyc_limits.h"
+	"resource.h"
+	"res_tracker.h"
+
+1381176985 /home/robert/.local/include/cyclus/cyc_limits.h
+
+1381176985 /home/robert/.local/include/cyclus/res_tracker.h
+	<string>
+	<vector>
+	<boost/shared_ptr.hpp>
+	"context.h"
+	"resource.h"
+
+1381780939 /home/robert/Bright-lite/Bright-lite/parser.h
+
+1381777159 /home/robert/Bright-lite/Bright-lite/burnupcalc.h
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
+	<map>
+	"structures.h"
+	"origenBuilder.h"
+	"nucname.h"
+
+1381421317 /home/robert/Bright-lite/Bright-lite/nucname.h
+	<iostream>
+	<string>
+	<map>
+	<set>
+	<exception>
+	<stdlib.h>
+	<stdio.h>
+	"pyne.h"
+
+1381777159 /home/robert/Bright-lite/Bright-lite/pyne.h
+	<string>
+	<string.h>
+	<sstream>
+	<cctype>
+	<stdlib.h>
+	<iostream>
+	<cmath>
+	<exception>
+	<sys/stat.h>
+	<sys/types.h>
+	<cstdlib>
+	<vector>
+	<algorithm>
+	<cmath>
+	<math.h>
+
+1381767892 /home/robert/.local/include/cyclus/generic_resource.h
+	<boost/shared_ptr.hpp>
+	"context.h"
+	"resource.h"
+	"res_tracker.h"
+
+1381176985 /home/robert/.local/include/cyclus/market_model.h
+	<deque>
+	<set>
+	<list>
+	"communicator.h"
+	"model.h"
+	"query_engine.h"
+
+1381421317 source:/home/robert/Bright-lite/Bright-lite/nucname.cc
+	"nucname.h"
+
+1381421317 source:/home/robert/Bright-lite/Bright-lite/pyne.cc
+	"pyne.h"
+
+1386273289 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\burnupcalc.cpp
+	"burnupcalc.h"
+
+1386273289 c:\users\cb39852\documents\github\bright-lite\bright-lite\burnupcalc.h
+	<iostream>
+	<vector>
+	<regex>
+	<iterator>
+	<fstream>
+	<algorithm>
+	<map>
+	"structures.h"
+	"origenBuilder.h"
+	"nucname.h"
+
+1386273289 c:\users\cb39852\documents\github\bright-lite\bright-lite\nucname.h
+	<iostream>
+	<string>
+	<map>
+	<set>
+	<exception>
+	<stdlib.h>
+	<stdio.h>
+	"pyne.h"
+
+1386273289 c:\users\cb39852\documents\github\bright-lite\bright-lite\pyne.h
+	<string>
+	<string.h>
+	<sstream>
+	<cctype>
+	<stdlib.h>
+	<iostream>
+	<cmath>
+	<exception>
+	<sys/stat.h>
+	<sys/types.h>
+	<cstdlib>
+	<vector>
+	<algorithm>
+	<cmath>
+	<math.h>
+
+1386273289 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\nucname.cc
+	"nucname.h"
+
+1386273289 source:c:\users\cb39852\documents\github\bright-lite\bright-lite\pyne.cc
+	"pyne.h"
 

@@ -1,11 +1,14 @@
 #ifndef STRUCTURES_H_INCLUDED
 #define STRUCTURES_H_INCLUDED
 
+#include <utility>
+
 using namespace std;
 
 struct daughter {
     string name;
     vector<double> mass;
+    double fraction;
 };
 
 struct isoInformation {
@@ -16,6 +19,7 @@ struct isoInformation {
     vector<double> BUd;
     vector<double> time;
     vector<daughter> iso_vector;
+    double fraction;
 };
 
 #endif // STRUCTURES_H_INCLUDED

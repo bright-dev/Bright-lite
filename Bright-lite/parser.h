@@ -1,9 +1,9 @@
 #ifndef PARSER_H_INCLUDED
 #define PARSER_H_INCLUDED
+#include "structures.h"
 
-#include "origenBuilder.h"
 
-vector<double> ParseOriginFile(String file_location);
-vector<double> FindNeutronProduction(String line);
+isoInformation ParseOriginFile(std::string file_location);
+vector<double> FindNeutronProduction(std::string line);
 
 #endif // PARSER_H_INCLUDED
