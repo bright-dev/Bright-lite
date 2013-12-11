@@ -137,7 +137,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
             }
             x1 = x0 + tempone.BUd[m]; // adds on more discrete point for linear interpolation
 
-            k_batch[j] = intpol(tempone.k_inf[i], tempone.k_inf[i+1], x0, x1, BU_n); //finds the k of the batch
+            k_batch[j] = intpol(tempone.k_inf[i], tempone.k_inf[i+1], x1, x0, BU_n); //finds the k of the batch
 
             x0 = 0;
             x1= 0;
