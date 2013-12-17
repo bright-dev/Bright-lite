@@ -1,6 +1,6 @@
 #include "burnupcalc.h"
 
-#define PL 0.98
+#define PL 0.96
 
 using namespace std;
 
@@ -77,32 +77,35 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     double BU_finder = 0;
     double BU_n = 0; // estimated burnup of the n th batch
     double time_finder = 0;
-    double k_total =0;
-    int i =0;
+    double k_total = 0;
+    int i = 0;
     double k_batch [N];
     double t_batch;
-    double x0=0;
-    double x1=0;
-    int m =0;
-    while (i< tempone.neutron_prod.size())
+    double x0 = 0;
+    double x1 = 0;
+    int m = 0;
+    double k_old;
+    double bud_old = tempone.BUd[0];
+    while (i < tempone.neutron_prod.size())
     {
         tempone.k_inf.push_back(tempone.neutron_prod[i]*PL/tempone.neutron_dest[i]);
         i++;
     }
-
+    k_old = tempone.k_inf[0];
     i=0;
-    while (tempone.k_inf[i] > 1)
+    while (tempone.k_inf[i] > 1.0){
+        //cout << i << "  "<< tempone.k_inf[i] << endl;
         i++; // finds the number of entry when k drops under 1
-
+    }
 
     // below line interpolates the end point for burnup when k is one
-    BU_f = intpol(tempone.BUd[i-1],tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
+    BU_f = intpol(tempone.BUd[i],tempone.BUd[i+1],tempone.k_inf[i],tempone.k_inf[i+1],1.0);
 
-    time_f = intpol(tempone.time[i-1],tempone.time[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
+    time_f = intpol(tempone.time[i],tempone.time[i+1],tempone.k_inf[i],tempone.k_inf[i+1],1.0);
 
 
     int j=0;
-    while (j < i)
+    while (j < i+1)
     {
         BU_total = tempone.BUd[j] + BU_total;
         j++;
@@ -116,11 +119,10 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         rtn.second = tomass(i, time_f, tempone);
         return rtn;
     }
-    BU_total = 2*N*BU_total/(N+1); //linear approximation of mutli batch burnup, used to find a good initial guess of the max burnup
-
-
+    BU_total = 2.* N * BU_total/(N+1); //linear approximation of mutli batch burnup, used to find a good initial guess of the max burnup
+    int mn = 0;
     while (1) {
-        for (j = 0; j<N; j++) {
+        for (j = 0; j < N; j++) {
             BU_finder = 0;
             BU_n = BU_total*(j+1)/N;
 
@@ -137,7 +139,8 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
             }
             x1 = x0 + tempone.BUd[m]; // adds on more discrete point for linear interpolation
 
-            k_batch[j] = intpol(tempone.k_inf[i], tempone.k_inf[i+1], x1, x0, BU_n); //finds the k of the batch
+            k_batch[j] = intpol(tempone.k_inf[i], tempone.k_inf[i+1], x0, x1, BU_n); //finds the k of the batch
+            time_f = intpol(tempone.time[i],tempone.time[i+1],x0, x1, BU_n);
 
             x0 = 0;
             x1= 0;
@@ -151,23 +154,19 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         }
         k_total = k_total/N;
 
-        cout << k_total << endl;
+        if (abs(1 - k_total) < 0.00001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
+            break;
 
-        if (abs(1 - k_total) < 0.0001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
-        break;
-
-
-        BU_total = intpol(0,BU_total,tempone.k_inf[0],k_total,1); // updates the guess using (k(0),0) and (k_total, BU_total)
-
-
+        BU_total = intpol(0,BU_total,0,k_total,1);
+        //BU_total = intpol(bud_old,BU_total,k_old,k_total,1); // updates the guess using (k(0),0) and (k_total, BU_total)
 
         k_total = 0;
+        mn++;
 
     }
-
-        rtn.first = BU_total;
-        rtn.second = tomass(i, time_f, tempone);
-        return rtn;
+    rtn.first = BU_total;
+    rtn.second = tomass(i, time_f, tempone);
+    return rtn;
 
 }
 
@@ -259,18 +258,20 @@ int main(){
         input_stream[i].fraction = input_stream[i].fraction / mass_total;
         cout << input_stream[i].name << " " << input_stream[i].fraction << endl;
     }
+    double enrichment = input_stream[0].fraction;
+    inf.close();
+    remove("../inputFile.txt");
     int dips;
-    cout << "1. LWR" << endl << "2. DUPIC" << endl;
-    cin >> dips;
+    /*cout << "1. LWR" << endl << "2. DUPIC" << endl;
+    cin >> dips;*/
     map<int, double> test_mass;
     map<int, double>::iterator Iter;
     double BU_end;
     int ip;
-    cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
-    cin >> ip;
-    ofstream outf1("../next_input.txt");
-    ofstream outf2("../outputIsos.txt");
-    switch (ip)
+    /*cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
+    cin >> ip;*/
+    ofstream outf1("../inputFile.txt");
+    /*switch (ip)
     {
     case 1:
         cout << "Enter number of batches: ";
@@ -284,7 +285,7 @@ int main(){
             if ((*Iter).second > 0.01){
                 outf2 << m << " " << (*Iter).second << endl;
                 /** STUPID UGLY UGLY CODE*/
-                if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
+                /*if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
                     outf1 << m << " " << (*Iter).second << endl;
                 }
                 if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
@@ -308,8 +309,74 @@ int main(){
     default:
         cout << endl<< "yeaah, no" << endl << endl;
     }
+    outf1.close();*/
+    double BU_d;
+    ofstream outf2("outputIsosLWR.txt");
+    BU_d = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first;
+    test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
+    cout << "Burnup is  " << BU_d << endl;
+    for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
+        string m = pyne::nucname::name((*Iter).first);
+        if ((*Iter).second > 0.01){
+            outf2 << m << "   " << (*Iter).second << endl;
+            /** STUPID UGLY UGLY CODE*/
+            if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
+                outf1 << m << "  " << (*Iter).second << endl;
+            }
+            if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
+                outf1 << m << "  " << (*Iter).second << endl;
+            }
+            if (m == "U236" || m == "U237" || m == "U238"){
+                outf1 << m << "  " << (*Iter).second << endl;
+            }
+        }
+    }
     outf1.close();
-  return 0;
+    outf2.close();
+    ofstream outf3("outputIsosDUPIC.txt");
+    ifstream inf1("../inputFile.txt");
+    string line1;
+    isoInformation test2;
+    vector<isoInformation> input_stream1;
+    double mass_total1;
+    map<int, double> test_mass1;
+    double BU_d1;
+    while (getline(inf1, line1)) {
+        isoInformation temp_iso;
+        istringstream iss(line1);
+        iss >> temp_iso.name;
+        iss >> temp_iso.fraction;
+        mass_total1 = mass_total1 + temp_iso.fraction;
+        input_stream1.push_back(temp_iso);
+    }
+    for (int i = 0; i < input_stream1.size(); i++){
+        input_stream1[i].fraction = input_stream1[i].fraction / mass_total1;
+        cout << input_stream1[i].name << "    " << input_stream1[i].fraction << endl;
+    }
+    inf.close();
+    BU_d1 = burnupcalc(DataReader(test2, 2, input_stream1), 300, .01).first;
+    test_mass1 = burnupcalc(DataReader(test2, 2, input_stream1), 300, .01).second;
+    cout << "Burnup is  " << BU_d1 << endl;
+    for (Iter = test_mass1.begin(); Iter != test_mass1.end(); ++Iter){
+        string m = pyne::nucname::name((*Iter).first);
+        if ((*Iter).second > 0.01){
+            outf3 << m << "   " << (*Iter).second << endl;
+            /** STUPID UGLY UGLY CODE*/
+            if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
+                outf1 << m << "  " << (*Iter).second << endl;
+            }
+            if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
+                outf1 << m << "  " << (*Iter).second << endl;
+            }
+            if (m == "U236" || m == "U237" || m == "U238"){
+                outf1 << m << "  " << (*Iter).second << endl;
+            }
+        }
+    }
+    fstream outf4("../outBUD", fstream::in | fstream::out | fstream::app);
+    outf4 << enrichment << "    " << BU_d << "   " << BU_d1 << endl;
+    outf4.close();
+    return 0;
 }
 
 

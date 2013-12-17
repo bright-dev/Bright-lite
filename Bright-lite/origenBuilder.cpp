@@ -119,7 +119,6 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         mass_stream[i].fraction = input_stream[i].fraction;
         inf.close();
     }
-
     ofstream outf("../test.txt");
     test1 = FuelBuilder(mass_stream);
     outf << "TIME" << " ";
@@ -148,6 +147,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
             outf << "\n";
         }
     }
+
     outf.close();
     return test1;
 }
