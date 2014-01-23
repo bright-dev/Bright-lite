@@ -15,6 +15,8 @@ struct isoInformation {
     string name;
     vector<double> neutron_prod;
     vector<double> neutron_dest;
+    double struct_prod;
+    double struct_dest;
     vector<double> k_inf;
     vector<double> BUd;
     vector<double> time;
