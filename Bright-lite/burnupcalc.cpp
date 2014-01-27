@@ -1,6 +1,5 @@
 #include "burnupcalc.h"
 
-#define PL 0.96
 
 using namespace std;
 
@@ -80,15 +79,32 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     double k_total = 0;
     int i = 0;
     double k_batch [N];
+    double fluxWeight[N], fluxWeight_tot=0;
     double t_batch;
     double x0 = 0;
     double x1 = 0;
     int m = 0;
     double k_old;
     double bud_old = tempone.BUd[0];
+
+
+    //read the structural material contribution information (production[0],
+    //destruction[1], leakage[2]) to s_contr
+    double s_contr[3];
+    ifstream fin("../Bright-lite/LWR/LWRSTRUCT.txt");
+    double passer;
+    string spasser;
+	while(!fin.eof())
+	{
+        fin >> spasser >> passer;
+        s_contr[i]=passer;
+        i++;
+	}
+	i = 0;
+
     while (i < tempone.neutron_prod.size())
     {
-        tempone.k_inf.push_back(tempone.neutron_prod[i]*PL/tempone.neutron_dest[i]);
+        tempone.k_inf.push_back((tempone.neutron_prod[i]*s_contr[2]-s_contr[0])/(tempone.neutron_dest[i]-s_contr[1]));
         i++;
     }
     k_old = tempone.k_inf[0];
@@ -141,18 +157,21 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
             k_batch[j] = intpol(tempone.k_inf[i], tempone.k_inf[i+1], x0, x1, BU_n); //finds the k of the batch
             time_f = intpol(tempone.time[i],tempone.time[i+1],x0, x1, BU_n);
-
+            //flux is inversely proportional to neutron production
+            fluxWeight[j] = 1./intpol(tempone.neutron_prod[i],tempone.neutron_prod[i+1], x0, x1, BU_n);
             x0 = 0;
             x1= 0;
             m = 0;
         }
 
         j = 0;
-        while (j < N) { //sums the k values of every batch
-            k_total = k_total + k_batch[j];
+        while (j < N) { //sums the k values of every batch, weighing for flux, inverse of production
+            k_total = k_total + k_batch[j]*fluxWeight[j];
+            fluxWeight_tot = fluxWeight_tot + fluxWeight[j];
             j++;
         }
-        k_total = k_total/N;
+
+        k_total = k_total/N/fluxWeight_tot;
 
         if (abs(1 - k_total) < 0.00001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
             break;
@@ -161,6 +180,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         //BU_total = intpol(bud_old,BU_total,k_old,k_total,1); // updates the guess using (k(0),0) and (k_total, BU_total)
 
         k_total = 0;
+        fluxWeight_tot = 0;
         mn++;
 
     }
