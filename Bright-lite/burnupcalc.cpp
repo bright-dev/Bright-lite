@@ -87,24 +87,22 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     double k_old;
     double bud_old = tempone.BUd[0];
 
-
     //read the structural material contribution information (production[0],
     //destruction[1], leakage[2]) to s_contr
     double s_contr[3];
-    ifstream fin("../Bright-lite/LWR/LWRSTRUCT.txt");
+    ifstream fin("../LWR/LWRSTRUCT.txt");
     double passer;
     string spasser;
-	while(!fin.eof())
+	while(i < 3)
 	{
         fin >> spasser >> passer;
         s_contr[i]=passer;
         i++;
 	}
 	i = 0;
-
     while (i < tempone.neutron_prod.size())
     {
-        tempone.k_inf.push_back((tempone.neutron_prod[i]*s_contr[2]-s_contr[0])/(tempone.neutron_dest[i]-s_contr[1]));
+        tempone.k_inf.push_back((tempone.neutron_prod[i]*s_contr[2]/* + s_contr[0]*/)/(tempone.neutron_dest[i]/* + s_contr[1]*/));
         i++;
     }
     k_old = tempone.k_inf[0];
@@ -172,13 +170,13 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         }
 
         k_total = k_total/N/fluxWeight_tot;
+        cout << k_total << endl;
 
         if (abs(1 - k_total) < 0.00001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
             break;
 
         BU_total = intpol(tempone.BUd[0],BU_total,tempone.k_inf[0],k_total,1);
         //BU_total = intpol(bud_old,BU_total,k_old,k_total,1); // updates the guess using (k(0),0) and (k_total, BU_total)
-
         k_total = 0;
         fluxWeight_tot = 0;
         mn++;
@@ -262,7 +260,7 @@ int main(){
     double X;
     isoInformation test1;
     vector<isoInformation> input_stream;
-    ifstream inf("../inputFile.txt");
+    ifstream inf("inputFile.txt");
     string line;
     double mass_total;
     while (getline(inf, line)) {
@@ -279,17 +277,15 @@ int main(){
     }
     double enrichment = input_stream[0].fraction;
     inf.close();
-    remove("../inputFile.txt");
     int dips;
     /*cout << "1. LWR" << endl << "2. DUPIC" << endl;
     cin >> dips;*/
     map<int, double> test_mass;
     map<int, double>::iterator Iter;
     double BU_end;
-    int ip;
-    /*cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
+    /*int ip;
+    cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
     cin >> ip;*/
-    ofstream outf1("../inputFile.txt");
     /*switch (ip)
     {
     case 1:
@@ -333,12 +329,13 @@ int main(){
     ofstream outf2("outputIsosLWR.txt");
     BU_d = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first;
     test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
+    cout << "TEST" << endl;
     cout << "Burnup is  " << BU_d << endl;
-    for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
+    /*for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
         string m = pyne::nucname::name((*Iter).first);
         if ((*Iter).second > 0.01){
             outf2 << m << "   " << (*Iter).second << endl;
-            /** STUPID UGLY UGLY CODE*/
+            /** STUPID UGLY UGLY CODE
             if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
                 outf1 << m << "  " << (*Iter).second << endl;
             }
@@ -353,7 +350,7 @@ int main(){
     outf1.close();
     outf2.close();
     ofstream outf3("outputIsosDUPIC.txt");
-    ifstream inf1("../inputFile.txt");
+    ifstream inf1("inputFile.txt");
     string line1;
     isoInformation test2;
     vector<isoInformation> input_stream1;
@@ -380,7 +377,7 @@ int main(){
         string m = pyne::nucname::name((*Iter).first);
         if ((*Iter).second > 0.01){
             outf3 << m << "   " << (*Iter).second << endl;
-            /** STUPID UGLY UGLY CODE*/
+            /** STUPID UGLY UGLY CODE
             if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
                 outf1 << m << "  " << (*Iter).second << endl;
             }
@@ -392,9 +389,9 @@ int main(){
             }
         }
     }
-    fstream outf4("../outBUD", fstream::in | fstream::out | fstream::app);
+    fstream outf4("outBUD", fstream::in | fstream::out | fstream::app);
     outf4 << enrichment << "    " << BU_d << "   " << BU_d1 << endl;
-    outf4.close();
+    outf4.close();*/
     return 0;
 }
 

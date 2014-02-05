@@ -105,9 +105,9 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         isoInformation iso_info;
         string dir;
         if (type == 1) {
-            dir = "../LWR/";
+            dir = "LWR/";
         } else if (type == 2){
-            dir = "../DUPIC/";
+            dir = "DUPIC/";
         }
         ifstream inf(dir + input_stream[i].name + ".txt");
         if(!inf){
@@ -147,7 +147,6 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
             outf << "\n";
         }
     }
-
     outf.close();
     return test1;
 }
