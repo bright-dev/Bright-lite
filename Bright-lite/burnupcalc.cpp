@@ -277,59 +277,12 @@ int main(){
     }
     double enrichment = input_stream[0].fraction;
     inf.close();
-    int dips;
-    /*cout << "1. LWR" << endl << "2. DUPIC" << endl;
-    cin >> dips;*/
     map<int, double> test_mass;
     map<int, double>::iterator Iter;
     double BU_end;
-    /*int ip;
-    cout << "1. Enrichment to Burnup" << endl << "2. Burnup to Enrichment" << endl;
-    cin >> ip;*/
-    /*switch (ip)
-    {
-    case 1:
-        cout << "Enter number of batches: ";
-        cin >> N;
-        double BU_d;
-        BU_d = burnupcalc(DataReader(test1, dips, input_stream), N, .01).first;
-        test_mass = burnupcalc(DataReader(test1, dips, input_stream), N, .01).second;
-        cout << "Burnup is " << BU_d << endl;
-        for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
-            string m = pyne::nucname::name((*Iter).first);
-            if ((*Iter).second > 0.01){
-                outf2 << m << " " << (*Iter).second << endl;
-                /** STUPID UGLY UGLY CODE*/
-                /*if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
-                    outf1 << m << " " << (*Iter).second << endl;
-                }
-                if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
-                    outf1 << m << " " << (*Iter).second << endl;
-                }
-                if (m == "U236" || m == "U237" || m == "U238"){
-                    outf1 << m << " " << (*Iter).second << endl;
-                }
-            }
-        }
-        outf1.close();
-        outf2.close();
-        break;
-    case 2:
-        cout << "Enter desired Burnup (0-200): ";
-        cin >> BU_end;
-        cout << "Enter number of batches: ";
-        cin >> N;
-        cout << "Desired enrichment is about: " << enrichcalc(BU_end, N, 1, dips, input_stream)*100 << " %" << endl << endl;
-        break;
-    default:
-        cout << endl<< "yeaah, no" << endl << endl;
-    }
-    outf1.close();*/
     double BU_d;
-    ofstream outf2("outputIsosLWR.txt");
     BU_d = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first;
     test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
-    cout << "TEST" << endl;
     cout << "Burnup is  " << BU_d << endl;
     /*for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
         string m = pyne::nucname::name((*Iter).first);
@@ -346,52 +299,7 @@ int main(){
                 outf1 << m << "  " << (*Iter).second << endl;
             }
         }
-    }
-    outf1.close();
-    outf2.close();
-    ofstream outf3("outputIsosDUPIC.txt");
-    ifstream inf1("inputFile.txt");
-    string line1;
-    isoInformation test2;
-    vector<isoInformation> input_stream1;
-    double mass_total1;
-    map<int, double> test_mass1;
-    double BU_d1;
-    while (getline(inf1, line1)) {
-        isoInformation temp_iso;
-        istringstream iss(line1);
-        iss >> temp_iso.name;
-        iss >> temp_iso.fraction;
-        mass_total1 = mass_total1 + temp_iso.fraction;
-        input_stream1.push_back(temp_iso);
-    }
-    for (int i = 0; i < input_stream1.size(); i++){
-        input_stream1[i].fraction = input_stream1[i].fraction / mass_total1;
-        cout << input_stream1[i].name << "    " << input_stream1[i].fraction << endl;
-    }
-    inf.close();
-    BU_d1 = burnupcalc(DataReader(test2, 2, input_stream1), 300, .01).first;
-    test_mass1 = burnupcalc(DataReader(test2, 2, input_stream1), 300, .01).second;
-    cout << "Burnup is  " << BU_d1 << endl;
-    for (Iter = test_mass1.begin(); Iter != test_mass1.end(); ++Iter){
-        string m = pyne::nucname::name((*Iter).first);
-        if ((*Iter).second > 0.01){
-            outf3 << m << "   " << (*Iter).second << endl;
-            /** STUPID UGLY UGLY CODE
-            if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
-                outf1 << m << "  " << (*Iter).second << endl;
-            }
-            if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
-                outf1 << m << "  " << (*Iter).second << endl;
-            }
-            if (m == "U236" || m == "U237" || m == "U238"){
-                outf1 << m << "  " << (*Iter).second << endl;
-            }
-        }
-    }
-    fstream outf4("outBUD", fstream::in | fstream::out | fstream::app);
-    outf4 << enrichment << "    " << BU_d << "   " << BU_d1 << endl;
-    outf4.close();*/
+    }*/
     return 0;
 }
 
