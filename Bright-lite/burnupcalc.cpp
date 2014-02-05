@@ -157,12 +157,11 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         if (abs(1 - k_total) < 0.00001 ) //breaks out of loop if k is close enough, tolerance value passed to the function can be used here
             break;
 
-        BU_total = intpol(0,BU_total,0,k_total,1);
+        BU_total = intpol(tempone.BUd[0],BU_total,tempone.k_inf[0],k_total,1);
         //BU_total = intpol(bud_old,BU_total,k_old,k_total,1); // updates the guess using (k(0),0) and (k_total, BU_total)
 
         k_total = 0;
         mn++;
-
     }
     rtn.first = BU_total;
     rtn.second = tomass(i, time_f, tempone);

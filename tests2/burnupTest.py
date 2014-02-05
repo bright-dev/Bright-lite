@@ -5,7 +5,7 @@ import subprocess
 main_dir = os.getcwd()
 subprocess.call("rm -r outBUD", shell = True)
 enrich = 20.
-while (enrich < 50):
+while (enrich < 45):
     os.mkdir(str(enrich)+"%")
     subprocess.call("cp Bright-lite " + str(enrich) + "%", shell = True)
     f = open("inputFile.temp", 'r')

@@ -88,8 +88,8 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                             }
                         }
                     }
+                    iso_check = false;
                 }
-                iso_check = false;
             }
             if (iso_check == true) {
                 fuel.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
