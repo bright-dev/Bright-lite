@@ -3,24 +3,24 @@
 
 #include <utility>
 
-using namespace std;
+
 
 struct daughter {
-    string name;
-    vector<double> mass;
+    std::string name;
+    std::vector<double> mass;
     double fraction;
 };
 
 struct isoInformation {
-    string name;
-    vector<double> neutron_prod;
-    vector<double> neutron_dest;
+    std::string name;
+    std::vector<double> neutron_prod;
+    std::vector<double> neutron_dest;
     double struct_prod;
     double struct_dest;
-    vector<double> k_inf;
-    vector<double> BUd;
-    vector<double> time;
-    vector<daughter> iso_vector;
+    std::vector<double> k_inf;
+    std::vector<double> BUd;
+    std::vector<double> time;
+    std::vector<daughter> iso_vector;
     double fraction;
 };
 
