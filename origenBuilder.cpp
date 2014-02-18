@@ -105,9 +105,9 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         isoInformation iso_info;
         string dir;
         if (type == 1) {
-            dir = "LWR/";
+            dir = "../Bright-lite/LWR/";
         } else if (type == 2){
-            dir = "DUPIC/";
+            dir = "../Bright-lite/DUPIC/";
         }
         ifstream inf(dir + input_stream[i].name + ".txt");
         if(!inf){
