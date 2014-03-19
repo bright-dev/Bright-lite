@@ -1,6 +1,5 @@
 #include "burnupcalc.h"
 
-
 using namespace std;
 
 double intpol(double y0, double y1, double x0, double x1, double x) {
