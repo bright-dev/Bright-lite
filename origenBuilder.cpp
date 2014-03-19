@@ -103,7 +103,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     vector<isoInformation> mass_stream;
     for (int i = 0; i < input_stream.size(); i++){
         isoInformation iso_info;
-        string dir;
+        string dir;x`
         if (type == 1) {
             dir = "../Bright-lite/LWR/";
         } else if (type == 2){
@@ -119,7 +119,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         mass_stream[i].fraction = input_stream[i].fraction;
         inf.close();
     }
-    ofstream outf("../test.txt");
+    ofstream outf("test.txt");
     test1 = FuelBuilder(mass_stream);
     outf << "TIME" << " ";
     for(int i = 0; i < test1.time.size(); i++){
