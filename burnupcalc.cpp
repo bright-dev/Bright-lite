@@ -30,57 +30,73 @@ map<int, double> tomass (int ti, double time, isoInformation isoinfo) {
     return out;
 }
 
-   double kcalc(isoInformation tempone, double BU_total, int N, double s_contr[3]){
-        double x0 = 0, x1 = 0, BU_finder = 0, BU_n = 0, phi[N], pbatch[N], dbatch[N], p_total=0, d_total=0;
-        double phi_total =0;
-        double t_n =0, F_n=0, dt_n, dF_n, dB_n;
-        int j = 0, m = 0, i = 0;
+/**
+phicalc calculates the flux of a given batch
+inputs: n is the batch number starting from zero, total bathces N, discharge burnup BU_total
+        isoInformation of the fuel
+**/
 
-                for (j = 0; j < N; j++) {
-                    BU_finder = 0;
+double phicalc(int n, int N, double BU_total, isoInformation tempone){
+    int i = 0;
+    double x0=0, x1, F_n, dF_n, dB_n, dt_n;
+    double BU_n;
+    cout<< "BU total: "<<BU_total<<endl;
+    BU_n = BU_total*(n+1)/N;
 
-                    BU_n = BU_total*(j+1)/N;
+    while (x0 + tempone.BUd[i] < BU_n) // finds the discrete point i corresponding to the burnup just under BU_n
+        {
+            x0 += tempone.BUd[i]; //x0 is the total burnup under BU_n
+            i++;
+        }
 
-                    i=0;
-                    while (BU_finder + tempone.BUd[i] < BU_n) // finds the discrete point i corresponding to the burnup just under BU_n
-                        {
-                            BU_finder = BU_finder + tempone.BUd[i];
-                            i++;
-                        }
+    x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
+
+    F_n = intpol(tempone.time[i-1],tempone.time[i],x0,x1,BU_n); //fluence at BU_n
+cout<<"Fn: "<< F_n<<" time:"<<tempone.time[i]<<endl;
+cout<<"x1: "<<x1<<" BU_n: "<<BU_n<<endl;
+    dF_n = (tempone.time[i] - F_n); //delta fluence
+    dB_n = x1 - BU_n; //delta burnup due to the delta fluence
+    dt_n = (N * dB_n*180) / BU_total; //delta time due to the change in fluence
+cout<< "dF_n: "<< dF_n<<" dB_n: "<<dB_n<<" dt_n: "<<dt_n<<endl;
+    return dF_n/dt_n; //flux of n'th batch, n indexed from zero
+
+}
 
 
-                    while (m <= i) {
-                        x0 = x0 + tempone.BUd[m]; // sums the burnup for total burnup
-                        m++;
+double kcalc(isoInformation tempone, double BU_total, int N, double s_contr[3]){
+    double x0 = 0, x1 = 0, BU_n = 0, phi, pbatch[N], dbatch[N], p_total=0, d_total=0;
+    int j = 0, i = 0;
+
+cout<<endl;
+            for (j = 0; j < N; j++) {
+
+                BU_n = BU_total*(j+1)/N;
+
+                i=0;
+                while (x0 + tempone.BUd[i] < BU_n) // finds the discrete point i corresponding to the burnup just under BU_n
+                    {
+                        x0 += tempone.BUd[i];
+                        i++;
                     }
-                    x1 = x0 + tempone.BUd[m+1]; // adds on more discrete point for linear interpolation
 
-                    F_n = intpol(tempone.time[i],tempone.time[i+1],x0,x1,BU_n); //fluence at BU_n
+                x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-                    dF_n = tempone.time[i+1] - F_n; //delta fluence
-                    dB_n = x1 - BU_n; //delta burnup due to the delta fluence
-                    dt_n = BU_total / (N * dB_n); //delta time due to the change in fluence
+                phi = phicalc(j, N, BU_total, tempone);
+                cout<< "batch"<<j+1<<" phi: "<<phi<< endl;
+                pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
+                dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
-                    phi[j] =  dF_n/dB_n; //flux of j'th batch
-                    cout<< phi[j]<<endl;
+                p_total += pbatch[j]*phi;
+                d_total += dbatch[j]*phi;
 
-                    pbatch[j] = intpol(tempone.neutron_prod[i],tempone.neutron_prod[i+1], x0, x1, BU_n);
-                    dbatch[j] = intpol(tempone.neutron_dest[i],tempone.neutron_dest[i+1], x0, x1, BU_n);
+                x0 = 0;
+                x1= 0;
 
-                    phi_total += phi[j];
-                    p_total += pbatch[j]*phi[j];
-                    d_total += dbatch[j]*phi[j];
+            }
 
+        return s_contr[2]*(p_total+s_contr[0])/(d_total+s_contr[1]);
 
-                    x0 = 0;
-                    x1= 0;
-                    m = 0;
-                }
-
-        cout<< endl;
-            return s_contr[2]*(p_total+s_contr[0])/(d_total+s_contr[1]);
-
-    }
+}
 
 
 /**
@@ -121,16 +137,10 @@ Double, total burnup reached by the core.
 
 pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double tolerance) {
     pair<double, map<int,double> > rtn(0, map<int, double>());
-    double BU_f, time_f; // burnup and time when k reaches one, time in days
+    double time_f; // time when k reaches one, time in days
     double BU_total = 0;
-    double BU_finder = 0, intBU, intk;
-    double BU_n = 0; // estimated burnup of the n th batch
-    double k_total = 10, p_total = 0, d_total = 0;
+    double k_total = 10;
     int i = 0;
-    double x0 = 0;
-    double x1 = 0;
-    int m = 0;
-    double phi[N], pbatch[N], dbatch[N]; //flux, production, destruction of the batch
     double BU1, BU2, BU3;
 
     //read the structural material contribution information (production[0],
@@ -151,42 +161,34 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     {
         tempone.k_inf.push_back(((tempone.neutron_prod[i]+s_contr[0])*s_contr[2])/(tempone.neutron_dest[i]+s_contr[1]));
         //tempone.k_inf.push_back(((tempone.neutron_prod[i]))/(tempone.neutron_dest[i]));
-        cout << "k: " << tempone.k_inf[i] << endl;
         i++;
     }
 
     i=0;
     while (tempone.k_inf[i] > 1.0){
+        BU_total += tempone.BUd[i];
         i++; // finds the number of entry when k drops under 1
 
     }
 
-    BU_f = intpol(tempone.BUd[i-1],tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
+    BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
     time_f = intpol(tempone.time[i-1],tempone.time[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
 
 
-    int j=0; //batch index
-    while (j < i+1)
-    {
-        BU_total += tempone.BUd[j];
-        j++;
-    }
-
-    BU_total = BU_total + BU_f; // adds the last value when k reaches one
-
+/*
     if (N == 1){
         rtn.first = BU_total;
         rtn.second = tomass(i, time_f, tempone);
         return rtn;
     }
-
+*/
 
 
     BU1 = 2.* N * BU_total/(N+1);
-    BU2 = BU1*1.05;
-    BU3 = 4;
+    BU2 = BU1*1.1;
     k_total = 2;
     i=0;
+
 
         while(abs(1-k_total)>0.000001){
 
@@ -195,18 +197,19 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
             BU1 = BU2;
             BU2 = BU3;
             i++;
+
             if(i==50)
                 {
                 cout<< "Warning! Maximum iteration reached."<<endl;
+                BU3 = (BU1+BU2+BU3)/3;
                 break;
                 }
+
 
 
         }
 
     BU_total = BU3;
-    cout << "N: " << N << endl;
-    cout << "k: " << k_total <<endl;
 
 
     rtn.first = BU_total;
@@ -311,9 +314,19 @@ int main(){
     double BU_end;
     double BU_d;
 
-    BU_d = burnupcalc(DataReader(test1, 1, input_stream), 100, .01).first;
+
+ //   BU_d = burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first;
+
+  //  cout << "N=1: "<< burnupcalc(DataReader(test1, 1, input_stream), 1, .01).first << endl<< endl;
+    cout << "N=2: "<< burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first << endl<< endl;
+ //   cout << "N=3: "<< burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl<< endl;
+ //   cout << "N=5: "<< burnupcalc(DataReader(test1, 1, input_stream), 5, .01).first << endl<< endl;
+ //   cout << "N=10: "<< burnupcalc(DataReader(test1, 1, input_stream), 10, .01).first << endl;
+ //   cout << "N=1000: "<< burnupcalc(DataReader(test1, 1, input_stream), 1000, .01).first << endl;
+
+
 //    test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
-    cout << "Burnup is  " << BU_d << endl;
+ //   cout << "Burnup is  " << BU_d << endl;
     /*for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
         string m = pyne::nucname::name((*Iter).first);
         if ((*Iter).second > 0.01){
