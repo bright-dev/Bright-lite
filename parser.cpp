@@ -144,6 +144,41 @@ isoInformation ParseOriginFile(string file_location){
 }
 
 
+fuelBundle InputReader(){
+
+
+    int region;
+    char type;
+    int nucid;
+    double mass;
+    fuelBundle fuel;
+
+    string line;
+    ifstream fin("../inputfile.txt");
+
+    int i=0;
+	while(getline(fin, line))
+	{
+        if(line.find("REGIONS") == 0){
+            while(getline(fin, line)){
+                    if(line.find("END") == 0)
+                        break;
+                istringstream iss(line);
+                iss >> region >> type >> nucid >> mass;
+                fuel.iso[i].name.push_back(nucid);
+                fuel.iso[i].region.push_back(region);
+                fuel.iso[i].type.push_back(type);
+                fuel.iso[i].fraction.push_back(mass);
+                i++;
+
+
+            }
+        }
+
+    }
+
+    return fuel;
+}
 
 
 

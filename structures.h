@@ -12,15 +12,16 @@ struct daughter {
 };
 
 struct isoInformation {
-    std::string name;
+    int name; //changed this to int so it contains nucid
+    int region;
+    char type;
+    double fraction;
     std::vector<double> neutron_prod;
     std::vector<double> neutron_dest;
     std::vector<double> k_inf;
     std::vector<double> BUd;
     std::vector<double> fluence;
     std::vector<daughter> iso_vector;
-    int region;
-    double fraction;
 };
 
 struct nonActinide {
@@ -33,6 +34,11 @@ struct nonActinide {
     double yyn;
     double total_prod;
     double total_dest;
+};
+
+struct fuelBundle {
+    std::string name;
+    std::vector<isoInformation> iso;
 };
 
 #endif // STRUCTURES_H_INCLUDED
