@@ -28,7 +28,7 @@ isoInformation BuildIsotope(ifstream &input){
         } else {
             while (iss >> value){
                 if (i == 0){
-                    isotope.time.push_back(value);
+                    isotope.fluence.push_back(value);
                 } else if (i == 1){
                     isotope.neutron_prod.push_back(value);
                 } else if (i == 2){
@@ -45,8 +45,8 @@ isoInformation BuildIsotope(ifstream &input){
 
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
-    for (int i = 0; i < fuel_values[0].time.size(); i++){
-        fuel.time.push_back(fuel_values[0].fraction*fuel_values[0].time[i]+(fuel_values[0].fraction)*fuel_values[1].time[i]);
+    for (int i = 0; i < fuel_values[0].fluence.size(); i++){
+        fuel.fluence.push_back(fuel_values[0].fraction*fuel_values[0].fluence[i]+(fuel_values[0].fraction)*fuel_values[1].fluence[i]);
     }
     for (int i = 0; i < fuel_values[0].neutron_prod.size(); i++){
         fuel.neutron_prod.push_back(fuel_values[0].fraction*fuel_values[0].neutron_prod[i]+(fuel_values[0].fraction)*fuel_values[1].neutron_prod[i]);
@@ -122,8 +122,8 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     ofstream outf("test.txt");
     test1 = FuelBuilder(mass_stream);
     outf << "TIME" << " ";
-    for(int i = 0; i < test1.time.size(); i++){
-        outf << test1.time[i] << " ";
+    for(int i = 0; i < test1.fluence.size(); i++){
+        outf << test1.fluence[i] << " ";
     }
     outf << "\n" << "NEUT_PROD" << " ";
     for(int i = 0; i < test1.neutron_prod.size(); i++){
@@ -151,8 +151,8 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     return test1;
 }
 
-isoInformation NonActinideReader(string file_name){
-    isoInformation test1;
+vector<nonActinide> NonActinideReader(string file_name){
+    vector<nonActinide> structural_comps;
     ifstream inf(file_name);
     string e_test = "E";
     string e_space = "*E *";
@@ -164,17 +164,31 @@ isoInformation NonActinideReader(string file_name){
     while(getline(inf, line)){
         istringstream iss(line);
         iss >> iso >> iso >> iso;
+        nonActinide na_iso;
         if (iso == "MATERIAL"){
             while(getline(inf, line)){
-                //replace( line.begin(), line.end(), e_space, e_test);
-                regex_replace(line, regex(e_space), e_test);
                 istringstream iss1(line);
                 iss1 >> library;
                 if (library == "-1"){
-                    return test1;
+                    inf.close();
+                    for (int i = 0; i < structural_comps.size(); i++){
+                        structural_comps[i].total_prod = structural_comps[i].sn2n;
+                        structural_comps[i].total_dest = structural_comps[i].snp +
+                        structural_comps[i].sng + structural_comps[i].sngx +
+                        structural_comps[i].sn2nx;
+                        cout << structural_comps[i].name << "    " << structural_comps[i].total_prod << "     " << structural_comps[i].total_dest << endl;
+                    }
+                    return structural_comps;
                 }
                 iss1 >> iso >> sng >> sn2n >> snp >> sngx >> sn2nx >> yyn;
-                cout << iso << "    " << sng << endl;
+                na_iso.name = iso;
+                na_iso.sng = sng;
+                na_iso.sn2n = sn2n;
+                na_iso.snp = snp;
+                na_iso.sngx = sngx;
+                na_iso.sn2nx = sn2nx;
+                na_iso.yyn = yyn;
+                structural_comps.push_back(na_iso);
             }
         }
     }

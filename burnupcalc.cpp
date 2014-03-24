@@ -12,7 +12,7 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
 
 // need to add units
 
-map<int, double> tomass (int ti, double time, isoInformation isoinfo) {
+map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
     map<int, double> out = map<int, double>();
     double mass_i;
     string name_i;
@@ -22,9 +22,9 @@ map<int, double> tomass (int ti, double time, isoInformation isoinfo) {
         nucid = pyne::nucname::zzaaam(name_i)/10;
         mass_i = intpol(isoinfo.iso_vector[i].mass[ti-1],
                         isoinfo.iso_vector[i].mass[ti],
-                        isoinfo.time[ti-1],
-                        isoinfo.time[ti],
-                        time);
+                        isoinfo.fluence[ti-1],
+                        isoinfo.fluence[ti],
+                        fluence);
         out[nucid] = mass_i;
     }
     return out;
@@ -50,12 +50,12 @@ double phicalc(int n, int N, double BU_total, isoInformation tempone){
 
     x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-    F_n = intpol(tempone.time[i-1],tempone.time[i],x0,x1,BU_n); //fluence at BU_n
+    F_n = intpol(tempone.fluence[i-1],tempone.fluence[i],x0,x1,BU_n); //fluence at BU_n
 /*
 cout<<"Fn: "<< F_n<<" time:"<<tempone.time[i]<<endl;
 cout<<"x1: "<<x1<<" BU_n: "<<BU_n<<endl;
 */
-    dF_n = (tempone.time[i] - F_n); //delta fluence
+    dF_n = (tempone.fluence[i] - F_n); //delta fluence
     dB_n = x1 - BU_n; //delta burnup due to the delta fluence
     dt_n = (N * dB_n*180) / BU_total; //delta time due to the change in fluence
 //cout<< "dF_n: "<< dF_n<<" dB_n: "<<dB_n<<" dt_n: "<<dt_n<<endl;
@@ -186,7 +186,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     }
 
     BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
-    time_f = intpol(tempone.time[i-1],tempone.time[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
+    time_f = intpol(tempone.fluence[i-1],tempone.fluence[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
 
 
 /*

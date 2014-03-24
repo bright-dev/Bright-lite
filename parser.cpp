@@ -59,15 +59,17 @@ isoInformation ParseOriginFile(string file_location){
                 iso_info.BUd.push_back(value);
             }
         }
-        if(line.find("REACTIVITY AND BURNUP DATA") == 45){
-            getline(inf, line);
-            getline(inf, line);
-            getline(inf, line);
+        if(line.find("TIME, SEC") == 45){
             istringstream iss(line);
             double time_pass;
-            string day;
-            while(iss >> time_pass >> day){
-                iso_info.time.push_back(time_pass);
+            string time;
+            string line2;
+            double flux;
+            getline(inf, line2);
+            istringstream iss_flux(line2);
+            iss >> time >> time >> flux;
+            while(iss >> time_pass){
+                iso_info.fluence.push_back(time_pass*flux);
             }
         }
         if(line.find("5 SUMMARY TABLE:  C") == 21){
@@ -111,8 +113,8 @@ isoInformation ParseOriginFile(string file_location){
     }
     inf.close();
     outf << "TIME" << "    ";
-    for(int i = 0; i < iso_info.time.size(); i++){
-        outf << iso_info.time[i] << "   ";
+    for(int i = 0; i < iso_info.fluence.size(); i++){
+        outf << iso_info.fluence[i] << "   ";
     }
     outf << "\n" << "NEUT_PROD" << "    ";
     for(int i = 0; i < iso_info.neutron_prod.size(); i++){
