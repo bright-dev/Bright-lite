@@ -40,7 +40,6 @@ double phicalc(int n, int N, double BU_total, isoInformation tempone){
     int i = 0;
     double x0=0, x1, F_n, dF_n, dB_n, dt_n;
     double BU_n;
-    cout<< "BU total: "<<BU_total<<endl;
     BU_n = BU_total*(n+1)/N;
 
     while (x0 + tempone.BUd[i] < BU_n) // finds the discrete point i corresponding to the burnup just under BU_n
@@ -52,12 +51,14 @@ double phicalc(int n, int N, double BU_total, isoInformation tempone){
     x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
     F_n = intpol(tempone.time[i-1],tempone.time[i],x0,x1,BU_n); //fluence at BU_n
+/*
 cout<<"Fn: "<< F_n<<" time:"<<tempone.time[i]<<endl;
 cout<<"x1: "<<x1<<" BU_n: "<<BU_n<<endl;
+*/
     dF_n = (tempone.time[i] - F_n); //delta fluence
     dB_n = x1 - BU_n; //delta burnup due to the delta fluence
     dt_n = (N * dB_n*180) / BU_total; //delta time due to the change in fluence
-cout<< "dF_n: "<< dF_n<<" dB_n: "<<dB_n<<" dt_n: "<<dt_n<<endl;
+//cout<< "dF_n: "<< dF_n<<" dB_n: "<<dB_n<<" dt_n: "<<dt_n<<endl;
     return dF_n/dt_n; //flux of n'th batch, n indexed from zero
 
 }
@@ -67,7 +68,6 @@ double kcalc(isoInformation tempone, double BU_total, int N, double s_contr[3]){
     double x0 = 0, x1 = 0, BU_n = 0, phi, pbatch[N], dbatch[N], p_total=0, d_total=0;
     int j = 0, i = 0;
 
-cout<<endl;
             for (j = 0; j < N; j++) {
 
                 BU_n = BU_total*(j+1)/N;
@@ -82,7 +82,6 @@ cout<<endl;
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
                 phi = phicalc(j, N, BU_total, tempone);
-                cout<< "batch"<<j+1<<" phi: "<<phi<< endl;
                 pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
                 dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
@@ -159,8 +158,8 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 	i = 0;
     while (i < tempone.neutron_prod.size())
     {
+        //tempone.k_inf.push_back(((tempone.neutron_prod[i]+s_contr[0])*s_contr[2])/(tempone.neutron_dest[i]+s_contr[1]));
         tempone.k_inf.push_back(((tempone.neutron_prod[i]+s_contr[0])*s_contr[2])/(tempone.neutron_dest[i]+s_contr[1]));
-        //tempone.k_inf.push_back(((tempone.neutron_prod[i]))/(tempone.neutron_dest[i]));
         i++;
     }
 
@@ -251,25 +250,33 @@ Double, the enrichment needed to achieve BU_end.
 
 double enrichcalc(double BU_end, int N, double tolerance, int type, vector<isoInformation> input_stream)
 {
-
+//THIS WORKS ONLY FOR TWO ISO'S
 double X;
 double BU_guess;
-double BU2, BU7;
+double BU2, BU6;
 isoInformation test2;
 
 
 // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
-BU2 = 20;
-BU7 = 100;
+input_stream[0].fraction = 0.02;
+input_stream[1].fraction = 0.98;
+BU2 = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
+input_stream[0].fraction = 0.06;
+input_stream[1].fraction = 0.94;
+BU6 = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
 
-X = 0.02 + (BU_end - BU2)*(0.07 - 0.02)/(BU7 - BU2);
+X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
 
+input_stream[0].fraction = X;
+input_stream[1].fraction = 1-X;
 BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
 
 // enrichment iteration
 while (BU_end < BU_guess)
 {
     X = X - 0.001;
+    input_stream[0].fraction = X;
+    input_stream[1].fraction = 1-X;
     BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
 }
 
@@ -277,6 +284,8 @@ while (BU_end < BU_guess)
 while (BU_end > BU_guess)
 {
     X = X + 0.001;
+    input_stream[0].fraction = X;
+    input_stream[1].fraction = 1-X;
     BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
 }
     return X;
@@ -314,16 +323,18 @@ int main(){
     double BU_end;
     double BU_d;
 
+/*
+    while(1){
+        cin >> BU_end;
+        cout<< enrichcalc(BU_end, 100, 0.001, 1, input_stream)<<endl;
+    }
+*/
 
- //   BU_d = burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first;
-
-  //  cout << "N=1: "<< burnupcalc(DataReader(test1, 1, input_stream), 1, .01).first << endl<< endl;
-    cout << "N=2: "<< burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first << endl<< endl;
- //   cout << "N=3: "<< burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl<< endl;
- //   cout << "N=5: "<< burnupcalc(DataReader(test1, 1, input_stream), 5, .01).first << endl<< endl;
- //   cout << "N=10: "<< burnupcalc(DataReader(test1, 1, input_stream), 10, .01).first << endl;
- //   cout << "N=1000: "<< burnupcalc(DataReader(test1, 1, input_stream), 1000, .01).first << endl;
-
+cout << burnupcalc(DataReader(test1, 1, input_stream), 1, .01).first << endl;
+cout << burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first << endl;
+cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
+cout << burnupcalc(DataReader(test1, 1, input_stream), 5, .01).first << endl;
+cout << burnupcalc(DataReader(test1, 1, input_stream), 100, .01).first << endl;
 
 //    test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
  //   cout << "Burnup is  " << BU_d << endl;
