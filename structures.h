@@ -6,7 +6,7 @@
 
 
 struct daughter {
-    std::string name;
+    int name;
     std::vector<double> mass;
     double fraction;
 };

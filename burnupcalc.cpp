@@ -15,7 +15,7 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
 map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
     map<int, double> out = map<int, double>();
     double mass_i;
-    string name_i;
+    int name_i;
     int nucid;
     for (int i = 0; i < isoinfo.iso_vector.size(); i++){
         name_i = isoinfo.iso_vector[i].name;

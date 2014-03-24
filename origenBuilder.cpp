@@ -12,7 +12,7 @@ using namespace std;
 isoInformation BuildIsotope(ifstream &input){
     isoInformation isotope;
     int i = 0;
-    string buffer;
+    int buffer;
     double value;
     string line;
     while(getline(input, line)){
@@ -109,7 +109,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         } else if (type == 2){
             dir = "../Bright-lite/DUPIC/";
         }
-        ifstream inf(dir + input_stream[i].name + ".txt");
+        ifstream inf(dir + to_string(input_stream[i].name) + ".txt");
         if(!inf){
             cout << "NOOOOO" << endl;
         }

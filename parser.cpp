@@ -89,7 +89,7 @@ isoInformation ParseOriginFile(string file_location){
                     iso_name.erase(remove(iso_name.begin(), iso_name.end(), ' '), iso_name.end());
                     if(iso_name.find_first_of("0123456789") != std::string::npos){
                         for (int i = 0; i < iso_info.iso_vector.size(); i++){
-                            if (iso_info.iso_vector[i].name == iso_name){
+                            if (iso_info.iso_vector[i].name == atoi(iso_name.c_str())){
                                 test = true;
                                 for ( int j = 11; j < 130 ; j += 10){
                                     istringstream iss(line.substr(j,9));
@@ -99,7 +99,7 @@ isoInformation ParseOriginFile(string file_location){
                         }
                         if (test == false){
                             daughter daughter;
-                            daughter.name = iso_name;
+                            daughter.name = atoi(iso_name.c_str());
                             for ( int j = 11; j < 130 ; j += 10){
                                 istringstream iss(line.substr(j,9));
                                 daughter.mass.push_back(IssToDouble(iss));
@@ -165,6 +165,7 @@ fuelBundle InputReader(){
                         break;
                 istringstream iss(line);
                 iss >> region >> type >> nucid >> mass;
+                isoInformation test;
                 fuel.iso[i].name.push_back(nucid);
                 fuel.iso[i].region.push_back(region);
                 fuel.iso[i].type.push_back(type);
