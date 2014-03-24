@@ -103,7 +103,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     vector<isoInformation> mass_stream;
     for (int i = 0; i < input_stream.size(); i++){
         isoInformation iso_info;
-        string dir;x`
+        string dir;
         if (type == 1) {
             dir = "../Bright-lite/LWR/";
         } else if (type == 2){

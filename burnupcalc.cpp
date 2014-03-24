@@ -72,6 +72,8 @@ double kcalc(isoInformation tempone, double BU_total, int N, double s_contr[3]){
 
                 BU_n = BU_total*(j+1)/N;
 
+                x0 = 0; //these variables are reset here b/c they're used outside the for-loop as well
+                x1= 0;
                 i=0;
                 while (x0 + tempone.BUd[i] < BU_n) // finds the discrete point i corresponding to the burnup just under BU_n
                     {
@@ -82,18 +84,31 @@ double kcalc(isoInformation tempone, double BU_total, int N, double s_contr[3]){
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
                 phi = phicalc(j, N, BU_total, tempone);
-                pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
-                dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
+                pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n)+s_contr[0];
+                dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n)+s_contr[1];
 
                 p_total += pbatch[j]*phi;
                 d_total += dbatch[j]*phi;
-
-                x0 = 0;
-                x1= 0;
-
             }
 
-        return s_contr[2]*(p_total+s_contr[0])/(d_total+s_contr[1]);
+
+    ofstream outfile("outputfile.txt");
+
+    outfile<< N << " "<< BU_total << endl << endl;
+
+    j=0; // recycled variable, is also batch index in this function
+    while(j < tempone.iso_vector.size()){
+        //i is still the discrete point of the last bach
+        outfile << tempone.iso_vector[j].name << " ";
+        outfile << intpol(tempone.iso_vector[j].mass[i-1], tempone.iso_vector[j].mass[i], x0, x1, BU_n) << endl;
+        j++;
+
+    }
+
+    outfile.close();
+
+
+    return s_contr[2]*(p_total)/(d_total);
 
 }
 
@@ -328,13 +343,17 @@ int main(){
         cin >> BU_end;
         cout<< enrichcalc(BU_end, 100, 0.001, 1, input_stream)<<endl;
     }
-*/
 
 cout << burnupcalc(DataReader(test1, 1, input_stream), 1, .01).first << endl;
 cout << burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first << endl;
 cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
 cout << burnupcalc(DataReader(test1, 1, input_stream), 5, .01).first << endl;
-cout << burnupcalc(DataReader(test1, 1, input_stream), 100, .01).first << endl;
+*/
+cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
+
+
+
+
 
 //    test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
  //   cout << "Burnup is  " << BU_d << endl;
