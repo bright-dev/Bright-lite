@@ -285,7 +285,7 @@ while (BU_end > BU_guess)
 }
 
 int main(){
-
+    NonActinideReader("PWRU50.LIB");
     isoInformation testVector;
     double BUd_sum = 0;
     int N;

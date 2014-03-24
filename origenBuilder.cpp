@@ -103,7 +103,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     vector<isoInformation> mass_stream;
     for (int i = 0; i < input_stream.size(); i++){
         isoInformation iso_info;
-        string dir;x`
+        string dir;
         if (type == 1) {
             dir = "../Bright-lite/LWR/";
         } else if (type == 2){
@@ -150,3 +150,33 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     outf.close();
     return test1;
 }
+
+isoInformation NonActinideReader(string file_name){
+    isoInformation test1;
+    ifstream inf(file_name);
+    string e_test = "E";
+    string e_space = "*E *";
+    if (!inf){
+        cout << "NOOO" << endl;
+    }
+    string line, library, iso;
+    double sng, sn2n, sna, snp, sngx, sn2nx, yyn;
+    while(getline(inf, line)){
+        istringstream iss(line);
+        iss >> iso >> iso >> iso;
+        if (iso == "MATERIAL"){
+            while(getline(inf, line)){
+                //replace( line.begin(), line.end(), e_space, e_test);
+                regex_replace(line, regex(e_space), e_test);
+                istringstream iss1(line);
+                iss1 >> library;
+                if (library == "-1"){
+                    return test1;
+                }
+                iss1 >> iso >> sng >> sn2n >> snp >> sngx >> sn2nx >> yyn;
+                cout << iso << "    " << sng << endl;
+            }
+        }
+    }
+}
+
