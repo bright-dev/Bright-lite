@@ -304,9 +304,9 @@ while (BU_end > BU_guess)
     BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
 }
     return X;
-
-
 }
+
+
 
 int main(){
     NonActinideReader("PWRU50.LIB");

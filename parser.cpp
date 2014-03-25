@@ -171,8 +171,6 @@ fuelBundle InputReader(){
                 fuel.iso[i].type.push_back(type);
                 fuel.iso[i].fraction.push_back(mass);
                 i++;
-
-
             }
         }
 
