@@ -152,6 +152,7 @@ fuelBundle InputReader(){
     int nucid;
     double mass;
     fuelBundle fuel;
+    isoInformation temp;
 
     string line;
     ifstream fin("../inputfile.txt");
@@ -165,14 +166,19 @@ fuelBundle InputReader(){
                         break;
                 istringstream iss(line);
                 iss >> region >> type >> nucid >> mass;
-                isoInformation test;
-                fuel.iso[i].name.push_back(nucid);
-                fuel.iso[i].region.push_back(region);
-                fuel.iso[i].type.push_back(type);
-                fuel.iso[i].fraction.push_back(mass);
-                i++;
+                temp.name = nucid;
+                temp.region = region;
+                temp.type = type;
+                temp.fraction = mass;
+                fuel.iso.push_back(temp);
             }
         }
+
+    }
+
+    while(i<6){
+        cout<< fuel.iso[i].fraction << endl;
+        i++;
 
     }
 
