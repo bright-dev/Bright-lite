@@ -263,8 +263,7 @@ Double, the enrichment needed to achieve BU_end.
 */
 
 
-double enrichcalc(double BU_end, int N, double tolerance, int type, vector<isoInformation> input_stream)
-{
+double enrichcalc(double BU_end, int N, double tolerance, int type, vector<isoInformation> input_stream) {
 //THIS WORKS ONLY FOR TWO ISO'S
 double X;
 double BU_guess;
@@ -306,6 +305,58 @@ while (BU_end > BU_guess)
     return X;
 }
 
+
+/*
+fluxVector fluxcalc(fuelBundle fuel){
+// calculates the flux of each region in fuelBundle
+// probably will need to add reactor identifier as input in the future
+#include "gsl_sf_bessel.h"
+
+
+if (sizeof(fuel) == 2){
+
+    double a; // radius of the fuel rod
+    double b; // radius of the equivalent cell
+    double L_F; // diffusion length of fuel
+    double L_M; // diffusion length of moderator
+    double Sig_aF; // macroscopic abs. CS of fuel
+    double Sig_aM; // macroscopic abs. CS of moderator
+    double V_F; // volume of fuel
+    double V_M; // volume of moderator
+    double Sig_trF; // macroscopic transport CS of fuel
+    double Sig_trM; // macroscopic transport CS of moderator
+    double D_F; // diffusion coef. of fuel
+    double D_M; // diffusion coef. of moderator
+    double x, y, z; // calculated equivalent dimensions
+    double F, E; // lattice functions
+    double f; // flux of fuel divided by total flux(fuel+moderator)
+
+    Sig_trF = 1;
+    Sig_trM = 1;
+    Sig_aF = 1;
+    Sig_aM = 1;
+    a = 0.4095; // [cm]
+    b = 0.70749; // [cm]
+
+
+    D_F = 1 / (3 * Sig_trF);
+    D_M = 1 / (3 * Sig_trM);
+
+    L_F = sqrt(D_F/Sig_aF);
+    L_M = sqrt(D_M/Sig_aM);
+
+    x = a/L_F;
+    y = a/L_M;
+    z = b/L_M;
+
+    F = x * gsl_sf_bessel_I0(x) / (2 * gsl_sf_bessel_I1(x));
+    E = (z*z - y*y) / (2 * y) * ( (gsl_sf_bessel_I0(y) * gsl_sf_bessel_K1(z) + gsl_sf_bessel_K0(y) * gsl_sf_bessel_I1(z)) / (gsl_sf_bessel_I1(z) * gsl_sf_bessel_K0(y) - gsl_sf_bessel_K1(z) * gsl_sf_bessel_I0(y)));
+
+    f = (((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E)^(-1);
+}
+
+}
+*/
 
 
 int main(){

@@ -144,8 +144,27 @@ isoInformation ParseOriginFile(string file_location){
 }
 
 
-fuelBundle InputReader(){
+fuelBundle FuelNormalizer(fuelBundle fuel){
+double actmass = 0; // total mass (or fraction) of all actinides
 
+
+for (int i; i < fuel.iso.size(); i++){
+    if(fuel.iso[i].type == "A"){
+        actmass += fuel.iso[i].fraction; // find the total mass of all actinides
+    }
+}
+
+for (int i; i < fuel.iso.size(); i++){
+    fuel.iso[i].fraction = fuel.iso[i].fraction/actmass; // normalize every fraction using total mass of actinides
+
+}
+
+}
+
+
+
+
+fuelBundle InputReader(){
 
     int region;
     char type;
@@ -173,17 +192,15 @@ fuelBundle InputReader(){
                 fuel.iso.push_back(temp);
             }
         }
-
     }
-
     while(i<6){
         cout<< fuel.iso[i].fraction << endl;
         i++;
-
     }
-
     return fuel;
 }
+
+
 
 
 

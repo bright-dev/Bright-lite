@@ -12,6 +12,8 @@
 #include "origenBuilder.h"
 #include "nucname.h"
 
+
+
 double intpol(double y0, double y1, double x0, double x1, double x);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
 std::pair<double, std::map<int, double> > burnupcalc(isoInformation tempone, int N, double tolerance);
