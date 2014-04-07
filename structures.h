@@ -41,4 +41,6 @@ struct fuelBundle {
     std::vector<isoInformation> iso;
 };
 
+
+
 #endif // STRUCTURES_H_INCLUDED

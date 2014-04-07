@@ -144,46 +144,12 @@ isoInformation ParseOriginFile(string file_location){
 }
 
 
-fuelBundle InputReader(){
 
 
-    int region;
-    char type;
-    int nucid;
-    double mass;
-    fuelBundle fuel;
-    isoInformation temp;
 
-    string line;
-    ifstream fin("../inputfile.txt");
 
-    int i=0;
-	while(getline(fin, line))
-	{
-        if(line.find("REGIONS") == 0){
-            while(getline(fin, line)){
-                    if(line.find("END") == 0)
-                        break;
-                istringstream iss(line);
-                iss >> region >> type >> nucid >> mass;
-                temp.name = nucid;
-                temp.region = region;
-                temp.type = type;
-                temp.fraction = mass;
-                fuel.iso.push_back(temp);
-            }
-        }
 
-    }
 
-    while(i<6){
-        cout<< fuel.iso[i].fraction << endl;
-        i++;
-
-    }
-
-    return fuel;
-}
 
 
 
