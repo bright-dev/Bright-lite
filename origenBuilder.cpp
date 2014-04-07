@@ -150,7 +150,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         outf << test1.BUd[i] << " ";
     }
     outf << "\n" << "";
-    /*for (int i = 0; i < test1.iso_vector.size(); i++){
+    for (int i = 0; i < test1.iso_vector.size(); i++){
         if (test1.iso_vector[i].mass[0] > 0.01){
 
             outf << test1.iso_vector[i].name << " ";
@@ -159,7 +159,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
             }
             outf << "\n";
         }
-    }*/
+    }
     outf.close();
     return test1;
 }
@@ -204,4 +204,55 @@ vector<nonActinide> NonActinideReader(string file_name){
         }
     }
 }
+
+isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
+    int i = 0;
+    string buffer;
+    double value;
+    string line;
+    while(getline(input, line)){
+        istringstream iss(line);
+        iss >> buffer;
+        if (i >= 4){
+            daughter daughter;
+            daughter.name = pyne::nucname::zzaaam(buffer);
+            while (iss >> value){
+                daughter.mass.push_back(value);
+            }
+            iso.iso_vector.push_back(daughter);
+        } else {
+            while (iss >> value){
+                if (i == 0){
+                    iso.fluence.push_back(value);
+                } else if (i == 1){
+                    iso.neutron_prod.push_back(value);
+                } else if (i == 2){
+                    iso.neutron_dest.push_back(value);
+                } else if (i == 3){
+                    iso.BUd.push_back(value);
+                }
+            }
+            i++;
+        }
+    }
+    return (iso);
+}
+
+
+isoInformation DataReader2(isoInformation test1, string type, vector<isoInformation> &input_stream){
+    for (int i = 0; i < input_stream.size(); i++){
+        isoInformation iso_info;
+        ifstream inf("../Bright-lite/" + type + "/" +to_string(input_stream[i].name) + ".txt");
+        if(!inf){
+            cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
+        }
+        iso_info = BuildIsotope(inf);
+        mass_stream.push_back(iso_info);
+        mass_stream[i].name = input_stream[i].name;
+        mass_stream[i].fraction = input_stream[i].fraction;
+        inf.close();
+    }
+    return test1;
+}
+
 
