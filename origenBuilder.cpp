@@ -4,7 +4,16 @@
 #include<iterator>
 #include<fstream>
 #include<algorithm>
-
+#include<iostream>
+#include<vector>
+#include<regex>
+#include<iterator>
+#include<fstream>
+#include<algorithm>
+#include<map>
+#include "structures.h"
+#include "origenBuilder.h"
+#include "nucname.h"
 #include "structures.h"
 
 using namespace std;
@@ -12,7 +21,7 @@ using namespace std;
 isoInformation BuildIsotope(ifstream &input){
     isoInformation isotope;
     int i = 0;
-    int buffer;
+    string buffer;
     double value;
     string line;
     while(getline(input, line)){
@@ -20,7 +29,7 @@ isoInformation BuildIsotope(ifstream &input){
         iss >> buffer;
         if (i >= 4){
             daughter daughter;
-            daughter.name = buffer;
+            daughter.name = pyne::nucname::zzaaam(buffer);
             while (iss >> value){
                 daughter.mass.push_back(value);
             }
@@ -84,7 +93,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
                         for(int ii = 0; ii < fuel_values[jj].iso_vector[i].mass.size(); ii ++){
                             if ( k ==ii ){
-                                fuel.iso_vector[j].mass[k] = fuel.iso_vector[j].mass[k] + fuel_values[jj].fraction*fuel_values[jj].iso_vector[i].mass[ii];
+                                fuel.iso_vector[j].mass[k] += fuel_values[jj].fraction*fuel_values[jj].iso_vector[i].mass[ii];
                             }
                         }
                     }
@@ -93,6 +102,9 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
             }
             if (iso_check == true) {
                 fuel.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
+                for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()].mass.size(); k++){
+                    fuel.iso_vector[fuel.iso_vector.size()].mass[k] = fuel.iso_vector[fuel.iso_vector.size()].mass[k]*fuel_values[jj].fraction;
+                }
             }
         }
     }
@@ -121,7 +133,7 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
     }
     ofstream outf("test.txt");
     test1 = FuelBuilder(mass_stream);
-    outf << "TIME" << " ";
+    outf << "FLUENCE" << " ";
     for(int i = 0; i < test1.fluence.size(); i++){
         outf << test1.fluence[i] << " ";
     }
@@ -138,15 +150,16 @@ isoInformation DataReader(isoInformation test1, int type, vector<isoInformation>
         outf << test1.BUd[i] << " ";
     }
     outf << "\n" << "";
-    for (int i = 0; i < test1.iso_vector.size(); i++){
-        if (test1.iso_vector[i].mass[11] > 0.01){
+    /*for (int i = 0; i < test1.iso_vector.size(); i++){
+        if (test1.iso_vector[i].mass[0] > 0.01){
+
             outf << test1.iso_vector[i].name << " ";
             for (int j = 0; j < test1.iso_vector[i].mass.size(); j++){
                 outf << test1.iso_vector[i].mass[j] << " ";
             }
             outf << "\n";
         }
-    }
+    }*/
     outf.close();
     return test1;
 }
@@ -172,11 +185,9 @@ vector<nonActinide> NonActinideReader(string file_name){
                 if (library == "-1"){
                     inf.close();
                     for (int i = 0; i < structural_comps.size(); i++){
-                        structural_comps[i].total_prod = structural_comps[i].sn2n;
+                        structural_comps[i].total_prod = structural_comps[i].sn2n + structural_comps[i].sn2nx;
                         structural_comps[i].total_dest = structural_comps[i].snp +
-                        structural_comps[i].sng + structural_comps[i].sngx +
-                        structural_comps[i].sn2nx;
-                        cout << structural_comps[i].name << "    " << structural_comps[i].total_prod << "     " << structural_comps[i].total_dest << endl;
+                        structural_comps[i].sng + structural_comps[i].sngx;
                     }
                     return structural_comps;
                 }

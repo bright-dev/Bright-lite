@@ -156,11 +156,10 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     double k_total = 10;
     int i = 0;
     double BU1, BU2, BU3;
-
     //read the structural material contribution information (production[0],
     //destruction[1], leakage[2]) to s_contr
     double s_contr[3];
-    ifstream fin("../Bright-lite/LWR/LWRSTRUCT.txt");
+    ifstream fin("LWR/LWRSTRUCT.txt");
     double passer;
     string spasser;
 	while(i < 3)
@@ -187,7 +186,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
     BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
     time_f = intpol(tempone.fluence[i-1],tempone.fluence[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
-
 
 /*
     if (N == 1){
@@ -306,7 +304,59 @@ while (BU_end > BU_guess)
     return X;
 }
 
+isoInformation lib_interpol(isoInformation iso_1, double lib_1_value, isoInformation iso_2, double lib_2_value){
+    isoInformation combined_lib;
+    for(int i = 0; i < iso_1.neutron_prod.size(); i++){
+        combined_lib.neutron_prod.push_back(iso_1.neutron_prod[i]*lib_1_value + iso_2.neutron_prod[i]*lib_2_value);
+    }
+    for(int i = 0; i < iso_1.neutron_dest.size(); i++){
+        combined_lib.neutron_dest.push_back(iso_1.neutron_dest[i]*lib_1_value + iso_2.neutron_dest[i]*lib_2_value);
+    }
+    for(int i = 0; i < iso_1.fluence.size(); i++){
+        combined_lib.fluence.push_back(iso_1.fluence[i]*lib_1_value + iso_2.fluence[i]*lib_2_value);
+    }
+    for(int i = 0; i < iso_1.BUd.size(); i++){
+        combined_lib.BUd.push_back(iso_1.BUd[i]*lib_1_value + iso_2.BUd[i]*lib_2_value);
+    }
+    for(int i = 0; i < iso_1.iso_vector.size(); i++){
+        combined_lib.BUd.push_back(iso_1.BUd[i]*lib_1_value + iso_2.BUd[i]*lib_2_value);
+    }
 
+    vector<isoInformation> fuel_values;
+    fuel_values.push_back(iso_1);
+    fuel_values.push_back(iso_2);
+
+    for (int i = 0; i < fuel_values[0].iso_vector.size(); i++){
+        combined_lib.iso_vector.push_back(fuel_values[0].iso_vector[i]);
+        for(int k = 0; k < combined_lib.iso_vector[i].mass.size(); k++){
+            combined_lib.iso_vector[i].mass[k] = fuel_values[0].fraction*combined_lib.iso_vector[i].mass[k];
+        }
+    }
+    for (int jj = 1; jj < fuel_values.size(); jj ++){
+        for (int i = 0; i < fuel_values[jj].iso_vector.size(); i++){
+            bool iso_check = true;
+            for(int j = 0; j < combined_lib.iso_vector.size(); j++){
+                if (fuel_values[jj].iso_vector[i].name == combined_lib.iso_vector[j].name){
+                    for(int k = 0; k < combined_lib.iso_vector[j].mass.size(); k++){
+                        for(int ii = 0; ii < fuel_values[jj].iso_vector[i].mass.size(); ii ++){
+                            if ( k ==ii ){
+                                combined_lib.iso_vector[j].mass[k] += fuel_values[jj].iso_vector[i].mass[ii]*lib_2_value;
+                            }
+                        }
+                    }
+                    iso_check = false;
+                }
+            }
+            if(iso_check == true){
+                combined_lib.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
+                for(int k = 0; k < combined_lib.iso_vector[-1].mass.size(); k++){
+                    combined_lib.iso_vector[-1].mass[k] = combined_lib.iso_vector[-1].mass[k]*lib_2_value;
+                }
+            }
+        }
+    }
+    return combined_lib;
+}
 
 int main(){
     NonActinideReader("PWRU50.LIB");
@@ -314,15 +364,17 @@ int main(){
     double BUd_sum = 0;
     int N;
     double X;
+    string name;
     isoInformation test1;
     vector<isoInformation> input_stream;
-    ifstream inf("../Bright-lite/inputFile.txt");
+    ifstream inf("inputFile.txt");
     string line;
     double mass_total;
     while (getline(inf, line)) {
         isoInformation temp_iso;
         istringstream iss(line);
-        iss >> temp_iso.name;
+        iss >> name;
+        temp_iso.name = pyne::nucname::zzaaam(name);
         iss >> temp_iso.fraction;
         mass_total = mass_total + temp_iso.fraction;
         input_stream.push_back(temp_iso);
