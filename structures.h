@@ -41,10 +41,6 @@ struct fuelBundle {
     std::vector<isoInformation> iso;
 };
 
-struct fluxVector {
-    std::string name;
-    std::vector<double> flux;
-};
 
 
 #endif // STRUCTURES_H_INCLUDED
