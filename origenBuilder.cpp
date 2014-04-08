@@ -239,20 +239,16 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
 }
 
 
-isoInformation DataReader2(isoInformation test1, string type, vector<isoInformation> &input_stream){
+isoInformation DataReader2(string type, vector<isoInformation> &input_stream){
     for (int i = 0; i < input_stream.size(); i++){
-        isoInformation iso_info;
         ifstream inf("../Bright-lite/" + type + "/" +to_string(input_stream[i].name) + ".txt");
         if(!inf){
             cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
         }
-        iso_info = BuildIsotope(inf);
-        mass_stream.push_back(iso_info);
-        mass_stream[i].name = input_stream[i].name;
-        mass_stream[i].fraction = input_stream[i].fraction;
+        BuildIsotope2(inf, input_stream[i]);
         inf.close();
     }
-    return test1;
+    return input_stream;
 }
 
 
