@@ -601,6 +601,12 @@ fuel = InputReader();
 
 fuel = FuelNormalizer(fuel);
 
+DataReader2("LWR", fuel.iso);
+
+for (int i = 0; i < fuel.iso.size(); i++){
+    cout << fuel.iso[i].BUd[0] << endl;
+}
+
 double flux[2];
 flux[0]= 1;
 flux[1] = 1.05;

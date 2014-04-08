@@ -239,7 +239,7 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
 }
 
 
-isoInformation DataReader2(string type, vector<isoInformation> &input_stream){
+vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
     for (int i = 0; i < input_stream.size(); i++){
         ifstream inf("../Bright-lite/" + type + "/" +to_string(input_stream[i].name) + ".txt");
         if(!inf){
