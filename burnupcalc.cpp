@@ -1,4 +1,5 @@
 #include "burnupcalc.h"
+#include <boost/math/special_functions/bessel.hpp>
 
 using namespace std;
 
@@ -454,17 +455,17 @@ if (r == 2){
     f = (((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E)^(-1);
     */
 
-    /* boost
-    F = x * cyl_bessel_i(0,x) / (2 * cyl_bessel_i(0, x));
-    E = (z*z - y*y) / (2 * y) * ( (cyl_bessel_i(0, y) * cyl_bessel_k(1, z)+ cyl_bessel_k(0, y) * cyl_bessel_i(1, z)) / (cyl_bessel_i(1, z) * cyl_bessel_k(0, y) - cyl_bessel_k(1, z) * cyl_bessel_i(0, y)));
+    //boost
+    F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(0, x));
+    E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
+                                   boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
+                                    boost::math::cyl_bessel_k(0, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(0, y)));
 
-    f = (((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E)^(-1);
-    */
+    f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
+
 
     flux[1] = 1;
     flux[0] = f / (1 - f);
-
-
 
 }
 
