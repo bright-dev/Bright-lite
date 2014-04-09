@@ -358,10 +358,9 @@ isoInformation lib_interpol(isoInformation iso_1, double lib_1_value, isoInforma
     return combined_lib;
 }
 
-double * fluxcalc(fuelBundle fuel){
+double fluxcalc(fuelBundle fuel){
 // calculates the flux of each region in fuelBundle
 // probably will need to add reactor identifier as input in the future
-//#include "gsl_sf_bessel.h"
 
 int i = 0;
 int r = 1; //number of regions
@@ -378,10 +377,13 @@ while(i < fuel.iso.size()){ // finds the number of regions and saves mass fracti
     i++;
 }
 
+cout << "235: " << frac35 << endl << "238: " << frac38 << endl;
+
+
 double flux[r]; // creates a flux vector
 
 
-if (r == 2){
+if (r == 1){ //r=1 means two regions
 
 
     double a; // radius of the fuel rod
@@ -422,15 +424,15 @@ if (r == 2){
     tot35 = 7.786;
 
     Sig_aF = abs35*frac35 + abs38*frac38;
-    Sig_aM = 0.000094*pow(10,-24);
+    Sig_aM = 0.000094*pow(10,1);
     a = 0.4095; // [cm]
-    b = 0.70749; // [cm]
+    b = 0.70749;// [cm]
 
 // transport CS calculation
-    Sig_tF = (tot35*frac35 + tot38*frac38)*pow(10,-24); // [cm]
-    Sig_tM = 2.75*pow(10,-24); // [cm]
-    Sig_sF = (sca35*frac35+sca38*frac38)*pow(10,-24); // [cm]
-    Sig_sM = 2.739*pow(10,-24); // [cm]
+    Sig_tF = (tot35*frac35 + tot38*frac38)*pow(10,1); // [cm]
+    Sig_tM = 2.75*pow(10,1); // [cm]
+    Sig_sF = (sca35*frac35+sca38*frac38)*pow(10,1); // [cm]
+    Sig_sM = 2.739*pow(10,1); // [cm]
     A_F = 235;
     A_M = 18;
     Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
@@ -447,25 +449,18 @@ if (r == 2){
     x = a/L_F;
     y = a/L_M;
     z = b/L_M;
+    V_M = pow(a,2)*3.141592;
+    V_F = pow(b,2)*3.141592 - pow(a,2)*3.141592;
 
-    /*
-    F = x * gsl_sf_bessel_I0(x) / (2 * gsl_sf_bessel_I1(x));
-    E = (z*z - y*y) / (2 * y) * ( (gsl_sf_bessel_I0(y) * gsl_sf_bessel_K1(z) + gsl_sf_bessel_K0(y) * gsl_sf_bessel_I1(z)) / (gsl_sf_bessel_I1(z) * gsl_sf_bessel_K0(y) - gsl_sf_bessel_K1(z) * gsl_sf_bessel_I0(y)));
 
-    f = (((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E)^(-1);
-    */
-
-    //boost
     F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(0, x));
     E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
                                    boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
                                     boost::math::cyl_bessel_k(0, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(0, y)));
-
     f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
 
-
     flux[1] = 1;
-    flux[0] = f / (1 - f);
+    flux[0] = f / (f - 1);
 
 }
 
@@ -479,7 +474,7 @@ else{
 }
 
 
-return flux;
+return flux[0];
 
 }
 
@@ -518,8 +513,8 @@ while(i <= r){ //for each region
             regioniso[i].k_inf[k] =+ fuel.iso[j].k_inf[k] * fuel.iso[j].fraction;
             regioniso[i].BUd[k] =+ fuel.iso[j].BUd[k] * fuel.iso[j].fraction;
             regioniso[i].fluence[k] =+ fuel.iso[j].fluence[k] * fuel.iso[j].fraction;
-            while(){
-                regioniso[i].iso_vector
+//            while(){
+//                regioniso[i].iso_vector
 
             }
             k++;
@@ -527,15 +522,12 @@ while(i <= r){ //for each region
         j++;
     }
     i++;
-}
-
-cout << regionsize[0]<< " "<< regionsize[1] << endl;
+};
 
 
 
-return singleiso;
 
-}
+
 
 
 fuelBundle InputReader(){
@@ -642,26 +634,27 @@ fuel = InputReader();
 
 fuel = FuelNormalizer(fuel);
 
-double *test;
-regioncollapse(fuel, test);
+double flux;
+
+flux = fluxcalc(fuel);
 
 DataReader2("LWR", fuel.iso);
 
-for (int i = 0; i < fuel.iso.size(); i++){
-    cout << fuel.iso[i].BUd[0] << endl;
+
+for (int i = 0; i < fuel.iso[0].BUd.size(); i++){
+    cout << fuel.iso[0].BUd[i] << endl;
 }
 
-double flux[2];
-flux[0]= 1;
-flux[1] = 1.05;
+/*
+
+regioncollapse(fuel, test);
 
 isoInformation singleiso;
 
 singleiso = regioncollapse(fuel, flux);
+*/
 
 
-
-cout << fuel.iso[3].name << "   "<< fuel.iso[3].region << "   "<< fuel.iso[3].type << "   "<< fuel.iso[3].fraction << "   "<<endl;
 
 
 /*
