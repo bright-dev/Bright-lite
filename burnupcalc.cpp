@@ -484,19 +484,59 @@ return flux;
 
 
 isoInformation regioncollapse(fuelBundle fuel, double * flux){
-int i = 0;
+int i = 0, j;
 int r = 1;
 isoInformation singleiso;
-while(i < fuel.iso.size()){ // finds the number of regions
+while(i < fuel.iso.size()){ // finds the number of regions indexed from zero.
+    //ie r=1 means there are two regions, r=2 means there are three
     if(fuel.iso[i].region > r)
         r = fuel.iso[i].region;
     i++;
 }
-//incomplete!
+isoInformation regioniso[r+1]; //an iso for each region
+int regionsize[r+1];
+for(int j = 0; j <= r; j++){
+    regionsize[j]=0;
+}
+
+i=0;
+while(i < fuel.iso.size()){ //finds the number of isotopes in each region
+    regionsize[fuel.iso[i].region]++;
+    i++;
+}
+
+
+i=0;
+j=0;
+int k=0;
+while(i <= r){ //for each region
+    while(j < regionsize[i]){ //for each isotope
+        while(k < fuel.iso[j].neutron_prod.size()){
+            regioniso[i].neutron_prod[k] =+ fuel.iso[j].neutron_prod[k] * fuel.iso[j].fraction;
+            regioniso[i].neutron_dest[k] =+ fuel.iso[j].neutron_dest[k] * fuel.iso[j].fraction;
+            regioniso[i].k_inf[k] =+ fuel.iso[j].k_inf[k] * fuel.iso[j].fraction;
+            regioniso[i].BUd[k] =+ fuel.iso[j].BUd[k] * fuel.iso[j].fraction;
+            regioniso[i].fluence[k] =+ fuel.iso[j].fluence[k] * fuel.iso[j].fraction;
+            while(){
+                regioniso[i].iso_vector
+
+            }
+            k++;
+        }
+        j++;
+    }
+    i++;
+}
+
+cout << regionsize[0]<< " "<< regionsize[1] << endl;
+
+
 
 return singleiso;
 
 }
+
+
 fuelBundle InputReader(){
 
     int region;
@@ -600,6 +640,9 @@ fuelBundle fuel;
 fuel = InputReader();
 
 fuel = FuelNormalizer(fuel);
+
+double *test;
+regioncollapse(fuel, test);
 
 DataReader2("LWR", fuel.iso);
 
