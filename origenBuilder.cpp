@@ -114,9 +114,9 @@ isoInformation BuildIsotope(ifstream &input){
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
     for(int mm = 0; mm < fuel_values.size(); mm++){
+        cout << fuel_values[mm].fraction << endl;
         if(fuel_values[mm].iso_vector.size() > 0){
             if(fuel.fluence.size() < 1){
-
                 for (int i = 0; i < fuel_values[mm].fluence.size(); i++){
                     fuel.fluence.push_back(fuel_values[mm].fluence[i]);
                 }
@@ -125,6 +125,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
                     fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]);
+
                 }
                 for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
                     fuel.BUd.push_back(fuel_values[mm].fraction*fuel_values[mm].BUd[i]);
@@ -137,13 +138,13 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                 }
             }else{
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
+                    fuel.neutron_prod[i] += fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
+                    fuel.neutron_dest[i] += fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
                 }
                 for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
-                    fuel.BUd[i] = fuel.BUd[i] + fuel_values[mm].fraction*fuel_values[mm].BUd[i];
+                    fuel.BUd[i] += fuel_values[mm].fraction*fuel_values[mm].BUd[i];
                 }
                 for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
                     bool iso_check = true;

@@ -91,7 +91,7 @@ double kcalc(isoInformation tempone, double BU_total, int N){
                 d_total += dbatch[j]*phi;
             }
 
-    return (p_total)/(d_total);
+    return (p_total*0.98)/(d_total);
 
 }
 
@@ -108,15 +108,15 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 	i = 0;
     while (i < tempone.neutron_prod.size())
     {
-        tempone.k_inf.push_back(((tempone.neutron_prod[i]))/(tempone.neutron_dest[i]));
+        tempone.k_inf.push_back(((tempone.neutron_prod[i]))*(0.98)/(tempone.neutron_dest[i]));
         i++;
     }
 
     i=0;
     while (tempone.k_inf[i] > 1.0){
+        cout << tempone.k_inf[i] << "   "<< tempone.BUd[i] <<endl;
         BU_total += tempone.BUd[i];
         i++; // finds the number of entry when k drops under 1
-
     }
 
     BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
@@ -128,7 +128,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     i=0;
 
 
-        while(abs(1-k_total)>0.000001){
+        while(abs(1-k_total)>tolerance){
 
             BU3 = BU2 - (kcalc(tempone, BU2, N)-1)*(BU2-BU1)/((kcalc(tempone, BU2, N))-(kcalc(tempone, BU1, N)));
             k_total = kcalc(tempone, BU3, N);
@@ -603,8 +603,8 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 
     regions.push_back(FuelBuilder(region0));
     regions.push_back(FuelBuilder(region1));
-    FuelBuilder(regions);
-
+    regions[0].fraction = 1;
+    regions[1].fraction = 1;
     return FuelBuilder(regions);
 };
 
@@ -726,17 +726,13 @@ nona = NonActinideReader("../Bright-lite/LWR/PWRU50.LIB");
 fuel = NBuilder(fuel, nona);
 
 isoInformation singleiso;
-
 singleiso = regioncollapse(fuel, flux);
 
 
-for(int i = 0; i < singleiso.neutron_prod.size(); i++){
+/*for(int i = 0; i < singleiso.neutron_prod.size(); i++){
     cout << singleiso.neutron_prod[i] / singleiso.neutron_dest[i] << endl;
-}
+}*/
 
-for(int i=0; i<fuel.iso.size(); i++){
-    cout << fuel.iso[i].name << "   " << fuel.iso[i].neutron_prod[0] / fuel.iso[i].neutron_dest[0] << endl;
-}
 cout << burnupcalc(singleiso, 3, 0.001).first << endl;
 /*
     while(1){
