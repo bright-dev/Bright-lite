@@ -15,7 +15,7 @@ isoInformation DataReader(isoInformation test1, int type, std::vector<isoInforma
 isoInformation BuildIsotope2(std::ifstream &input, isoInformation &iso);
 std::vector<isoInformation> DataReader2(std::string type, std::vector<isoInformation> &input_stream);
 
-isoInformation FuelBuilder(std::vector<isoInformation> fuel_values, double u235_mass);
+isoInformation FuelBuilder(std::vector<isoInformation> fuel_values);
 std::vector<nonActinide> NonActinideReader(std::string file_name);
 
 #endif // ORIGENBUILDER_H_INCLUDED

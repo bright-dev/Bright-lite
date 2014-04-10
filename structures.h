@@ -25,7 +25,7 @@ struct isoInformation {
 };
 
 struct nonActinide {
-    std::string name;
+    int name;
     double sng;
     double sn2n;
     double snp;

@@ -52,7 +52,7 @@ isoInformation BuildIsotope(ifstream &input){
     return (isotope);
 }
 
-isoInformation FuelBuilder(vector<isoInformation> fuel_values){
+/*isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
     for (int i = 0; i < fuel_values[0].fluence.size(); i++){
         fuel.fluence.push_back(fuel_values[0].fraction*fuel_values[0].fluence[i]+(fuel_values[0].fraction)*fuel_values[1].fluence[i]);
@@ -104,6 +104,84 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                 fuel.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
                 for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()].mass.size(); k++){
                     fuel.iso_vector[fuel.iso_vector.size()].mass[k] = fuel.iso_vector[fuel.iso_vector.size()].mass[k]*fuel_values[jj].fraction;
+                }
+            }
+        }
+    }
+    return fuel;
+}*/
+
+isoInformation FuelBuilder(vector<isoInformation> fuel_values){
+    isoInformation fuel;
+    for(int mm = 0; mm < fuel_values.size(); mm++){
+        if(fuel_values[mm].iso_vector.size() > 0){
+            if(fuel.fluence.size() < 1){
+
+                for (int i = 0; i < fuel_values[mm].fluence.size(); i++){
+                    fuel.fluence.push_back(fuel_values[mm].fluence[i]);
+                }
+                for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
+                    fuel.neutron_prod.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i]);
+                }
+                for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
+                    fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]);
+                }
+                for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
+                    fuel.BUd.push_back(fuel_values[mm].fraction*fuel_values[mm].BUd[i]);
+                }
+                for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
+                    fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
+                    for(int k = 0; k < fuel.iso_vector[i].mass.size(); k++){
+                        fuel.iso_vector[i].mass[k] = fuel_values[mm].fraction*fuel.iso_vector[i].mass[k];
+                    }
+                }
+            }else{
+                for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
+                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
+                }
+                for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
+                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
+                }
+                for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
+                    fuel.BUd[i] = fuel.BUd[i] + fuel_values[mm].fraction*fuel_values[mm].BUd[i];
+                }
+                for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
+                    bool iso_check = true;
+                    for(int j = 0; j < fuel.iso_vector.size(); j++){
+                        if (fuel_values[mm].iso_vector[i].name == fuel.iso_vector[j].name){
+                            for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
+                                for(int ii = 0; ii < fuel_values[mm].iso_vector[i].mass.size(); ii ++){
+                                    if ( k ==ii ){
+                                        fuel.iso_vector[j].mass[k] += fuel_values[mm].fraction*fuel_values[mm].iso_vector[i].mass[ii];
+                                    }
+                                }
+                            }
+                            iso_check = false;
+                        }
+                    }
+                    if (iso_check == true) {
+                        fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
+                        for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()].mass.size(); k++){
+                            fuel.iso_vector[fuel.iso_vector.size()].mass[k] = fuel.iso_vector[fuel.iso_vector.size()].mass[k]*fuel_values[mm].fraction;
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            if(fuel.neutron_prod.size()>1){
+                for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
+                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
+                }
+                for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
+                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
+                }
+            }else{
+                for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
+                    fuel.neutron_prod.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i]+(fuel_values[mm].fraction)*fuel_values[1].neutron_prod[i]);
+                }
+                for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
+                    fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]+(fuel_values[mm].fraction)*fuel_values[1].neutron_dest[i]);
                 }
             }
         }
@@ -192,7 +270,7 @@ vector<nonActinide> NonActinideReader(string file_name){
                     return structural_comps;
                 }
                 iss1 >> iso >> sng >> sn2n >> snp >> sngx >> sn2nx >> yyn;
-                na_iso.name = iso;
+                na_iso.name = atoi(iso.c_str());
                 na_iso.sng = sng;
                 na_iso.sn2n = sn2n;
                 na_iso.snp = snp;
@@ -241,12 +319,14 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
 
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
     for (int i = 0; i < input_stream.size(); i++){
-        ifstream inf("../Bright-lite/" + type + "/" +to_string(input_stream[i].name) + ".txt");
-        if(!inf){
-            cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
+        if(input_stream[i].type == *"A"){       //cem added this
+            ifstream inf("../Bright-lite/" + type + "/" +to_string(input_stream[i].name) + ".txt");
+            if(!inf){
+                cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
+            }
+            BuildIsotope2(inf, input_stream[i]);
+            inf.close();
         }
-        BuildIsotope2(inf, input_stream[i]);
-        inf.close();
     }
     return input_stream;
 }
