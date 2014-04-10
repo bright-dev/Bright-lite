@@ -562,7 +562,30 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
     for(int j = 0; j <= r; j++){
         regionsize[j]=0;
     }
+int regionsize[r+1];
+for(int j = 0; j <= r; j++){
+    regionsize[j]=0;
+}
 
+while(i < fuel.iso.size()){ //finds the number of isotopes in each region
+    regionsize[fuel.iso[i].region]++;
+    i++;
+}
+
+
+i=0;
+j=0;
+int k=0;
+while(i <= r){ //for each region
+    while(j < regionsize[i]){ //for each isotope
+        while(k < fuel.iso[j].neutron_prod.size()){
+            regioniso[i].neutron_prod[k] =+ fuel.iso[j].neutron_prod[k] * fuel.iso[j].fraction;
+            regioniso[i].neutron_dest[k] =+ fuel.iso[j].neutron_dest[k] * fuel.iso[j].fraction;
+            regioniso[i].k_inf[k] =+ fuel.iso[j].k_inf[k] * fuel.iso[j].fraction;
+            regioniso[i].BUd[k] =+ fuel.iso[j].BUd[k] * fuel.iso[j].fraction;
+            regioniso[i].fluence[k] =+ fuel.iso[j].fluence[k] * fuel.iso[j].fraction;
+//            while(){
+//                regioniso[i].iso_vector
 
     for(int i=0; i < fuel.iso.size(); i++){ //up to two regions at the moment
 
@@ -702,12 +725,14 @@ DataReader2("LWR", fuel.iso);
 
 vector<nonActinide> nona; //"NONA"ctinide ;)
 nona = NonActinideReader("../Bright-lite/LWR/PWRU50.LIB");
+    cout << fuel.iso[0].BUd[i] << endl;
 
 fuel = NBuilder(fuel, nona);
 
 isoInformation singleiso;
 
 singleiso = regioncollapse(fuel, flux);
+*/
 
 for(int i = 0; i < singleiso.neutron_prod.size(); i++){
     cout << singleiso.neutron_prod[i] / singleiso.neutron_dest[i] << endl;
