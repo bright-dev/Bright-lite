@@ -114,7 +114,7 @@ isoInformation BuildIsotope(ifstream &input){
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
     for(int mm = 0; mm < fuel_values.size(); mm++){
-        cout << fuel_values[mm].fraction << endl;
+        //cout << fuel_values[mm].fraction << endl;
         if(fuel_values[mm].iso_vector.size() > 0){
             if(fuel.fluence.size() < 1){
                 for (int i = 0; i < fuel_values[mm].fluence.size(); i++){

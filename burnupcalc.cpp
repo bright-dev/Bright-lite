@@ -83,13 +83,27 @@ double kcalc(isoInformation tempone, double BU_total, int N){
 
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-                phi = phicalc(j, N, BU_total, tempone);
+                phi = 1;//phicalc(j, N, BU_total, tempone);
                 pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
                 dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
                 p_total += pbatch[j]*phi;
                 d_total += dbatch[j]*phi;
             }
+    ofstream outfile("../outputfile.txt");
+
+    outfile<< N << " "<< BU_total << endl << endl;
+
+    j=0; // recycled variable, is also batch index in this function
+    while(j < tempone.iso_vector.size()){
+        //i is still the discrete point of the last bach
+        outfile << tempone.iso_vector[j].name << " ";
+        outfile << intpol(tempone.iso_vector[j].mass[i-1], tempone.iso_vector[j].mass[i], x0, x1, BU_n) << endl;
+        j++;
+
+    }
+
+    outfile.close();
 
     return (p_total*0.98)/(d_total);
 
@@ -114,7 +128,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
     i=0;
     while (tempone.k_inf[i] > 1.0){
-        cout << tempone.k_inf[i] << "   "<< tempone.BUd[i] <<endl;
         BU_total += tempone.BUd[i];
         i++; // finds the number of entry when k drops under 1
     }
@@ -150,22 +163,9 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     BU_total = BU3;
 
 
-    /*
-    ofstream outfile("outputfile.txt");
 
-    outfile<< N << " "<< BU_total << endl << endl;
 
-    j=0; // recycled variable, is also batch index in this function
-    while(j < tempone.iso_vector.size()){
-        //i is still the discrete point of the last bach
-        outfile << tempone.iso_vector[j].name << " ";
-        outfile << intpol(tempone.iso_vector[j].mass[i-1], tempone.iso_vector[j].mass[i], x0, x1, BU_n) << endl;
-        j++;
 
-    }
-
-    outfile.close();
-    */
 
     rtn.first = BU_total;
     rtn.second = tomass(i, time_f, tempone);
