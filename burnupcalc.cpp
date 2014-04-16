@@ -592,7 +592,7 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
             region1.push_back(fuel.iso[i]);
     }
 
-    for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest
+    for(int i=0; i<1; i++){ //uses the flux to adjust prod and dest
         for(int j =0; j < region0[i].neutron_prod.size(); j++){
 
             region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
