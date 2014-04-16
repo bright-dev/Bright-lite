@@ -720,6 +720,14 @@ double flux;
 flux = fluxcalc(fuel);
 
 DataReader2("LWR", fuel.iso);
+cout << fuel.iso[0].name << endl;
+for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
+    cout << fuel.iso[0].neutron_dest[i]<< "     ";
+}
+cout << endl <<fuel.iso[1].name << endl;
+for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
+    cout << fuel.iso[1].neutron_dest[i]<< "     ";
+}
 
 vector<nonActinide> nona; //"NONA"ctinide ;)
 nona = NonActinideReader("../Bright-lite/LWR/PWRU50.LIB");
