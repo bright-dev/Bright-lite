@@ -39,6 +39,7 @@ struct nonActinide {
 struct fuelBundle {
     std::string name;
     int batch;
+    double pnl; //leakage
     double tres;
     std::vector<isoInformation> iso;
 };
