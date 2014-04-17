@@ -83,7 +83,7 @@ double kcalc(isoInformation tempone, double BU_total, int N){
 
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-                phi = 1;//phicalc(j, N, BU_total, tempone);
+                phi = phicalc(j, N, BU_total, tempone);
                 pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
                 dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
@@ -610,8 +610,8 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 
 fuelBundle InputReader(){
 
-    int region;
-    char type;
+    int region, N, t_res;
+    char type, batch[5], fres[7];
     int nucid;
     double mass;
     fuelBundle fuel;
@@ -636,6 +636,15 @@ fuelBundle InputReader(){
                 fuel.iso.push_back(temp);
             }
         }
+        if(line.find("BATCH") == 0){
+            istringstream iss(line);
+            iss >> batch >> N;
+        }
+        if(line.find("FUELRES") == 0){
+            istringstream iss(line);
+            iss >> fres >> t_res;
+        }
+
     }
     /*
     while(i<6){
@@ -643,6 +652,9 @@ fuelBundle InputReader(){
         i++;
     }
     */
+    fuel.batch = N;
+    fuel.tres = t_res;
+
     return fuel;
 }
 
@@ -720,6 +732,8 @@ double flux;
 flux = fluxcalc(fuel);
 
 DataReader2("LWR", fuel.iso);
+
+/*
 cout << fuel.iso[0].name << endl;
 for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
     cout << fuel.iso[0].neutron_dest[i]<< "     ";
@@ -728,6 +742,7 @@ cout << endl <<fuel.iso[1].name << endl;
 for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
     cout << fuel.iso[1].neutron_dest[i]<< "     ";
 }
+*/
 
 vector<nonActinide> nona; //"NONA"ctinide ;)
 nona = NonActinideReader("../Bright-lite/LWR/PWRU50.LIB");
@@ -742,7 +757,7 @@ singleiso = regioncollapse(fuel, flux);
     cout << singleiso.neutron_prod[i] / singleiso.neutron_dest[i] << endl;
 }*/
 
-cout << burnupcalc(singleiso, 3, 0.001).first << endl;
+cout << burnupcalc(singleiso, fuel.batch, 0.001).first << endl;
 /*
     while(1){
         cin >> BU_end;
