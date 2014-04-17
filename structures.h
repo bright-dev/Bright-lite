@@ -38,8 +38,11 @@ struct nonActinide {
 
 struct fuelBundle {
     std::string name;
+    int batch;
+    double tres;
     std::vector<isoInformation> iso;
 };
+
 
 
 
