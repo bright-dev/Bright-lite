@@ -64,7 +64,7 @@ cout<<"x1: "<<x1<<" BU_n: "<<BU_n<<endl;
 
 }
 
-double kcalc(isoInformation tempone, double BU_total, int N){
+double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
     double x0 = 0, x1 = 0, BU_n = 0, phi, pbatch[N], dbatch[N], p_total=0, d_total=0;
     int j = 0, i = 0;
 
@@ -90,14 +90,28 @@ double kcalc(isoInformation tempone, double BU_total, int N){
                 p_total += pbatch[j]*phi;
                 d_total += dbatch[j]*phi;
             }
+    ofstream outfile("../outputfile.txt");
 
-    return (p_total*0.98)/(d_total);
+    outfile<< N << " "<< BU_total << endl << endl;
+
+    j=0; // recycled variable, is also batch index in this function
+    while(j < tempone.iso_vector.size()){
+        //i is still the discrete point of the last bach
+        outfile << tempone.iso_vector[j].name << " ";
+        outfile << intpol(tempone.iso_vector[j].mass[i-1], tempone.iso_vector[j].mass[i], x0, x1, BU_n) << endl;
+        j++;
+
+    }
+
+    outfile.close();
+
+    return (p_total*pnl)/(d_total);
 
 }
 
 
 
-pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double tolerance) {
+pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double pnl, double tolerance) {
     pair<double, map<int,double> > rtn(0, map<int, double>());
     double time_f; // time when k reaches one, time in days
     double BU_total = 0;
@@ -108,13 +122,12 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 	i = 0;
     while (i < tempone.neutron_prod.size())
     {
-        tempone.k_inf.push_back(((tempone.neutron_prod[i]))*(0.98)/(tempone.neutron_dest[i]));
+        tempone.k_inf.push_back(((tempone.neutron_prod[i]))*pnl/(tempone.neutron_dest[i]));
         i++;
     }
 
     i=0;
     while (tempone.k_inf[i] > 1.0){
-        cout << tempone.k_inf[i] << "   "<< tempone.BUd[i] <<endl;
         BU_total += tempone.BUd[i];
         i++; // finds the number of entry when k drops under 1
     }
@@ -130,8 +143,8 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
         while(abs(1-k_total)>tolerance){
 
-            BU3 = BU2 - (kcalc(tempone, BU2, N)-1)*(BU2-BU1)/((kcalc(tempone, BU2, N))-(kcalc(tempone, BU1, N)));
-            k_total = kcalc(tempone, BU3, N);
+            BU3 = BU2 - (kcalc(tempone, BU2, N, pnl)-1)*(BU2-BU1)/((kcalc(tempone, BU2, N, pnl))-(kcalc(tempone, BU1, N, pnl)));
+            k_total = kcalc(tempone, BU3, N, pnl);
             BU1 = BU2;
             BU2 = BU3;
             i++;
@@ -150,22 +163,9 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     BU_total = BU3;
 
 
-    /*
-    ofstream outfile("outputfile.txt");
 
-    outfile<< N << " "<< BU_total << endl << endl;
 
-    j=0; // recycled variable, is also batch index in this function
-    while(j < tempone.iso_vector.size()){
-        //i is still the discrete point of the last bach
-        outfile << tempone.iso_vector[j].name << " ";
-        outfile << intpol(tempone.iso_vector[j].mass[i-1], tempone.iso_vector[j].mass[i], x0, x1, BU_n) << endl;
-        j++;
 
-    }
-
-    outfile.close();
-    */
 
     rtn.first = BU_total;
     rtn.second = tomass(i, time_f, tempone);
@@ -345,16 +345,16 @@ isoInformation test2;
 // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
 input_stream[0].fraction = 0.02;
 input_stream[1].fraction = 0.98;
-BU2 = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
+BU2 = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01).first;
 input_stream[0].fraction = 0.06;
 input_stream[1].fraction = 0.94;
-BU6 = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
+BU6 = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01).first;
 
 X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
 
 input_stream[0].fraction = X;
 input_stream[1].fraction = 1-X;
-BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01).first;
+BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01).first;
 
 // enrichment iteration
 while (BU_end < BU_guess)
@@ -362,7 +362,7 @@ while (BU_end < BU_guess)
     X = X - 0.001;
     input_stream[0].fraction = X;
     input_stream[1].fraction = 1-X;
-    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
+    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01 ).first;
 }
 
 
@@ -371,7 +371,7 @@ while (BU_end > BU_guess)
     X = X + 0.001;
     input_stream[0].fraction = X;
     input_stream[1].fraction = 1-X;
-    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, 0.01 ).first;
+    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01 ).first;
 }
     return X;
 }
@@ -558,47 +558,26 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 
     vector<isoInformation> region0, region1, region2;
     vector<isoInformation> regions;
-    int regionsize[r+1];
-    for(int j = 0; j <= r; j++){
-        regionsize[j]=0;
-    }
-    while(i < fuel.iso.size()){ //finds the number of isotopes in each region
-        regionsize[fuel.iso[i].region]++;
-        i++;
-    }
 
 
-    /*i=0;
-    j=0;
-    int k=0;
-    while(i <= r){ //for each region
-        while(j < regionsize[i]){ //for each isotope
-            while(k < fuel.iso[j].neutron_prod.size()){
-            regioniso[i].neutron_prod[k] =+ fuel.iso[j].neutron_prod[k] * fuel.iso[j].fraction;
-            regioniso[i].neutron_dest[k] =+ fuel.iso[j].neutron_dest[k] * fuel.iso[j].fraction;
-            regioniso[i].k_inf[k] =+ fuel.iso[j].k_inf[k] * fuel.iso[j].fraction;
-            regioniso[i].BUd[k] =+ fuel.iso[j].BUd[k] * fuel.iso[j].fraction;
-            regioniso[i].fluence[k] =+ fuel.iso[j].fluence[k] * fuel.iso[j].fraction;
-//            while(){
-//                regioniso[i].iso_vector
-            }
-        }
-    }*/
     for(int i=0; i < fuel.iso.size(); i++){ //up to two regions at the moment
 
-        if(fuel.iso[i].region == 0)
+        if(fuel.iso[i].region == 0){
             region0.push_back(fuel.iso[i]);
-        if(fuel.iso[i].region == 1)
+        }
+        if(fuel.iso[i].region == 1){
             region1.push_back(fuel.iso[i]);
+        }
     }
 
-    for(int i=0; i<1; i++){ //uses the flux to adjust prod and dest
-        for(int j =0; j < region0[i].neutron_prod.size(); j++){
 
+    for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
+        for(int j =0; j < region0[i].neutron_prod.size(); j++){
             region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
             region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
         }
     }
+
 
 
     regions.push_back(FuelBuilder(region0));
@@ -609,11 +588,11 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 };
 
 fuelBundle InputReader(){
-
-    int region;
-    char type;
+    std::string name;
+    int region, N, t_res;
+    char type, word[8];
     int nucid;
-    double mass;
+    double mass, pnl;
     fuelBundle fuel;
     isoInformation temp;
 
@@ -623,11 +602,16 @@ fuelBundle InputReader(){
     int i=0;
 	while(getline(fin, line))
 	{
+        istringstream iss(line);
+        if(line.find("REACTOR") == 0){
+            iss >> name >> name;
+            fuel.name = name;
+        }
         if(line.find("REGIONS") == 0){
             while(getline(fin, line)){
                     if(line.find("END") == 0)
                         break;
-                istringstream iss(line);
+
                 iss >> region >> type >> nucid >> mass;
                 temp.name = nucid;
                 temp.region = region;
@@ -636,6 +620,17 @@ fuelBundle InputReader(){
                 fuel.iso.push_back(temp);
             }
         }
+        if(line.find("BATCH") == 0){
+            iss >> word >> N;
+        }
+        if(line.find("FUELRES") == 0){
+            iss >> word >> t_res;
+        }
+        if(line.find("LEAK") == 0){
+            iss >> word >> pnl;
+            if(pnl <= 0.92 || pnl > 1)
+                cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
+        }
     }
     /*
     while(i<6){
@@ -643,6 +638,10 @@ fuelBundle InputReader(){
         i++;
     }
     */
+    fuel.batch = N;
+    fuel.pnl = pnl;
+    fuel.tres = t_res;
+
     return fuel;
 }
 
@@ -709,6 +708,7 @@ return fuel;
 
 int main(){
 fuelBundle fuel;
+//test
 
 fuel = InputReader();
 
@@ -718,7 +718,12 @@ double flux;
 
 flux = fluxcalc(fuel);
 
-DataReader2("LWR", fuel.iso);
+
+DataReader2(fuel.name, fuel.iso);
+
+
+
+/*
 cout << fuel.iso[0].name << endl;
 for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
     cout << fuel.iso[0].neutron_dest[i]<< "     ";
@@ -727,11 +732,16 @@ cout << endl <<fuel.iso[1].name << endl;
 for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
     cout << fuel.iso[1].neutron_dest[i]<< "     ";
 }
+*/
 
 vector<nonActinide> nona; //"NONA"ctinide ;)
-nona = NonActinideReader("../Bright-lite/LWR/PWRU50.LIB");
+nona = NonActinideReader(fuel.name + "/TAPE9.OUT");
+
+
 
 fuel = NBuilder(fuel, nona);
+
+
 
 isoInformation singleiso;
 singleiso = regioncollapse(fuel, flux);
@@ -741,7 +751,7 @@ singleiso = regioncollapse(fuel, flux);
     cout << singleiso.neutron_prod[i] / singleiso.neutron_dest[i] << endl;
 }*/
 
-cout << burnupcalc(singleiso, 3, 0.001).first << endl;
+cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
 /*
     while(1){
         cin >> BU_end;
@@ -781,7 +791,6 @@ cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
 
     return 0;
 }
-
 
 
 
