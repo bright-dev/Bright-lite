@@ -111,6 +111,7 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
 
 
 
+
 pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double pnl, double tolerance) {
     pair<double, map<int,double> > rtn(0, map<int, double>());
     double time_f; // time when k reaches one, time in days
@@ -628,6 +629,9 @@ fuelBundle InputReader(){
         }
         if(line.find("LEAK") == 0){
             iss >> word >> pnl;
+            if(pnl <= 0.92 || pnl > 1)
+                cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
+        }
             if(pnl <= 0.92 || pnl > 1)
                 cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
         }
