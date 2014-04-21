@@ -52,69 +52,9 @@ isoInformation BuildIsotope(ifstream &input){
     return (isotope);
 }
 
-/*isoInformation FuelBuilder(vector<isoInformation> fuel_values){
-    isoInformation fuel;
-    for (int i = 0; i < fuel_values[0].fluence.size(); i++){
-        fuel.fluence.push_back(fuel_values[0].fraction*fuel_values[0].fluence[i]+(fuel_values[0].fraction)*fuel_values[1].fluence[i]);
-    }
-    for (int i = 0; i < fuel_values[0].neutron_prod.size(); i++){
-        fuel.neutron_prod.push_back(fuel_values[0].fraction*fuel_values[0].neutron_prod[i]+(fuel_values[0].fraction)*fuel_values[1].neutron_prod[i]);
-    }
-    for (int i = 0; i < fuel_values[0].neutron_dest.size(); i++){
-        fuel.neutron_dest.push_back(fuel_values[0].fraction*fuel_values[0].neutron_dest[i]+(fuel_values[0].fraction)*fuel_values[1].neutron_dest[i]);
-    }
-    for (int i = 0; i < fuel_values[0].BUd.size(); i++){
-        fuel.BUd.push_back(fuel_values[0].fraction*fuel_values[0].BUd[i]+(fuel_values[0].fraction)*fuel_values[1].BUd[i]);
-    }
-
-    for(int j = 1; j < fuel_values.size(); j++){
-        for (int i = 0; i < fuel_values[0].neutron_prod.size(); i++){
-            fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[j].fraction*fuel_values[j].neutron_prod[i];
-        }
-        for (int i = 0; i < fuel_values[0].neutron_dest.size(); i++){
-            fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[j].fraction*fuel_values[j].neutron_dest[i];
-        }
-        for (int i = 0; i < fuel_values[0].BUd.size(); i++){
-            fuel.BUd[i] = fuel.BUd[i] + fuel_values[j].fraction*fuel_values[j].BUd[i];
-        }
-    }
-
-    for (int i = 0; i < fuel_values[0].iso_vector.size(); i++){
-        fuel.iso_vector.push_back(fuel_values[0].iso_vector[i]);
-        for(int k = 0; k < fuel.iso_vector[i].mass.size(); k++){
-            fuel.iso_vector[i].mass[k] = fuel_values[0].fraction*fuel.iso_vector[i].mass[k];
-        }
-    }
-    for (int jj = 1; jj < fuel_values.size(); jj ++){
-        for (int i = 0; i < fuel_values[jj].iso_vector.size(); i++){
-            bool iso_check = true;
-            for(int j = 0; j < fuel.iso_vector.size(); j++){
-                if (fuel_values[jj].iso_vector[i].name == fuel.iso_vector[j].name){
-                    for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
-                        for(int ii = 0; ii < fuel_values[jj].iso_vector[i].mass.size(); ii ++){
-                            if ( k ==ii ){
-                                fuel.iso_vector[j].mass[k] += fuel_values[jj].fraction*fuel_values[jj].iso_vector[i].mass[ii];
-                            }
-                        }
-                    }
-                    iso_check = false;
-                }
-            }
-            if (iso_check == true) {
-                fuel.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
-                for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()].mass.size(); k++){
-                    fuel.iso_vector[fuel.iso_vector.size()].mass[k] = fuel.iso_vector[fuel.iso_vector.size()].mass[k]*fuel_values[jj].fraction;
-                }
-            }
-        }
-    }
-    return fuel;
-}*/
-
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
     for(int mm = 0; mm < fuel_values.size(); mm++){
-        cout << fuel_values[mm].fraction << endl;
         if(fuel_values[mm].iso_vector.size() > 0){
             if(fuel.fluence.size() < 1){
                 for (int i = 0; i < fuel_values[mm].fluence.size(); i++){
@@ -162,8 +102,9 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     }
                     if (iso_check == true) {
                         fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
-                        for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()].mass.size(); k++){
-                            fuel.iso_vector[fuel.iso_vector.size()].mass[k] = fuel.iso_vector[fuel.iso_vector.size()].mass[k]*fuel_values[mm].fraction;
+                        for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()-1].mass.size()-1; k++){
+                            //cout << fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] << endl;
+                            fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] = fuel.iso_vector[fuel.iso_vector.size()-1].mass[k]*fuel_values[mm].fraction;
                         }
                     }
                 }
