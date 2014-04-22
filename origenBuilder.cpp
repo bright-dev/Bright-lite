@@ -103,7 +103,6 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     if (iso_check == true) {
                         fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
                         for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()-1].mass.size()-1; k++){
-                            //cout << fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] << endl;
                             fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] = fuel.iso_vector[fuel.iso_vector.size()-1].mass[k]*fuel_values[mm].fraction;
                         }
                     }
@@ -262,7 +261,7 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
     for (int i = 0; i < input_stream.size(); i++){
         if(input_stream[i].type == *"A"){       //cem added this
-            ifstream inf("../Bright-lite/" + type + "/" +to_string(input_stream[i].name) + ".txt");
+            ifstream inf(type + "/" +to_string(input_stream[i].name) + ".txt");
             if(!inf){
                 cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
             }

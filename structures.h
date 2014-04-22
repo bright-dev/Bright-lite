@@ -44,7 +44,10 @@ struct fuelBundle {
     std::vector<isoInformation> iso;
 };
 
-
+struct interpol_pair {
+    std::string metric;
+    double value;
+};
 
 
 #endif // STRUCTURES_H_INCLUDED

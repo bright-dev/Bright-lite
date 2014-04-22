@@ -132,7 +132,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         BU_total += tempone.BUd[i];
         i++; // finds the number of entry when k drops under 1
     }
-
     BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
     time_f = intpol(tempone.fluence[i-1],tempone.fluence[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
 
@@ -173,137 +172,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     return rtn;
 
 }
-
-double OLDkcalc(isoInformation tempone, double BU_total, int N, double s_contr[3]){
-    double x0 = 0, x1 = 0, BU_n = 0, phi, pbatch[N], dbatch[N], p_total=0, d_total=0;
-    int j = 0, i = 0;
-
-            for (j = 0; j < N; j++) {
-
-                BU_n = BU_total*(j+1)/N;
-
-                x0 = 0; //these variables are reset here b/c they're used outside the for-loop as well
-                x1= 0;
-                i=0;
-                while (x0 + tempone.BUd[i] < BU_n) // finds the discrete point i corresponding to the burnup just under BU_n
-                    {
-                        x0 += tempone.BUd[i];
-                        i++;
-                    }
-
-                x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
-
-                phi = phicalc(j, N, BU_total, tempone);
-                pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n)+s_contr[0];
-                dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n)+s_contr[1];
-
-                p_total += pbatch[j]*phi;
-                d_total += dbatch[j]*phi;
-            }
-
-
-    ofstream outfile("outputfile.txt");
-
-    outfile<< N << " "<< BU_total << endl << endl;
-
-    j=0; // recycled variable, is also batch index in this function
-    while(j < tempone.iso_vector.size()){
-        //i is still the discrete point of the last bach
-        outfile << tempone.iso_vector[j].name << " ";
-        outfile << intpol(tempone.iso_vector[j].mass[i-1], tempone.iso_vector[j].mass[i], x0, x1, BU_n) << endl;
-        j++;
-
-    }
-
-    outfile.close();
-
-
-    return s_contr[2]*(p_total)/(d_total);
-
-}
-
-
-pair<double, map<int, double> > OLDburnupcalc(isoInformation tempone, int N, double tolerance) {
-    pair<double, map<int,double> > rtn(0, map<int, double>());
-    double time_f; // time when k reaches one, time in days
-    double BU_total = 0;
-    double k_total = 10;
-    int i = 0;
-    double BU1, BU2, BU3;
-    //read the structural material contribution information (production[0],
-    //destruction[1], leakage[2]) to s_contr
-    double s_contr[3];
-    ifstream fin("LWR/LWRSTRUCT.txt");
-    double passer;
-    string spasser;
-	while(i < 3)
-	{
-        fin >> spasser >> passer;
-        s_contr[i]=passer;
-        i++;
-	}
-
-	i = 0;
-    while (i < tempone.neutron_prod.size())
-    {
-        //tempone.k_inf.push_back(((tempone.neutron_prod[i]+s_contr[0])*s_contr[2])/(tempone.neutron_dest[i]+s_contr[1]));
-        tempone.k_inf.push_back(((tempone.neutron_prod[i]+s_contr[0])*s_contr[2])/(tempone.neutron_dest[i]+s_contr[1]));
-        i++;
-    }
-
-    i=0;
-    while (tempone.k_inf[i] > 1.0){
-        BU_total += tempone.BUd[i];
-        i++; // finds the number of entry when k drops under 1
-
-    }
-
-    BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
-    time_f = intpol(tempone.fluence[i-1],tempone.fluence[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
-
-/*
-    if (N == 1){
-        rtn.first = BU_total;
-        rtn.second = tomass(i, time_f, tempone);
-        return rtn;
-    }
-*/
-
-
-    BU1 = 2.* N * BU_total/(N+1);
-    BU2 = BU1*1.1;
-    k_total = 2;
-    i=0;
-
-
-        while(abs(1-k_total)>0.000001){
-
-            BU3 = BU2 - (OLDkcalc(tempone, BU2, N, s_contr)-1)*(BU2-BU1)/((OLDkcalc(tempone, BU2, N, s_contr))-(OLDkcalc(tempone, BU1, N, s_contr)));
-            k_total = OLDkcalc(tempone, BU3, N, s_contr);
-            BU1 = BU2;
-            BU2 = BU3;
-            i++;
-
-            if(i==50)
-                {
-                cout<< "Warning! Maximum iteration reached."<<endl;
-                BU3 = (BU1+BU2+BU3)/3;
-                break;
-                }
-
-
-
-        }
-
-    BU_total = BU3;
-
-
-    rtn.first = BU_total;
-    rtn.second = tomass(i, time_f, tempone);
-    return rtn;
-
-}
-
 
 /**
 enrichcalc takes the burnup goal, batch number, and tolerance;
@@ -377,167 +245,138 @@ while (BU_end > BU_guess)
     return X;
 }
 
-isoInformation lib_interpol(isoInformation iso_1, double lib_1_value, isoInformation iso_2, double lib_2_value){
-    isoInformation combined_lib;
-    for(int i = 0; i < iso_1.neutron_prod.size(); i++){
-        combined_lib.neutron_prod.push_back(iso_1.neutron_prod[i]*lib_1_value + iso_2.neutron_prod[i]*lib_2_value);
+fuelBundle lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
+    vector<fuelBundle> fuel_pairs;
+    for (int i = 0; i < libs.size(); i++){
+        fuelBundle lib_bundle;
+        for(int j = 0; j < input_fuel.iso.size(); i++){
+            isoInformation iso;
+            iso.name = input_fuel.iso[i].name;
+            iso.fraction = input_fuel.iso[i].fraction;
+            iso.type = input_fuel.iso[i].type;
+            iso.region = input_fuel.iso[i].region;
+            lib_bundle.iso.push_back(iso);
+        }
+        lib_bundle.name = libs[i];
+        lib_bundle.batch = input_fuel.batch;
+        lib_bundle.tres = input_fuel.tres;
+        lib_bundle.pnl = input_fuel.pnl;
+        fuel_pairs.push_back(lib_bundle);
     }
-    for(int i = 0; i < iso_1.neutron_dest.size(); i++){
-        combined_lib.neutron_dest.push_back(iso_1.neutron_dest[i]*lib_1_value + iso_2.neutron_dest[i]*lib_2_value);
+    for (int i = 0; i < fuel_pairs.size(); i++){
+        DataReader2(fuel_pairs[i].name, fuel_pairs[i].iso);
     }
-    for(int i = 0; i < iso_1.fluence.size(); i++){
-        combined_lib.fluence.push_back(iso_1.fluence[i]*lib_1_value + iso_2.fluence[i]*lib_2_value);
-    }
-    for(int i = 0; i < iso_1.BUd.size(); i++){
-        combined_lib.BUd.push_back(iso_1.BUd[i]*lib_1_value + iso_2.BUd[i]*lib_2_value);
-    }
-    for(int i = 0; i < iso_1.iso_vector.size(); i++){
-        combined_lib.BUd.push_back(iso_1.BUd[i]*lib_1_value + iso_2.BUd[i]*lib_2_value);
-    }
+    // Reading Metrics //
 
-    vector<isoInformation> fuel_values;
-    fuel_values.push_back(iso_1);
-    fuel_values.push_back(iso_2);
-
-    for (int i = 0; i < fuel_values[0].iso_vector.size(); i++){
-        combined_lib.iso_vector.push_back(fuel_values[0].iso_vector[i]);
-        for(int k = 0; k < combined_lib.iso_vector[i].mass.size(); k++){
-            combined_lib.iso_vector[i].mass[k] = fuel_values[0].fraction*combined_lib.iso_vector[i].mass[k];
+    for (int i = 0; i < targets.size(); i++){
+        for (int j = 0; j < fuel_pairs.size(); j++){
+            ifstream inf(fuel_pairs[j].name + "/params.txt");
         }
     }
-    for (int jj = 1; jj < fuel_values.size(); jj ++){
-        for (int i = 0; i < fuel_values[jj].iso_vector.size(); i++){
-            bool iso_check = true;
-            for(int j = 0; j < combined_lib.iso_vector.size(); j++){
-                if (fuel_values[jj].iso_vector[i].name == combined_lib.iso_vector[j].name){
-                    for(int k = 0; k < combined_lib.iso_vector[j].mass.size(); k++){
-                        for(int ii = 0; ii < fuel_values[jj].iso_vector[i].mass.size(); ii ++){
-                            if ( k ==ii ){
-                                combined_lib.iso_vector[j].mass[k] += fuel_values[jj].iso_vector[i].mass[ii]*lib_2_value;
-                            }
-                        }
-                    }
-                    iso_check = false;
-                }
-            }
-            if(iso_check == true){
-                combined_lib.iso_vector.push_back(fuel_values[jj].iso_vector[i]);
-                for(int k = 0; k < combined_lib.iso_vector[-1].mass.size(); k++){
-                    combined_lib.iso_vector[-1].mass[k] = combined_lib.iso_vector[-1].mass[k]*lib_2_value;
-                }
-            }
-        }
-    }
-    return combined_lib;
 }
 
 double fluxcalc(fuelBundle fuel){
 // calculates the flux of each region in fuelBundle
 // probably will need to add reactor identifier as input in the future
 
-int i = 0;
-int r = 1; //number of regions
-double frac35, frac38; // mass fraction of u235 and u238
-double temp;
+    int i = 0;
+    int r = 1; //number of regions
+    double frac35, frac38; // mass fraction of u235 and u238
+    double temp;
 
-while(i < fuel.iso.size()){ // finds the number of regions and saves mass fraction of fuel
-    if(fuel.iso[i].region > r)
-        r = fuel.iso[i].region;
-    if(fuel.iso[i].name == 922350)
-        frac35 = fuel.iso[i].fraction;
-    if(fuel.iso[i].name == 922380)
-        frac38 = fuel.iso[i].fraction;
-    i++;
-}
-
-cout << "235: " << frac35 << endl << "238: " << frac38 << endl;
-
-
-double flux[r]; // creates a flux vector
-
-
-if (r == 1){ //r=1 means two regions
-
-
-    double a; // radius of the fuel rod
-    double b; // radius of the equivalent cell
-    double L_F; // diffusion length of fuel
-    double L_M; // diffusion length of moderator
-    double Sig_aF; // macroscopic abs. CS of fuel
-    double Sig_aM; // macroscopic abs. CS of moderator
-    double V_F; // volume of fuel
-    double V_M; // volume of moderator
-    double Sig_trF; // macroscopic transport CS of fuel
-    double Sig_trM; // macroscopic transport CS of moderator
-    double Sig_tF; // macroscopic total CS of fuel
-    double Sig_tM; //macroscopic total CS of moderator
-    double Sig_sF; // macroscopic scatter CS of fuel
-    double Sig_sM; //macroscopic scatter CS of moderator
-    double D_F; // diffusion coef. of fuel
-    double D_M; // diffusion coef. of moderator
-    double A_F; // A number of fuel
-    double A_M; // A number of moderator
-    double x, y, z; // calculated equivalent dimensions
-    double F, E; // lattice functions
-    double f; // flux of fuel divided by total flux(fuel+moderator)
-
-    temp = frac35;
-    frac35 = frac35 / (frac35 + frac38);
-    frac38 = frac38 / (temp + frac38);
-
-    double abs35, sca35, tot35; //xsecs for u235
-    double abs38, sca38, tot38; //xsecs for u238
-
-    abs35 = 0.08907;
-    sca35 = 4.566;
-    tot35 = 7.705;
-
-    abs38 = 0.0664;
-    sca38 = 4.804;
-    tot35 = 7.786;
-
-    Sig_aF = abs35*frac35 + abs38*frac38;
-    Sig_aM = 0.000094*pow(10,1);
-    a = 0.4095; // [cm]
-    b = 0.70749;// [cm]
-
-// transport CS calculation
-    Sig_tF = (tot35*frac35 + tot38*frac38)*pow(10,1); // [cm]
-    Sig_tM = 2.75*pow(10,1); // [cm]
-    Sig_sF = (sca35*frac35+sca38*frac38)*pow(10,1); // [cm]
-    Sig_sM = 2.739*pow(10,1); // [cm]
-    A_F = 235;
-    A_M = 18;
-    Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
-    Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;
-
-// diffusion calculation
-    D_F = 1 / (3 * Sig_trF);
-    D_M = 1 / (3 * Sig_trM);
-
-// diffusion length calculation
-    L_F = sqrt(D_F/Sig_aF);
-    L_M = sqrt(D_M/Sig_aM);
-
-    x = a/L_F;
-    y = a/L_M;
-    z = b/L_M;
-    V_M = pow(a,2)*3.141592;
-    V_F = pow(b,2)*3.141592 - pow(a,2)*3.141592;
-
-
-    F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(0, x));
-    E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
-                                   boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
-                                    boost::math::cyl_bessel_k(0, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(0, y)));
-    f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
-
-    flux[1] = 1;
-    flux[0] = f / (f - 1);
-
+    while(i < fuel.iso.size()){ // finds the number of regions and saves mass fraction of fuel
+        if(fuel.iso[i].region > r)
+            r = fuel.iso[i].region;
+        if(fuel.iso[i].name == 922350)
+            frac35 = fuel.iso[i].fraction;
+        if(fuel.iso[i].name == 922380)
+            frac38 = fuel.iso[i].fraction;
+        i++;
     }
 
-    else{
+    //cout << "235: " << frac35 << endl << "238: " << frac38 << endl;
+
+
+    double flux[r]; // creates a flux vector
+
+
+    if (r == 1){ //r=1 means two regions
+        double a; // radius of the fuel rod
+        double b; // radius of the equivalent cell
+        double L_F; // diffusion length of fuel
+        double L_M; // diffusion length of moderator
+        double Sig_aF; // macroscopic abs. CS of fuel
+        double Sig_aM; // macroscopic abs. CS of moderator
+        double V_F; // volume of fuel
+        double V_M; // volume of moderator
+        double Sig_trF; // macroscopic transport CS of fuel
+        double Sig_trM; // macroscopic transport CS of moderator
+        double Sig_tF; // macroscopic total CS of fuel
+        double Sig_tM; //macroscopic total CS of moderator
+        double Sig_sF; // macroscopic scatter CS of fuel
+        double Sig_sM; //macroscopic scatter CS of moderator
+        double D_F; // diffusion coef. of fuel
+        double D_M; // diffusion coef. of moderator
+        double A_F; // A number of fuel
+        double A_M; // A number of moderator
+        double x, y, z; // calculated equivalent dimensions
+        double F, E; // lattice functions
+        double f; // flux of fuel divided by total flux(fuel+moderator)
+
+        temp = frac35;
+        frac35 = frac35 / (frac35 + frac38);
+        frac38 = frac38 / (temp + frac38);
+
+        double abs35, sca35, tot35; //xsecs for u235
+        double abs38, sca38, tot38; //xsecs for u238
+
+        abs35 = 0.08907;
+        sca35 = 4.566;
+        tot35 = 7.705;
+
+        abs38 = 0.0664;
+        sca38 = 4.804;
+        tot35 = 7.786;
+
+        Sig_aF = abs35*frac35 + abs38*frac38;
+        Sig_aM = 0.000094*pow(10,1);
+        a = 0.4095; // [cm]
+        b = 0.70749;// [cm]
+
+    // transport CS calculation
+        Sig_tF = (tot35*frac35 + tot38*frac38)*pow(10,1); // [cm]
+        Sig_tM = 2.75*pow(10,1); // [cm]
+        Sig_sF = (sca35*frac35+sca38*frac38)*pow(10,1); // [cm]
+        Sig_sM = 2.739*pow(10,1); // [cm]
+        A_F = 235;
+        A_M = 18;
+        Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
+        Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;
+
+    // diffusion calculation
+        D_F = 1 / (3 * Sig_trF);
+        D_M = 1 / (3 * Sig_trM);
+
+    // diffusion length calculation
+        L_F = sqrt(D_F/Sig_aF);
+        L_M = sqrt(D_M/Sig_aM);
+
+        x = a/L_F;
+        y = a/L_M;
+        z = b/L_M;
+        V_M = pow(a,2)*3.141592;
+        V_F = pow(b,2)*3.141592 - pow(a,2)*3.141592;
+
+
+        F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(0, x));
+        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
+                                       boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
+                                        boost::math::cyl_bessel_k(0, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(0, y)));
+        f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
+
+        flux[1] = 1;
+        flux[0] = f / (f - 1);
+    } else{
         i=0;
         while(i < r){
             flux[i] = 1;
@@ -598,21 +437,20 @@ fuelBundle InputReader(){
     isoInformation temp;
 
     string line;
-    ifstream fin("../Bright-lite/inputFile2.txt");
+    ifstream fin("inputFile2.txt");
 
     int i=0;
 	while(getline(fin, line))
 	{
-        istringstream iss(line);
         if(line.find("REACTOR") == 0){
+            istringstream iss(line);
             iss >> name >> name;
             fuel.name = name;
         }
         if(line.find("REGIONS") == 0){
             while(getline(fin, line)){
-                    if(line.find("END") == 0)
-                        break;
-
+                if(line.find("END") == 0) break;
+                istringstream iss(line);
                 iss >> region >> type >> nucid >> mass;
                 temp.name = nucid;
                 temp.region = region;
@@ -622,26 +460,20 @@ fuelBundle InputReader(){
             }
         }
         if(line.find("BATCH") == 0){
+            istringstream iss(line);
             iss >> word >> N;
         }
         if(line.find("FUELRES") == 0){
+            istringstream iss(line);
             iss >> word >> t_res;
         }
         if(line.find("LEAK") == 0){
+            istringstream iss(line);
             iss >> word >> pnl;
             if(pnl <= 0.92 || pnl > 1)
                 cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
         }
-            if(pnl <= 0.92 || pnl > 1)
-                cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
-        }
-    }
-    /*
-    while(i<6){
-        cout<< fuel.iso[i].fraction << endl;
-        i++;
-    }
-    */
+	}
     fuel.batch = N;
     fuel.pnl = pnl;
     fuel.tres = t_res;
@@ -725,8 +557,6 @@ flux = fluxcalc(fuel);
 
 DataReader2(fuel.name, fuel.iso);
 
-
-
 /*
 cout << fuel.iso[0].name << endl;
 for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
@@ -739,7 +569,7 @@ for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
 */
 
 vector<nonActinide> nona; //"NONA"ctinide ;)
-nona = NonActinideReader(fuel.name + "/TAPE9.OUT");
+nona = NonActinideReader(fuel.name + "/TAPE9.INP");
 
 
 
@@ -749,7 +579,6 @@ fuel = NBuilder(fuel, nona);
 
 isoInformation singleiso;
 singleiso = regioncollapse(fuel, flux);
-
 
 /*for(int i = 0; i < singleiso.neutron_prod.size(); i++){
     cout << singleiso.neutron_prod[i] / singleiso.neutron_dest[i] << endl;
