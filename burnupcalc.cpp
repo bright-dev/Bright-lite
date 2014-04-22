@@ -249,12 +249,12 @@ fuelBundle lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<inter
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < libs.size(); i++){
         fuelBundle lib_bundle;
-        for(int j = 0; j < input_fuel.iso.size(); i++){
+        for(int j = 0; j < input_fuel.iso.size(); j++){
             isoInformation iso;
-            iso.name = input_fuel.iso[i].name;
-            iso.fraction = input_fuel.iso[i].fraction;
-            iso.type = input_fuel.iso[i].type;
-            iso.region = input_fuel.iso[i].region;
+            iso.name = input_fuel.iso[j].name;
+            iso.fraction = input_fuel.iso[j].fraction;
+            iso.type = input_fuel.iso[j].type;
+            iso.region = input_fuel.iso[j].region;
             lib_bundle.iso.push_back(iso);
         }
         lib_bundle.name = libs[i];
@@ -267,11 +267,53 @@ fuelBundle lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<inter
         DataReader2(fuel_pairs[i].name, fuel_pairs[i].iso);
     }
     // Reading Metrics //
-
+    vector<vector<double> > metrics;
+    std::string metric_name;
+    double metric_value;
     for (int i = 0; i < targets.size(); i++){
+        cout << targets[i].metric << endl;
         for (int j = 0; j < fuel_pairs.size(); j++){
+            std::string line;
+            cout << fuel_pairs[i].name << endl;
             ifstream inf(fuel_pairs[j].name + "/params.txt");
+            while(getline(inf, line)){
+                if (line.find(targets[i].metric) == 0){
+                    istringstream iss(line);
+                    metrics[i].push_back(metric_value);
+                }
+            }
+            inf.close();
         }
+    }
+
+    double alpha = 1;
+    for (int i = 0; i < metrics.size(); i++){
+        double max = 0;
+        double min = metrics[i][0];
+        for(int j = 0; j < metrics[i].size(); j++){
+            if (metrics[i][j] > max){
+                max = metrics[i][j];
+            }
+            if (metrics[i][j] < min){
+                min = metrics[i][j];
+            }
+            if (targets[i].value > max || targets[i].value < min){
+                alpha = 40;
+            }
+        }
+        for(int j = 0; j < metrics[i].size(); j++){
+            metrics[i][j] /= max;
+        }
+    }
+    // distances
+    vector<double>metric_distances;
+    for(int i = 0; i < targets.size(); i++){
+        double distance_measure = 0;
+        for (int j = 0; j < metrics.size(); j++){
+                distance_measure += pow(std::abs(targets[i].value - metrics[j][i]), 2);
+        }
+        metric_distances.push_back(distance_measure);
+        cout << distance_measure << endl;
     }
 }
 
@@ -543,48 +585,43 @@ return fuel;
 
 
 int main(){
-fuelBundle fuel;
-//test
+    fuelBundle fuel;
+    //test
 
-fuel = InputReader();
+    fuel = InputReader();
 
-fuel = FuelNormalizer(fuel);
+    vector <string> test_libs;
+    test_libs.push_back("E5_60");
+    test_libs.push_back("E9_100");
+    interpol_pair test_pair;
+    test_pair.metric = "BURNUP";
+    test_pair.value = 80;
+    vector<interpol_pair> test_inter;
+    test_inter.push_back(test_pair);
+    lib_interpol(fuel, test_libs, test_inter);
 
-double flux;
+    fuel = FuelNormalizer(fuel);
 
-flux = fluxcalc(fuel);
+    double flux;
 
-
-DataReader2(fuel.name, fuel.iso);
-
-/*
-cout << fuel.iso[0].name << endl;
-for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
-    cout << fuel.iso[0].neutron_dest[i]<< "     ";
-}
-cout << endl <<fuel.iso[1].name << endl;
-for(int i = 0; i < fuel.iso[0].fluence.size(); i++){
-    cout << fuel.iso[1].neutron_dest[i]<< "     ";
-}
-*/
-
-vector<nonActinide> nona; //"NONA"ctinide ;)
-nona = NonActinideReader(fuel.name + "/TAPE9.INP");
+    flux = fluxcalc(fuel);
 
 
+    DataReader2(fuel.name, fuel.iso);
 
-fuel = NBuilder(fuel, nona);
+    vector<nonActinide> nona; //"NONA"ctinide ;)
+    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
 
 
 
-isoInformation singleiso;
-singleiso = regioncollapse(fuel, flux);
+    fuel = NBuilder(fuel, nona);
 
-/*for(int i = 0; i < singleiso.neutron_prod.size(); i++){
-    cout << singleiso.neutron_prod[i] / singleiso.neutron_dest[i] << endl;
-}*/
 
-cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+
+    isoInformation singleiso;
+    singleiso = regioncollapse(fuel, flux);
+
+    cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
 /*
     while(1){
         cin >> BU_end;
@@ -597,30 +634,6 @@ cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
 cout << burnupcalc(DataReader(test1, 1, input_stream), 5, .01).first << endl;
 cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
 */
-
-
-
-
-
-
-//    test_mass = burnupcalc(DataReader(test1, 1, input_stream), 3, .01).second;
- //   cout << "Burnup is  " << BU_d << endl;
-    /*for (Iter = test_mass.begin(); Iter != test_mass.end(); ++Iter){
-        string m = pyne::nucname::name((*Iter).first);
-        if ((*Iter).second > 0.01){
-            outf2 << m << "   " << (*Iter).second << endl;
-            /** STUPID UGLY UGLY CODE
-            if (m == "Am241" || m == "Am243" || m == "Cm242" || m == "Cm244" || m == "Np237" || m == "Np238" || m == "Np239"){
-                outf1 << m << "  " << (*Iter).second << endl;
-            }
-            if (m == "Pu238" || m == "Pu239" || m == "Pu240" || m == "Pu241" || m == "Pu242" || m == "U234" || m == "U235"){
-                outf1 << m << "  " << (*Iter).second << endl;
-            }
-            if (m == "U236" || m == "U237" || m == "U238"){
-                outf1 << m << "  " << (*Iter).second << endl;
-            }
-        }
-    }*/
 
     return 0;
 }
