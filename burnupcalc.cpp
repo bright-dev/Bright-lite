@@ -83,7 +83,7 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
 
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-                phi = phicalc(j, N, BU_total, tempone);
+                phi = 1;//phicalc(j, N, BU_total, tempone);
                 pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
                 dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
@@ -455,15 +455,21 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 
     for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
         for(int j =0; j < region0[i].neutron_prod.size(); j++){
+                        cout << region0[i].neutron_prod[j] <<"  ";
             region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
             region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
+            cout << region0[i].neutron_prod[j] <<endl;
         }
+        cout <<endl<<endl;
     }
 
 
 
     regions.push_back(FuelBuilder(region0));
     regions.push_back(FuelBuilder(region1));
+
+  cout << regions[1].neutron_dest[0] << "  "<< regions[1].neutron_dest[1] << "  "<< regions[1].neutron_dest[2] << endl;
+
     regions[0].fraction = 1;
     regions[1].fraction = 1;
     return FuelBuilder(regions);
@@ -484,10 +490,12 @@ fuelBundle InputReader(){
     int i=0;
 	while(getline(fin, line))
 	{
+
         if(line.find("REACTOR") == 0){
             istringstream iss(line);
             iss >> name >> name;
             fuel.name = name;
+            cout << name << endl;
         }
         if(line.find("REGIONS") == 0){
             while(getline(fin, line)){
@@ -589,7 +597,7 @@ int main(){
     //test
 
     fuel = InputReader();
-
+/*
     vector <string> test_libs;
     test_libs.push_back("E5_60");
     test_libs.push_back("E9_100");
@@ -599,13 +607,12 @@ int main(){
     vector<interpol_pair> test_inter;
     test_inter.push_back(test_pair);
     lib_interpol(fuel, test_libs, test_inter);
-
+*/
     fuel = FuelNormalizer(fuel);
 
     double flux;
 
     flux = fluxcalc(fuel);
-
 
     DataReader2(fuel.name, fuel.iso);
 
