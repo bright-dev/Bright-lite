@@ -28,8 +28,6 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
             region1.push_back(fuel.iso[i]);
         }
     }
-
-    isoInformation test_thing = FuelBuilder(region1);
     for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
         for(int j =0; j < region0[i].neutron_prod.size(); j++){
             region0[i].neutron_prod[j] *= flux;
@@ -38,7 +36,9 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
     }
 
 
-
+    for (int i = 0; i < region1.size();i++){
+        cout << region1[i].name << "    "<<region1[i].fraction << endl;
+    }
     regions.push_back(FuelBuilder(region0));
     regions.push_back(FuelBuilder(region1));
     regions[0].fraction = 1;
