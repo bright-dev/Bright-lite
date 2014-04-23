@@ -204,9 +204,10 @@ vector<nonActinide> NonActinideReader(string file_name){
                 if (library == "-1"){
                     inf.close();
                     for (int i = 0; i < structural_comps.size(); i++){
-                        structural_comps[i].total_prod = structural_comps[i].sn2n + structural_comps[i].sn2nx;
-                        structural_comps[i].total_dest = structural_comps[i].snp +
-                        structural_comps[i].sng + structural_comps[i].sngx;
+                        structural_comps[i].total_prod = 2*structural_comps[i].sn2n + 2*structural_comps[i].sn2nx;
+                        structural_comps[i].total_dest = structural_comps[i].snp + structural_comps[i].sng +
+                        structural_comps[i].sngx + structural_comps[i].sn2n + structural_comps[i].sn2nx;
+
                     }
                     return structural_comps;
                 }

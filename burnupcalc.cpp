@@ -10,7 +10,41 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
 }
 
 
+isoInformation regioncollapse(fuelBundle fuel, double flux){
+    int i = 0, j;
+    int r = 1;
+    isoInformation singleiso;
 
+    vector<isoInformation> region0, region1, region2;
+    vector<isoInformation> regions;
+
+
+    for(int i=0; i < fuel.iso.size(); i++){ //up to two regions at the moment
+
+        if(fuel.iso[i].region == 0){
+            region0.push_back(fuel.iso[i]);
+        }
+        if(fuel.iso[i].region == 1){
+            region1.push_back(fuel.iso[i]);
+        }
+    }
+
+
+    for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
+        for(int j =0; j < region0[i].neutron_prod.size(); j++){
+            region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
+            region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
+        }
+    }
+
+
+
+    regions.push_back(FuelBuilder(region0));
+    regions.push_back(FuelBuilder(region1));
+    regions[0].fraction = 1;
+    regions[1].fraction = 1;
+    return FuelBuilder(regions);
+};
 // need to add units
 
 map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
@@ -69,9 +103,7 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
     int j = 0, i = 0;
 
             for (j = 0; j < N; j++) {
-
                 BU_n = BU_total*(j+1)/N;
-
                 x0 = 0; //these variables are reset here b/c they're used outside the for-loop as well
                 x1= 0;
                 i=0;
@@ -80,7 +112,6 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
                         x0 += tempone.BUd[i];
                         i++;
                     }
-
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
                 phi = phicalc(j, N, BU_total, tempone);
@@ -126,7 +157,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
         tempone.k_inf.push_back(((tempone.neutron_prod[i]))*pnl/(tempone.neutron_dest[i]));
         i++;
     }
-
     i=0;
     while (tempone.k_inf[i] > 1.0){
         BU_total += tempone.BUd[i];
@@ -134,32 +164,28 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     }
     BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
     time_f = intpol(tempone.fluence[i-1],tempone.fluence[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
-
     BU1 = 2.* N * BU_total/(N+1);
     BU2 = BU1*1.1;
     k_total = 2;
     i=0;
 
+    while(abs(1-k_total)>tolerance){
+        BU3 = BU2 - (kcalc(tempone, BU2, N, pnl)-1)*(BU2-BU1)/((kcalc(tempone, BU2, N, pnl))-(kcalc(tempone, BU1, N, pnl)));
+        k_total = kcalc(tempone, BU3, N, pnl);
+        BU1 = BU2;
+        BU2 = BU3;
+        i++;
 
-        while(abs(1-k_total)>tolerance){
-
-            BU3 = BU2 - (kcalc(tempone, BU2, N, pnl)-1)*(BU2-BU1)/((kcalc(tempone, BU2, N, pnl))-(kcalc(tempone, BU1, N, pnl)));
-            k_total = kcalc(tempone, BU3, N, pnl);
-            BU1 = BU2;
-            BU2 = BU3;
-            i++;
-
-            if(i==50)
-                {
-                cout<< "Warning! Maximum iteration reached."<<endl;
-                BU3 = (BU1+BU2+BU3)/3;
-                break;
-                }
+        if(i==50)
+            {
+            cout<< "Warning! Maximum iteration reached."<<endl;
+            BU3 = (BU1+BU2+BU3)/3;
+            break;
+            }
 
 
 
-        }
-
+    }
     BU_total = BU3;
 
 
@@ -168,7 +194,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
 
     rtn.first = BU_total;
-    rtn.second = tomass(i, time_f, tempone);
+    //rtn.second = tomass(i, time_f, tempone);
     return rtn;
 
 }
@@ -245,77 +271,7 @@ while (BU_end > BU_guess)
     return X;
 }
 
-fuelBundle lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
-    vector<fuelBundle> fuel_pairs;
-    for (int i = 0; i < libs.size(); i++){
-        fuelBundle lib_bundle;
-        for(int j = 0; j < input_fuel.iso.size(); j++){
-            isoInformation iso;
-            iso.name = input_fuel.iso[j].name;
-            iso.fraction = input_fuel.iso[j].fraction;
-            iso.type = input_fuel.iso[j].type;
-            iso.region = input_fuel.iso[j].region;
-            lib_bundle.iso.push_back(iso);
-        }
-        lib_bundle.name = libs[i];
-        lib_bundle.batch = input_fuel.batch;
-        lib_bundle.tres = input_fuel.tres;
-        lib_bundle.pnl = input_fuel.pnl;
-        fuel_pairs.push_back(lib_bundle);
-    }
-    for (int i = 0; i < fuel_pairs.size(); i++){
-        DataReader2(fuel_pairs[i].name, fuel_pairs[i].iso);
-    }
-    // Reading Metrics //
-    vector<vector<double> > metrics;
-    std::string metric_name;
-    double metric_value;
-    for (int i = 0; i < targets.size(); i++){
-        cout << targets[i].metric << endl;
-        for (int j = 0; j < fuel_pairs.size(); j++){
-            std::string line;
-            cout << fuel_pairs[i].name << endl;
-            ifstream inf(fuel_pairs[j].name + "/params.txt");
-            while(getline(inf, line)){
-                if (line.find(targets[i].metric) == 0){
-                    istringstream iss(line);
-                    metrics[i].push_back(metric_value);
-                }
-            }
-            inf.close();
-        }
-    }
 
-    double alpha = 1;
-    for (int i = 0; i < metrics.size(); i++){
-        double max = 0;
-        double min = metrics[i][0];
-        for(int j = 0; j < metrics[i].size(); j++){
-            if (metrics[i][j] > max){
-                max = metrics[i][j];
-            }
-            if (metrics[i][j] < min){
-                min = metrics[i][j];
-            }
-            if (targets[i].value > max || targets[i].value < min){
-                alpha = 40;
-            }
-        }
-        for(int j = 0; j < metrics[i].size(); j++){
-            metrics[i][j] /= max;
-        }
-    }
-    // distances
-    vector<double>metric_distances;
-    for(int i = 0; i < targets.size(); i++){
-        double distance_measure = 0;
-        for (int j = 0; j < metrics.size(); j++){
-                distance_measure += pow(std::abs(targets[i].value - metrics[j][i]), 2);
-        }
-        metric_distances.push_back(distance_measure);
-        cout << distance_measure << endl;
-    }
-}
 
 double fluxcalc(fuelBundle fuel){
 // calculates the flux of each region in fuelBundle
@@ -433,41 +389,7 @@ double fluxcalc(fuelBundle fuel){
 }
 
 
-isoInformation regioncollapse(fuelBundle fuel, double flux){
-    int i = 0, j;
-    int r = 1;
-    isoInformation singleiso;
 
-    vector<isoInformation> region0, region1, region2;
-    vector<isoInformation> regions;
-
-
-    for(int i=0; i < fuel.iso.size(); i++){ //up to two regions at the moment
-
-        if(fuel.iso[i].region == 0){
-            region0.push_back(fuel.iso[i]);
-        }
-        if(fuel.iso[i].region == 1){
-            region1.push_back(fuel.iso[i]);
-        }
-    }
-
-
-    for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
-        for(int j =0; j < region0[i].neutron_prod.size(); j++){
-            region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
-            region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
-        }
-    }
-
-
-
-    regions.push_back(FuelBuilder(region0));
-    regions.push_back(FuelBuilder(region1));
-    regions[0].fraction = 1;
-    regions[1].fraction = 1;
-    return FuelBuilder(regions);
-};
 
 fuelBundle InputReader(){
     std::string name;
@@ -572,8 +494,8 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
                 name = fuel.iso[i].name;
                 name = name % 10000;
                 name = name / 10;
-                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]*fuel.iso[i].fraction*0.602/name);
-                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]*fuel.iso[i].fraction*0.602/name);
+                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]*1000*0.602/name);
+                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]*1000*0.602/name);
             }
         }
 
@@ -582,23 +504,133 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
 return fuel;
 }
 
+isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
+    vector<fuelBundle> fuel_pairs;
+    for (int i = 0; i < libs.size(); i++){
+        fuelBundle lib_bundle;
+        for(int j = 0; j < input_fuel.iso.size(); j++){
+            if(input_fuel.iso[j].type == *"A"){
+                isoInformation iso;
+                iso.name = input_fuel.iso[j].name;
+                iso.fraction = input_fuel.iso[j].fraction;
+                iso.type = input_fuel.iso[j].type;
+                iso.region = input_fuel.iso[j].region;
+                lib_bundle.iso.push_back(iso);
+            }
+        }
+        lib_bundle.name = libs[i];
+        lib_bundle.batch = input_fuel.batch;
+        lib_bundle.tres = input_fuel.tres;
+        lib_bundle.pnl = input_fuel.pnl;
+        fuel_pairs.push_back(lib_bundle);
+    }
+    for (int i = 0; i < fuel_pairs.size(); i++){
+        DataReader2(fuel_pairs[i].name, fuel_pairs[i].iso);
+    }
+    // Reading Metrics //
+    vector<vector<double> > metrics;
+    std::string metric_name;
+    double metric_value;
+    for (int i = 0; i < targets.size(); i++){
+        vector<double> metric_vect;
+        metrics.push_back(metric_vect);
+        for (int j = 0; j < fuel_pairs.size(); j++){
+            std::string line;
+            ifstream inf(fuel_pairs[j].name + "/params.txt");
+            while(getline(inf, line)){
+                if (line.find(targets[i].metric) == 0){
+                    istringstream iss(line);
+                    iss >> metric_name >> metric_value;
+                    metrics[i].push_back(metric_value);
+                }
+            }
+            inf.close();
+        }
+    }
 
+    double alpha = 1;
+    for (int i = 0; i < metrics.size(); i++){
+        double max = 0;
+        double min = metrics[i][0];
+        for(int j = 0; j < metrics[i].size(); j++){
+            if (metrics[i][j] > max){
+                max = metrics[i][j];
+            }
+            if (metrics[i][j] < min){
+                min = metrics[i][j];
+            }
+        }
+        if (targets[i].value > max || targets[i].value < min){
+            alpha = 40;
+        }
+        for(int j = 0; j < metrics[i].size(); j++){
+            metrics[i][j] -= min;
+            metrics[i][j] /= max;
+        }
+        targets[i].scaled_value = targets[i].value - min;
+        targets[i].scaled_value /= max;
+    }
+    // distances
+    vector<double> metric_distances;
+    for(int i = 0; i < libs.size(); i++){
+        double distance_measure = 0;
+        for (int j = 0; j < metrics.size(); j++){
+            distance_measure += pow(targets[j].scaled_value - metrics[j][i], 2);
+        }
+        metric_distances.push_back(pow(distance_measure, alpha/2));
+    }
+    double met_dist_sum;
+    for (int i = 0; i < metric_distances.size(); i++){
+        met_dist_sum += 1./metric_distances[i];
+    }
+    // libs
+    vector<isoInformation> test_pairs;
+    for(int i = 0; i < fuel_pairs.size(); i++){
+        double flux = fluxcalc(fuel_pairs[i]);
+        vector<nonActinide> nona; //"NONA"ctinide ;)
+        nona = NonActinideReader(fuel_pairs[i].name + "/TAPE9.INP");
+        fuel_pairs[i] = NBuilder(fuel_pairs[i], nona);
+        isoInformation singleiso;
+        singleiso = regioncollapse(fuel_pairs[i], flux);
+        test_pairs.push_back(singleiso);
+    }
+    for (int i = 0; i < test_pairs.size(); i++){
+        cout <<"burnup: "<< burnupcalc(test_pairs[i], fuel_pairs[i].batch, fuel_pairs[i].pnl, 0.001).first << endl;
+    }
+    isoInformation test_iso;
+    for (int i = 0; i < test_pairs[0].fluence.size(); i++){
+        test_iso.fluence.push_back(test_pairs[0].fluence[i]);
+    }
+    for (int i = 0; i < test_pairs[0].neutron_prod.size(); i++){
+        double temp_prod = 0;
+        for (int j = 0; j < test_pairs.size(); j++){
+            temp_prod += test_pairs[j].neutron_prod[i]/metric_distances[j];
+        }
+        test_iso.neutron_prod.push_back(temp_prod/met_dist_sum);
+    }
+    for (int i = 0; i < test_pairs[0].neutron_dest.size(); i++){
+        double temp_dest = 0;
+        for (int j = 0; j < test_pairs.size(); j++){
+            temp_dest += test_pairs[j].neutron_dest[i]/metric_distances[j];
+        }
+        test_iso.neutron_dest.push_back(temp_dest/met_dist_sum);
+    }
+    for (int i = 0; i < test_pairs[0].BUd.size(); i++){
+        double temp_BUd = 0;
+        for (int j = 0; j < test_pairs.size(); j++){
+            temp_BUd += test_pairs[j].BUd[i]/metric_distances[j];
+        }
+        test_iso.BUd.push_back(temp_BUd/met_dist_sum);
+    }
+    return test_iso;
+
+}
 
 int main(){
     fuelBundle fuel;
     //test
 
     fuel = InputReader();
-
-    vector <string> test_libs;
-    test_libs.push_back("E5_60");
-    test_libs.push_back("E9_100");
-    interpol_pair test_pair;
-    test_pair.metric = "BURNUP";
-    test_pair.value = 80;
-    vector<interpol_pair> test_inter;
-    test_inter.push_back(test_pair);
-    lib_interpol(fuel, test_libs, test_inter);
 
     fuel = FuelNormalizer(fuel);
 
@@ -609,19 +641,32 @@ int main(){
 
     DataReader2(fuel.name, fuel.iso);
 
-    vector<nonActinide> nona; //"NONA"ctinide ;)
-    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
-
-
-
-    fuel = NBuilder(fuel, nona);
-
-
-
     isoInformation singleiso;
     singleiso = regioncollapse(fuel, flux);
 
+    vector <string> test_libs;
+
+    test_libs.push_back("E7_100");
+    test_libs.push_back("E9_100");
+    interpol_pair test_pair;
+    test_pair.metric = "ENRICHMENT";
+    test_pair.value = 8;
+    vector<interpol_pair> test_inter;
+    test_inter.push_back(test_pair);
+    isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
+
+    cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;
+
     cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+    /*bool test_check = false;
+    double old_burnup = 1;
+    double burnup_test = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first
+    while (!test_check){
+        isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter)
+        old_burnup = burnup_test;
+        burnup_test = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first
+        if (std::abs(burnup_test - old_burnup)/burnup_test < 0.001) test_check = true;
+    }
 /*
     while(1){
         cin >> BU_end;

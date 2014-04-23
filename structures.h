@@ -47,6 +47,7 @@ struct fuelBundle {
 struct interpol_pair {
     std::string metric;
     double value;
+    double scaled_value;
 };
 
 
