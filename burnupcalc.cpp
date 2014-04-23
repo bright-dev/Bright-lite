@@ -83,7 +83,7 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
 
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-                phi = 1;//phicalc(j, N, BU_total, tempone);
+                phi = phicalc(j, N, BU_total, tempone);
                 pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
                 dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
@@ -455,12 +455,9 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 
     for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
         for(int j =0; j < region0[i].neutron_prod.size(); j++){
-                        cout << region0[i].neutron_prod[j] <<"  ";
             region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
             region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
-            cout << region0[i].neutron_prod[j] <<endl;
         }
-        cout <<endl<<endl;
     }
 
 
@@ -468,11 +465,11 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
     regions.push_back(FuelBuilder(region0));
     regions.push_back(FuelBuilder(region1));
 
-  cout << regions[1].neutron_dest[0] << "  "<< regions[1].neutron_dest[1] << "  "<< regions[1].neutron_dest[2] << endl;
 
     regions[0].fraction = 1;
     regions[1].fraction = 1;
-    return FuelBuilder(regions);
+
+    return FuelBuilder(region0);
 };
 
 fuelBundle InputReader(){
@@ -580,8 +577,9 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
                 name = fuel.iso[i].name;
                 name = name % 10000;
                 name = name / 10;
-                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]*fuel.iso[i].fraction*0.602/name);
-                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]*fuel.iso[i].fraction*0.602/name);
+                cout << fuel.iso[i].neutron_dest[0] <<"  "<<fuel.iso[i].fraction <<"  "<<fuel.iso[i].neutron_dest[0]*fuel.iso[i].fraction*.6014/name<<endl;
+                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]*fuel.iso[i].fraction);
+                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]*fuel.iso[i].fraction);
             }
         }
 
