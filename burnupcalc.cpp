@@ -36,9 +36,9 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
     }
 
 
-    for (int i = 0; i < region1.size();i++){
+    /*for (int i = 0; i < region1.size();i++){
         cout << region1[i].name << "    "<<region1[i].fraction << endl;
-    }
+    }*/
     regions.push_back(FuelBuilder(region0));
     regions.push_back(FuelBuilder(region1));
     regions[0].fraction = 1;
