@@ -32,8 +32,10 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
 
     for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
         for(int j =0; j < region0[i].neutron_prod.size(); j++){
+            cout << region0[i].neutron_prod[j] << "        ";
             region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
             region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
+            cout << region0[i].neutron_prod[j] << endl;
         }
     }
 
@@ -328,13 +330,13 @@ double fluxcalc(fuelBundle fuel){
         double abs35, sca35, tot35; //xsecs for u235
         double abs38, sca38, tot38; //xsecs for u238
 
-        abs35 = 0.08907;
-        sca35 = 4.566;
-        tot35 = 7.705;
+        abs35 = 608.4-14.95;
+        sca35 = 14.95;
+        tot35 = 608.4;
 
-        abs38 = 0.0664;
-        sca38 = 4.804;
-        tot35 = 7.786;
+        abs38 = 11.77-9.356;
+        sca38 = 9.360;
+        tot35 = 11.77;
 
         Sig_aF = abs35*frac35 + abs38*frac38;
         Sig_aM = 0.000094*pow(10,1);
@@ -391,6 +393,7 @@ double fluxcalc(fuelBundle fuel){
 
 
 
+
 fuelBundle InputReader(){
     std::string name;
     int region, N, t_res;
@@ -406,10 +409,12 @@ fuelBundle InputReader(){
     int i=0;
 	while(getline(fin, line))
 	{
+
         if(line.find("REACTOR") == 0){
             istringstream iss(line);
             iss >> name >> name;
             fuel.name = name;
+            cout << name << endl;
         }
         if(line.find("REGIONS") == 0){
             while(getline(fin, line)){
@@ -468,14 +473,23 @@ fuelBundle FuelNormalizer(fuelBundle fuel){
 
 fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
     //assumes the actinides are built in fuel, and that fuel has correct mass fractions
+    int name;
+    double total_prod = 0;
+    double total_dest = 0;
     for(int i=0; i < fuel.iso.size(); i++){
         for(int j=0; j < nona.size(); j++){
             if(fuel.iso[i].name == nona[j].name){
-                fuel.iso[i].neutron_prod.push_back(nona[j].total_prod);
-                fuel.iso[i].neutron_dest.push_back(nona[j].total_dest);
+                name = fuel.iso[i].name;
+                name = name % 10000;
+                name = name / 10;
+                fuel.iso[i].neutron_prod.push_back(nona[j].total_prod*1000*0.602/name);
+                total_prod += nona[j].total_prod*1000*0.602/name*fuel.iso[i].fraction;
+                fuel.iso[i].neutron_dest.push_back(nona[j].total_dest*1000*0.602/name);
+                total_dest += nona[j].total_dest*1000*0.602/name*fuel.iso[i].fraction;
             }
         }
     }
+    //cout << total_prod << "     " << total_dest << endl;
     int datasize;
     for(int i=0; i<fuel.iso.size(); i++){
         if(fuel.iso[i].type == *"A"){
@@ -484,24 +498,17 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
         }
     }
 
-    int name;
-
 
 
     for(int i =0; i<fuel.iso.size(); i++){
         if(fuel.iso[i].type == *"N"){
             for(int j=0; j< datasize; j++){
-                name = fuel.iso[i].name;
-                name = name % 10000;
-                name = name / 10;
-                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]*1000*0.602/name);
-                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]*1000*0.602/name);
+                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]);
+                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]);
             }
         }
-
     }
-
-return fuel;
+    return fuel;
 }
 
 isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
@@ -633,18 +640,19 @@ int main(){
     fuel = InputReader();
 
     fuel = FuelNormalizer(fuel);
-
+    vector<nonActinide> nona; //"NONA"ctinide ;)
+    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
+    fuel = NBuilder(fuel, nona);
     double flux;
-
     flux = fluxcalc(fuel);
-
+    cout << flux << endl;
 
     DataReader2(fuel.name, fuel.iso);
 
     isoInformation singleiso;
     singleiso = regioncollapse(fuel, flux);
 
-    vector <string> test_libs;
+    /*vector <string> test_libs;
 
     test_libs.push_back("E7_100");
     test_libs.push_back("E9_100");
@@ -655,7 +663,7 @@ int main(){
     test_inter.push_back(test_pair);
     isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
 
-    cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;
+    cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;*/
 
     cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
     /*bool test_check = false;
