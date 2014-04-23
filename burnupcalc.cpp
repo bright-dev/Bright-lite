@@ -29,13 +29,11 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
         }
     }
 
-
+    isoInformation test_thing = FuelBuilder(region1);
     for(int i=0; i<region0.size(); i++){ //uses the flux to adjust prod and dest for region0, the fuel
         for(int j =0; j < region0[i].neutron_prod.size(); j++){
-            cout << region0[i].neutron_prod[j] << "        ";
-            region0[i].neutron_prod[j] = region0[i].neutron_prod[j]*flux;
-            region0[i].neutron_dest[j] = region0[i].neutron_dest[j]*flux;
-            cout << region0[i].neutron_prod[j] << endl;
+            region0[i].neutron_prod[j] *= flux;
+            region0[i].neutron_dest[j] *= flux;
         }
     }
 
@@ -141,9 +139,6 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
     return (p_total*pnl)/(d_total);
 
 }
-
-
-
 
 pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double pnl, double tolerance) {
     pair<double, map<int,double> > rtn(0, map<int, double>());
@@ -274,7 +269,6 @@ while (BU_end > BU_guess)
 }
 
 
-
 double fluxcalc(fuelBundle fuel){
 // calculates the flux of each region in fuelBundle
 // probably will need to add reactor identifier as input in the future
@@ -389,9 +383,6 @@ double fluxcalc(fuelBundle fuel){
     return flux[0];
 
 }
-
-
-
 
 
 fuelBundle InputReader(){
@@ -640,14 +631,15 @@ int main(){
     fuel = InputReader();
 
     fuel = FuelNormalizer(fuel);
-    vector<nonActinide> nona; //"NONA"ctinide ;)
-    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
-    fuel = NBuilder(fuel, nona);
     double flux;
     flux = fluxcalc(fuel);
     cout << flux << endl;
 
     DataReader2(fuel.name, fuel.iso);
+
+    vector<nonActinide> nona; //"NONA"ctinide ;)
+    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
+    fuel = NBuilder(fuel, nona);
 
     isoInformation singleiso;
     singleiso = regioncollapse(fuel, flux);
