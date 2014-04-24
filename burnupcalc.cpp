@@ -9,12 +9,72 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
     return y;
 }
 
+fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
+    //assumes the actinides are built in fuel, and that fuel has correct mass fractions
+    int name;
+    double total_prod = 0;
+    double total_dest = 0;
+    for(int i=0; i < fuel.iso.size(); i++){
+        for(int j=0; j < nona.size(); j++){
+            if(fuel.iso[i].name == nona[j].name){
+                name = fuel.iso[i].name;
+                name = name % 10000;
+                name = name / 10;
+                fuel.iso[i].neutron_prod.push_back(nona[j].total_prod*1000*0.602/name);
+                total_prod += nona[j].total_prod*1000*0.602/name*fuel.iso[i].fraction;
+                fuel.iso[i].neutron_dest.push_back(nona[j].total_dest*1000*0.602/name);
+                total_dest += nona[j].total_dest*1000*0.602/name*fuel.iso[i].fraction;
+            }
+        }
+    }
+    //cout << total_prod << "     " << total_dest << endl;
+    int datasize;
+    for(int i=0; i<fuel.iso.size(); i++){
+        if(fuel.iso[i].type == *"A"){
+            datasize = fuel.iso[i].neutron_prod.size();
+            break;
+        }
+    }
+
+
+
+    for(int i =0; i<fuel.iso.size(); i++){
+        if(fuel.iso[i].type == *"N"){
+            for(int j=0; j< datasize; j++){
+                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]);
+                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]);
+            }
+        }
+    }
+    return fuel;
+}
+
+fuelBundle FuelNormalizer(fuelBundle fuel){
+    double actmass = 0; // total mass (or fraction) of all actinides
+    int i=0;
+    char *type = "A";
+
+    while (i < fuel.iso.size()){
+        if(fuel.iso[i].type == *type)
+           actmass += fuel.iso[i].fraction; // find the total mass of all actinides
+            i++;
+        }
+
+    i=0;
+    while (i < fuel.iso.size()){
+        fuel.iso[i].fraction = fuel.iso[i].fraction/actmass; // normalize every fraction using total mass of actinides
+        i++;
+    }
+
+    return fuel;
+
+}
 
 isoInformation regioncollapse(fuelBundle fuel, double flux){
     int i = 0, j;
     int r = 1;
     isoInformation singleiso;
-
+    cout << "TEST" << endl;
     vector<isoInformation> region0, region1, region2;
     vector<isoInformation> regions;
 
@@ -196,79 +256,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
 
 }
 
-/**
-enrichcalc takes the burnup goal, batch number, and tolerance;
-and returns the enrichment needed to reach the burnup goal.
-The code initially estimates the enrichment needed by
-calculating the burnup (for a given number of batches and type
-of reactor) of a two and seven percent enriched fuel and then
-interpolates/extrapolates from these two points. The code then
-calculates the burnup for this estimated enrichment level, and
-iterates by changing the guess enrichment until the desired
-burnup is achieved by the guess value. This enrichment is then
-returned.
-
-
-Inputs
-
-BU_end: The target burnup. The code finds an enrichment which
-will result in a burnup equal to this value.
-
-N: number of batches used in the core.
-
-tolerance: Currently not utilized, used to adjust precision.
-
-
-Outputs:
-
-Double, the enrichment needed to achieve BU_end.
-
-*/
-
-
-double enrichcalc(double BU_end, int N, double tolerance, int type, vector<isoInformation> input_stream) {
-//THIS WORKS ONLY FOR TWO ISO'S
-double X;
-double BU_guess;
-double BU2, BU6;
-isoInformation test2;
-
-
-// accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
-input_stream[0].fraction = 0.02;
-input_stream[1].fraction = 0.98;
-BU2 = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01).first;
-input_stream[0].fraction = 0.06;
-input_stream[1].fraction = 0.94;
-BU6 = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01).first;
-
-X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
-
-input_stream[0].fraction = X;
-input_stream[1].fraction = 1-X;
-BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01).first;
-
-// enrichment iteration
-while (BU_end < BU_guess)
-{
-    X = X - 0.001;
-    input_stream[0].fraction = X;
-    input_stream[1].fraction = 1-X;
-    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01 ).first;
-}
-
-
-while (BU_end > BU_guess)
-{
-    X = X + 0.001;
-    input_stream[0].fraction = X;
-    input_stream[1].fraction = 1-X;
-    BU_guess = burnupcalc(DataReader(test2, type, input_stream), N, .98, 0.01 ).first;
-}
-    return X;
-}
-
-
 double fluxcalc(fuelBundle fuel){
 // calculates the flux of each region in fuelBundle
 // probably will need to add reactor identifier as input in the future
@@ -384,6 +371,105 @@ double fluxcalc(fuelBundle fuel){
 
 }
 
+/**
+enrichcalc takes the burnup goal, batch number, and tolerance;
+and returns the enrichment needed to reach the burnup goal.
+The code initially estimates the enrichment needed by
+calculating the burnup (for a given number of batches and type
+of reactor) of a two and seven percent enriched fuel and then
+interpolates/extrapolates from these two points. The code then
+calculates the burnup for this estimated enrichment level, and
+iterates by changing the guess enrichment until the desired
+burnup is achieved by the guess value. This enrichment is then
+returned.
+
+
+Inputs
+
+BU_end: The target burnup. The code finds an enrichment which
+will result in a burnup equal to this value.
+
+N: number of batches used in the core.
+
+tolerance: Currently not utilized, used to adjust precision.
+
+
+Outputs:
+
+Double, the enrichment needed to achieve BU_end.
+
+*/
+
+
+double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
+    //THIS WORKS ONLY FOR TWO ISO'S
+    double X;
+    double BU_guess;
+    double BU2, BU6;
+
+    /** This is a super quick hack to benchmark enrichcalc */
+    isoInformation singleiso;
+    vector<nonActinide> nona; //"NONA"ctinide ;)
+    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
+
+    // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
+    fuel.iso[0].fraction = 0.02;
+    fuel.iso[1].fraction = 0.98;
+    fuel = FuelNormalizer(fuel);
+    DataReader2(fuel.name, fuel.iso);
+    fuel = NBuilder(fuel, nona);
+    singleiso = regioncollapse(fuel, fluxcalc(fuel));
+    BU2 = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+
+    fuel.iso[0].fraction = 0.06;
+    fuel.iso[1].fraction = 0.94;
+    fuel = FuelNormalizer(fuel);
+    DataReader2(fuel.name, fuel.iso);
+    fuel = NBuilder(fuel, nona);
+    singleiso = regioncollapse(fuel, fluxcalc(fuel));
+    BU6 = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+
+    X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
+
+    /** rest of the haxxor */
+    fuel.iso[0].fraction = X;
+    fuel.iso[1].fraction = 1-X;
+    fuel = FuelNormalizer(fuel);
+    DataReader2(fuel.name, fuel.iso);
+    fuel = NBuilder(fuel, nona);
+    singleiso = regioncollapse(fuel, fluxcalc(fuel));
+    BU_guess = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+
+    // enrichment iteration
+    while (BU_end < BU_guess)
+    {
+        X = X - 0.001;
+        fuel.iso[0].fraction = X;
+        fuel.iso[1].fraction = 1-X;
+        fuel = FuelNormalizer(fuel);
+        DataReader2(fuel.name, fuel.iso);
+        fuel = NBuilder(fuel, nona);
+        singleiso = regioncollapse(fuel, fluxcalc(fuel));
+        BU_guess = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+    }
+
+
+    while (BU_end > BU_guess)
+    {
+        X = X + 0.001;
+        fuel.iso[0].fraction = X;
+        fuel.iso[1].fraction = 1-X;
+        fuel = FuelNormalizer(fuel);
+        DataReader2(fuel.name, fuel.iso);
+        fuel = NBuilder(fuel, nona);
+        singleiso = regioncollapse(fuel, fluxcalc(fuel));
+        BU_guess = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+    }
+    return X;
+}
+
+
+
 
 fuelBundle InputReader(){
     std::string name;
@@ -441,66 +527,9 @@ fuelBundle InputReader(){
     return fuel;
 }
 
-fuelBundle FuelNormalizer(fuelBundle fuel){
-    double actmass = 0; // total mass (or fraction) of all actinides
-    int i=0;
-    char *type = "A";
-
-    while (i < fuel.iso.size()){
-        if(fuel.iso[i].type == *type)
-           actmass += fuel.iso[i].fraction; // find the total mass of all actinides
-            i++;
-        }
-
-    i=0;
-    while (i < fuel.iso.size()){
-        fuel.iso[i].fraction = fuel.iso[i].fraction/actmass; // normalize every fraction using total mass of actinides
-        i++;
-    }
-
-    return fuel;
-
-}
-
-fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
-    //assumes the actinides are built in fuel, and that fuel has correct mass fractions
-    int name;
-    double total_prod = 0;
-    double total_dest = 0;
-    for(int i=0; i < fuel.iso.size(); i++){
-        for(int j=0; j < nona.size(); j++){
-            if(fuel.iso[i].name == nona[j].name){
-                name = fuel.iso[i].name;
-                name = name % 10000;
-                name = name / 10;
-                fuel.iso[i].neutron_prod.push_back(nona[j].total_prod*1000*0.602/name);
-                total_prod += nona[j].total_prod*1000*0.602/name*fuel.iso[i].fraction;
-                fuel.iso[i].neutron_dest.push_back(nona[j].total_dest*1000*0.602/name);
-                total_dest += nona[j].total_dest*1000*0.602/name*fuel.iso[i].fraction;
-            }
-        }
-    }
-    //cout << total_prod << "     " << total_dest << endl;
-    int datasize;
-    for(int i=0; i<fuel.iso.size(); i++){
-        if(fuel.iso[i].type == *"A"){
-            datasize = fuel.iso[i].neutron_prod.size();
-            break;
-        }
-    }
 
 
 
-    for(int i =0; i<fuel.iso.size(); i++){
-        if(fuel.iso[i].type == *"N"){
-            for(int j=0; j< datasize; j++){
-                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]);
-                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]);
-            }
-        }
-    }
-    return fuel;
-}
 
 isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
     vector<fuelBundle> fuel_pairs;
@@ -644,8 +673,8 @@ int main(){
     isoInformation singleiso;
     singleiso = regioncollapse(fuel, flux);
 
-    /*vector <string> test_libs;
-
+    vector <string> test_libs;
+/*    test_libs.push_back("E5_60");
     test_libs.push_back("E7_100");
     test_libs.push_back("E9_100");
     interpol_pair test_pair;
@@ -653,33 +682,24 @@ int main(){
     test_pair.value = 8;
     vector<interpol_pair> test_inter;
     test_inter.push_back(test_pair);
-    isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
+    isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);*/
 
-    cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;*/
-
-    cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+    //cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+    cout<< enrichcalc(20, fuel.batch, 0.001, fuel)<<endl;
     /*bool test_check = false;
-    double old_burnup = 1;
-    double burnup_test = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first
+    double old_burnup = 1;*/
+    /*double burnup_test = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first;
     while (!test_check){
-        isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter)
+        isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
         old_burnup = burnup_test;
         burnup_test = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first
         if (std::abs(burnup_test - old_burnup)/burnup_test < 0.001) test_check = true;
-    }
-/*
-    while(1){
+    }*/
+
+    /*while(1){
         cin >> BU_end;
         cout<< enrichcalc(BU_end, 100, 0.001, 1, input_stream)<<endl;
-    }
-
-cout << burnupcalc(DataReader(test1, 1, input_stream), 1, .01).first << endl;
-cout << burnupcalc(DataReader(test1, 1, input_stream), 2, .01).first << endl;
-cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
-cout << burnupcalc(DataReader(test1, 1, input_stream), 5, .01).first << endl;
-cout << burnupcalc(DataReader(test1, 1, input_stream), 3, .01).first << endl;
-*/
-
+    }*/
     return 0;
 }
 
