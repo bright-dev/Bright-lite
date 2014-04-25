@@ -74,7 +74,6 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
     int i = 0, j;
     int r = 1;
     isoInformation singleiso;
-    cout << "TEST" << endl;
     vector<isoInformation> region0, region1, region2;
     vector<isoInformation> regions;
 
@@ -409,6 +408,10 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
 
     /** This is a super quick hack to benchmark enrichcalc */
     isoInformation singleiso;
+    isoInformation singleiso1;
+    isoInformation singleiso2;
+    fuelBundle fuel1;
+    fuelBundle fuel2;
     vector<nonActinide> nona; //"NONA"ctinide ;)
     nona = NonActinideReader(fuel.name + "/TAPE9.INP");
 
@@ -423,47 +426,48 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
 
     fuel.iso[0].fraction = 0.06;
     fuel.iso[1].fraction = 0.94;
-    fuel = FuelNormalizer(fuel);
-    DataReader2(fuel.name, fuel.iso);
-    fuel = NBuilder(fuel, nona);
-    singleiso = regioncollapse(fuel, fluxcalc(fuel));
-    BU6 = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
-
+    fuel1 = FuelNormalizer(fuel);
+    DataReader2(fuel1.name, fuel1.iso);
+    fuel1 = NBuilder(fuel1, nona);
+    singleiso1 = regioncollapse(fuel1, fluxcalc(fuel1));
+    BU6 = burnupcalc(singleiso1, fuel.batch, fuel.pnl, 0.01).first;
     X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
 
     /** rest of the haxxor */
     fuel.iso[0].fraction = X;
     fuel.iso[1].fraction = 1-X;
-    fuel = FuelNormalizer(fuel);
-    DataReader2(fuel.name, fuel.iso);
-    fuel = NBuilder(fuel, nona);
-    singleiso = regioncollapse(fuel, fluxcalc(fuel));
-    BU_guess = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+    fuel2 = FuelNormalizer(fuel);
+    DataReader2(fuel2.name, fuel2.iso);
+    fuel2 = NBuilder(fuel2, nona);
+    singleiso2 = regioncollapse(fuel2, fluxcalc(fuel2));
+    BU_guess = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.01).first;
 
     // enrichment iteration
-    while (BU_end < BU_guess)
-    {
-        X = X - 0.001;
-        fuel.iso[0].fraction = X;
-        fuel.iso[1].fraction = 1-X;
-        fuel = FuelNormalizer(fuel);
-        DataReader2(fuel.name, fuel.iso);
-        fuel = NBuilder(fuel, nona);
-        singleiso = regioncollapse(fuel, fluxcalc(fuel));
-        BU_guess = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
-    }
+    while ((abs(BU_end - BU_guess)/BU_end) > 0.01){
+        if (BU_end < BU_guess){
+            isoInformation singleiso3;
+            fuelBundle fuel3;
+            X = X - 0.00001;
+            fuel.iso[0].fraction = X;
+            fuel.iso[1].fraction = 1-X;
+            fuel3 = FuelNormalizer(fuel);
+            DataReader2(fuel3.name, fuel3.iso);
+            fuel3 = NBuilder(fuel3, nona);
+            singleiso3 = regioncollapse(fuel3, fluxcalc(fuel3));
+            BU_guess = burnupcalc(singleiso3, fuel.batch, fuel.pnl, 0.01).first;
 
-
-    while (BU_end > BU_guess)
-    {
-        X = X + 0.001;
-        fuel.iso[0].fraction = X;
-        fuel.iso[1].fraction = 1-X;
-        fuel = FuelNormalizer(fuel);
-        DataReader2(fuel.name, fuel.iso);
-        fuel = NBuilder(fuel, nona);
-        singleiso = regioncollapse(fuel, fluxcalc(fuel));
-        BU_guess = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
+        } else if (BU_end > BU_guess){
+            isoInformation singleiso4;
+            fuelBundle fuel4;
+            X = X + 0.00001;
+            fuel.iso[0].fraction = X;
+            fuel.iso[1].fraction = 1-X;
+            fuel4 = FuelNormalizer(fuel);
+            DataReader2(fuel4.name, fuel4.iso);
+            fuel4 = NBuilder(fuel4, nona);
+            singleiso4 = regioncollapse(fuel4, fluxcalc(fuel4));
+            BU_guess = burnupcalc(singleiso4, fuel.batch, fuel.pnl, 0.01).first;
+        }
     }
     return X;
 }
@@ -659,7 +663,7 @@ int main(){
 
     fuel = InputReader();
 
-    fuel = FuelNormalizer(fuel);
+    /*fuel = FuelNormalizer(fuel);
     double flux;
     flux = fluxcalc(fuel);
     cout << flux << endl;
@@ -671,7 +675,7 @@ int main(){
     fuel = NBuilder(fuel, nona);
 
     isoInformation singleiso;
-    singleiso = regioncollapse(fuel, flux);
+    singleiso = regioncollapse(fuel, flux);*/
 
     vector <string> test_libs;
 /*    test_libs.push_back("E5_60");
@@ -685,7 +689,7 @@ int main(){
     isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);*/
 
     //cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
-    cout<< enrichcalc(20, fuel.batch, 0.001, fuel)<<endl;
+    cout<< enrichcalc(108.99, fuel.batch, 0.001, fuel)<<endl;
     /*bool test_check = false;
     double old_burnup = 1;*/
     /*double burnup_test = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first;
