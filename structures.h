@@ -15,6 +15,7 @@ struct isoInformation {
     int name; //changed this to int so it contains nucid
     int region;
     char type;
+    bool blending;
     double fraction;
     std::vector<double> neutron_prod;
     std::vector<double> neutron_dest;
