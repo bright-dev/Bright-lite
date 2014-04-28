@@ -681,12 +681,12 @@ int main(){
     test_libs.push_back("E9_100");
     interpol_pair test_pair;
     test_pair.metric = "ENRICHMENT";
-    test_pair.value = 5;
+    test_pair.value = 6;
     vector<interpol_pair> test_inter;
     test_inter.push_back(test_pair);
     isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
 
-    cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+    cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;
 
     /*bool test_check = false;
     double old_burnup = 1;*/
