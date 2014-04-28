@@ -532,22 +532,17 @@ fuelBundle InputReader(){
 }
 
 
-
-
-
 isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < libs.size(); i++){
         fuelBundle lib_bundle;
         for(int j = 0; j < input_fuel.iso.size(); j++){
-            if(input_fuel.iso[j].type == *"A"){
-                isoInformation iso;
-                iso.name = input_fuel.iso[j].name;
-                iso.fraction = input_fuel.iso[j].fraction;
-                iso.type = input_fuel.iso[j].type;
-                iso.region = input_fuel.iso[j].region;
-                lib_bundle.iso.push_back(iso);
-            }
+            isoInformation iso;
+            iso.name = input_fuel.iso[j].name;
+            iso.fraction = input_fuel.iso[j].fraction;
+            iso.type = input_fuel.iso[j].type;
+            iso.region = input_fuel.iso[j].region;
+            lib_bundle.iso.push_back(iso);
         }
         lib_bundle.name = libs[i];
         lib_bundle.batch = input_fuel.batch;
@@ -608,6 +603,10 @@ isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<i
         for (int j = 0; j < metrics.size(); j++){
             distance_measure += pow(targets[j].scaled_value - metrics[j][i], 2);
         }
+        /// TODO - change to just accept the proper library ///
+        if(distance_measure == 0){
+            distance_measure = 0.000000001;
+        }
         metric_distances.push_back(pow(distance_measure, alpha/2));
     }
     double met_dist_sum;
@@ -663,10 +662,9 @@ int main(){
 
     fuel = InputReader();
 
-    /*fuel = FuelNormalizer(fuel);
+    fuel = FuelNormalizer(fuel);
     double flux;
     flux = fluxcalc(fuel);
-    cout << flux << endl;
 
     DataReader2(fuel.name, fuel.iso);
 
@@ -675,21 +673,21 @@ int main(){
     fuel = NBuilder(fuel, nona);
 
     isoInformation singleiso;
-    singleiso = regioncollapse(fuel, flux);*/
+    singleiso = regioncollapse(fuel, flux);
 
     vector <string> test_libs;
-/*    test_libs.push_back("E5_60");
+    test_libs.push_back("E5_60");
     test_libs.push_back("E7_100");
     test_libs.push_back("E9_100");
     interpol_pair test_pair;
     test_pair.metric = "ENRICHMENT";
-    test_pair.value = 8;
+    test_pair.value = 5;
     vector<interpol_pair> test_inter;
     test_inter.push_back(test_pair);
-    isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);*/
+    isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
 
-    //cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
-    cout<< enrichcalc(108.99, fuel.batch, 0.001, fuel)<<endl;
+    cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+
     /*bool test_check = false;
     double old_burnup = 1;*/
     /*double burnup_test = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first;
