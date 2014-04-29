@@ -1,6 +1,8 @@
 #include "burnupcalc.h"
 #include <boost/math/special_functions/bessel.hpp>
 
+double interpolate_value_input;
+
 using namespace std;
 
 double intpol(double y0, double y1, double x0, double x1, double x) {
@@ -244,11 +246,6 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     }
     BU_total = BU3;
 
-
-
-
-
-
     rtn.first = BU_total;
     //rtn.second = tomass(i, time_f, tempone);
     return rtn;
@@ -310,14 +307,15 @@ double fluxcalc(fuelBundle fuel){
         double abs35, sca35, tot35; //xsecs for u235
         double abs38, sca38, tot38; //xsecs for u238
 
+        //abs35 = 608.4-14.95;
         abs35 = 608.4-14.95;
         sca35 = 14.95;
         tot35 = 608.4;
 
+        //abs38 = 11.77-9.356;
         abs38 = 11.77-9.356;
         sca38 = 9.360;
         tot35 = 11.77;
-
         Sig_aF = abs35*frac35 + abs38*frac38;
         Sig_aM = 0.000094*pow(10,1);
         a = 0.4095; // [cm]
@@ -399,7 +397,6 @@ Double, the enrichment needed to achieve BU_end.
 
 */
 
-
 double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
     //THIS WORKS ONLY FOR TWO ISO'S
     double X;
@@ -472,15 +469,12 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
     return X;
 }
 
-
-
-
 fuelBundle InputReader(){
     std::string name;
     int region, N, t_res;
     char type, word[8];
     int nucid;
-    double mass, pnl;
+    double mass, pnl, intpol_val;
     fuelBundle fuel;
     isoInformation temp;
 
@@ -490,12 +484,10 @@ fuelBundle InputReader(){
     int i=0;
 	while(getline(fin, line))
 	{
-
         if(line.find("REACTOR") == 0){
             istringstream iss(line);
             iss >> name >> name;
             fuel.name = name;
-            cout << name << endl;
         }
         if(line.find("REGIONS") == 0){
             while(getline(fin, line)){
@@ -523,18 +515,42 @@ fuelBundle InputReader(){
             if(pnl <= 0.92 || pnl > 1)
                 cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
         }
+        if(line.find("INTERPOLATE") == 0){
+            while(getline(fin, line)){
+                if(line.find("INTERPOLEND") == 0) break;
+                if(line.find("INTERPOL") == 0){
+                    istringstream iss(line);
+                    iss >> name;
+                    while (iss >> name >> intpol_val){
+                        interpol_pair lib_pair;
+                        lib_pair.metric = name;
+                        lib_pair.value = intpol_val;
+                        fuel.interpol_pairs.push_back(lib_pair);
+                    }
+                }
+                if(line.find("INTLIBS") == 0){
+                     istringstream iss(line);
+                     iss >> name;
+                     while (iss >> name){
+                        fuel.interpol_libs.push_back(name);
+                     }
+                }
+            }
+
+        }
 	}
     fuel.batch = N;
     fuel.pnl = pnl;
     fuel.tres = t_res;
 
+    fin.close();
+
     return fuel;
 }
 
-
-isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<interpol_pair> targets){
+isoInformation lib_interpol(fuelBundle input_fuel){
     vector<fuelBundle> fuel_pairs;
-    for (int i = 0; i < libs.size(); i++){
+    for (int i = 0; i < input_fuel.interpol_libs.size(); i++){
         fuelBundle lib_bundle;
         for(int j = 0; j < input_fuel.iso.size(); j++){
             isoInformation iso;
@@ -544,7 +560,7 @@ isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<i
             iso.region = input_fuel.iso[j].region;
             lib_bundle.iso.push_back(iso);
         }
-        lib_bundle.name = libs[i];
+        lib_bundle.name = input_fuel.interpol_libs[i];
         lib_bundle.batch = input_fuel.batch;
         lib_bundle.tres = input_fuel.tres;
         lib_bundle.pnl = input_fuel.pnl;
@@ -557,14 +573,14 @@ isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<i
     vector<vector<double> > metrics;
     std::string metric_name;
     double metric_value;
-    for (int i = 0; i < targets.size(); i++){
+    for (int i = 0; i < input_fuel.interpol_pairs.size(); i++){
         vector<double> metric_vect;
         metrics.push_back(metric_vect);
         for (int j = 0; j < fuel_pairs.size(); j++){
             std::string line;
             ifstream inf(fuel_pairs[j].name + "/params.txt");
             while(getline(inf, line)){
-                if (line.find(targets[i].metric) == 0){
+                if (line.find(input_fuel.interpol_pairs[i].metric) == 0){
                     istringstream iss(line);
                     iss >> metric_name >> metric_value;
                     metrics[i].push_back(metric_value);
@@ -586,22 +602,22 @@ isoInformation lib_interpol(fuelBundle input_fuel, vector<string> libs, vector<i
                 min = metrics[i][j];
             }
         }
-        if (targets[i].value > max || targets[i].value < min){
+        if (input_fuel.interpol_pairs[i].value > max || input_fuel.interpol_pairs[i].value < min){
             alpha = 40;
         }
         for(int j = 0; j < metrics[i].size(); j++){
             metrics[i][j] -= min;
             metrics[i][j] /= max;
         }
-        targets[i].scaled_value = targets[i].value - min;
-        targets[i].scaled_value /= max;
+        input_fuel.interpol_pairs[i].scaled_value = input_fuel.interpol_pairs[i].value - min;
+        input_fuel.interpol_pairs[i].scaled_value /= max;
     }
     // distances
     vector<double> metric_distances;
-    for(int i = 0; i < libs.size(); i++){
+    for(int i = 0; i < input_fuel.interpol_libs.size(); i++){
         double distance_measure = 0;
         for (int j = 0; j < metrics.size(); j++){
-            distance_measure += pow(targets[j].scaled_value - metrics[j][i], 2);
+            distance_measure += pow(input_fuel.interpol_pairs[j].scaled_value - metrics[j][i], 2);
         }
         /// TODO - change to just accept the proper library ///
         if(distance_measure == 0){
@@ -675,16 +691,7 @@ int main(){
     isoInformation singleiso;
     singleiso = regioncollapse(fuel, flux);
 
-    vector <string> test_libs;
-    test_libs.push_back("E5_60");
-    test_libs.push_back("E7_100");
-    test_libs.push_back("E9_100");
-    interpol_pair test_pair;
-    test_pair.metric = "ENRICHMENT";
-    test_pair.value = 6;
-    vector<interpol_pair> test_inter;
-    test_inter.push_back(test_pair);
-    isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
+    isoInformation singleiso2 = lib_interpol(fuel);
 
     cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;
 
