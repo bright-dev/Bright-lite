@@ -28,6 +28,7 @@ struct isoInformation {
 struct nonActinide {
     int name;
     double sng;
+    double scattering;
     double sn2n;
     double snp;
     double sngx;
@@ -37,19 +38,23 @@ struct nonActinide {
     double total_dest;
 };
 
+struct interpol_pair {
+    std::string metric;
+    double value;
+    double scaled_value;
+};
+
 struct fuelBundle {
     std::string name;
     int batch;
     double pnl; //leakage
     double tres;
     std::vector<isoInformation> iso;
+    std::vector<interpol_pair> interpol_pairs;
+    std::vector<std::string> interpol_libs;
 };
 
-struct interpol_pair {
-    std::string metric;
-    double value;
-    double scaled_value;
-};
+
 
 
 #endif // STRUCTURES_H_INCLUDED
