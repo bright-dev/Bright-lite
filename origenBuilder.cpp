@@ -189,7 +189,7 @@ vector<nonActinide> NonActinideReader(string file_name){
     string e_test = "E";
     string e_space = "*E *";
     if (!inf){
-        cout << "NOOO" << endl;
+        cout << "Failure to read " << file_name << endl;
     }
     string line, library, iso;
     double sng, sn2n, sna, snp, sngx, sn2nx, yyn;
