@@ -96,7 +96,6 @@ isoInformation regioncollapse(fuelBundle fuel, double flux){
         }
     }
 
-
     /*for (int i = 0; i < region1.size();i++){
         cout << region1[i].name << "    "<<region1[i].fraction << endl;
     }*/
@@ -409,23 +408,19 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
     isoInformation singleiso2;
     fuelBundle fuel1;
     fuelBundle fuel2;
-    vector<nonActinide> nona; //"NONA"ctinide ;)
-    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
 
     // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
     fuel.iso[0].fraction = 0.02;
     fuel.iso[1].fraction = 0.98;
     fuel = FuelNormalizer(fuel);
-    DataReader2(fuel.name, fuel.iso);
-    fuel = NBuilder(fuel, nona);
     singleiso = regioncollapse(fuel, fluxcalc(fuel));
+        cout << "TEST3" << endl;
     BU2 = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
 
-    fuel.iso[0].fraction = 0.06;
-    fuel.iso[1].fraction = 0.94;
+
+    fuel.iso[0].fraction = 0.07;
+    fuel.iso[1].fraction = 0.93;
     fuel1 = FuelNormalizer(fuel);
-    DataReader2(fuel1.name, fuel1.iso);
-    fuel1 = NBuilder(fuel1, nona);
     singleiso1 = regioncollapse(fuel1, fluxcalc(fuel1));
     BU6 = burnupcalc(singleiso1, fuel.batch, fuel.pnl, 0.01).first;
     X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
@@ -434,8 +429,6 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
     fuel.iso[0].fraction = X;
     fuel.iso[1].fraction = 1-X;
     fuel2 = FuelNormalizer(fuel);
-    DataReader2(fuel2.name, fuel2.iso);
-    fuel2 = NBuilder(fuel2, nona);
     singleiso2 = regioncollapse(fuel2, fluxcalc(fuel2));
     BU_guess = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.01).first;
 
@@ -448,8 +441,6 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
             fuel.iso[0].fraction = X;
             fuel.iso[1].fraction = 1-X;
             fuel3 = FuelNormalizer(fuel);
-            DataReader2(fuel3.name, fuel3.iso);
-            fuel3 = NBuilder(fuel3, nona);
             singleiso3 = regioncollapse(fuel3, fluxcalc(fuel3));
             BU_guess = burnupcalc(singleiso3, fuel.batch, fuel.pnl, 0.01).first;
 
@@ -460,8 +451,6 @@ double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
             fuel.iso[0].fraction = X;
             fuel.iso[1].fraction = 1-X;
             fuel4 = FuelNormalizer(fuel);
-            DataReader2(fuel4.name, fuel4.iso);
-            fuel4 = NBuilder(fuel4, nona);
             singleiso4 = regioncollapse(fuel4, fluxcalc(fuel4));
             BU_guess = burnupcalc(singleiso4, fuel.batch, fuel.pnl, 0.01).first;
         }
@@ -516,6 +505,7 @@ fuelBundle InputReader(){
                 cout <<endl << endl << "Warning! Non-leakage value wrong!"<<endl<<" See LEAKG in input file."<<endl<<endl;
         }
         if(line.find("INTERPOLATE") == 0){
+            fuel.libcheck = true;
             while(getline(fin, line)){
                 if(line.find("INTERPOLEND") == 0) break;
                 if(line.find("INTERPOL") == 0){
@@ -548,7 +538,8 @@ fuelBundle InputReader(){
     return fuel;
 }
 
-isoInformation lib_interpol(fuelBundle input_fuel){
+fuelBundle lib_interpol(fuelBundle input_fuel){
+    /// TODO Add NONA to these libs before combining ///
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < input_fuel.interpol_libs.size(); i++){
         fuelBundle lib_bundle;
@@ -619,63 +610,122 @@ isoInformation lib_interpol(fuelBundle input_fuel){
         for (int j = 0; j < metrics.size(); j++){
             distance_measure += pow(input_fuel.interpol_pairs[j].scaled_value - metrics[j][i], 2);
         }
-        /// TODO - change to just accept the proper library ///
         if(distance_measure == 0){
-            distance_measure = 0.000000001;
+            return fuel_pairs[i];
         }
         metric_distances.push_back(pow(distance_measure, alpha/2));
     }
     double met_dist_sum;
     for (int i = 0; i < metric_distances.size(); i++){
+        cout << metric_distances[i] << endl;
         met_dist_sum += 1./metric_distances[i];
     }
-    // libs
-    vector<isoInformation> test_pairs;
+    // Fuel Bundle instead of iso //
+    fuelBundle new_fuel;
+    new_fuel.tres = input_fuel.tres;
+    new_fuel.pnl = input_fuel.pnl;
+    new_fuel.batch = input_fuel.batch;
     for(int i = 0; i < fuel_pairs.size(); i++){
-        double flux = fluxcalc(fuel_pairs[i]);
-        vector<nonActinide> nona; //"NONA"ctinide ;)
-        nona = NonActinideReader(fuel_pairs[i].name + "/TAPE9.INP");
-        fuel_pairs[i] = NBuilder(fuel_pairs[i], nona);
-        isoInformation singleiso;
-        singleiso = regioncollapse(fuel_pairs[i], flux);
-        test_pairs.push_back(singleiso);
-    }
-    for (int i = 0; i < test_pairs.size(); i++){
-        cout <<"burnup: "<< burnupcalc(test_pairs[i], fuel_pairs[i].batch, fuel_pairs[i].pnl, 0.001).first << endl;
-    }
-    isoInformation test_iso;
-    for (int i = 0; i < test_pairs[0].fluence.size(); i++){
-        test_iso.fluence.push_back(test_pairs[0].fluence[i]);
-    }
-    for (int i = 0; i < test_pairs[0].neutron_prod.size(); i++){
-        double temp_prod = 0;
-        for (int j = 0; j < test_pairs.size(); j++){
-            temp_prod += test_pairs[j].neutron_prod[i]/metric_distances[j];
+        if(i==0){
+            for(int j = 0; j < fuel_pairs[i].iso.size(); j++){
+                isoInformation new_iso;
+                new_iso.name = fuel_pairs[i].iso[j].name;
+                new_iso.region = fuel_pairs[i].iso[j].region;
+                new_iso.blending = fuel_pairs[i].iso[j].blending;
+                new_iso.fraction = fuel_pairs[i].iso[j].fraction;
+                new_iso.type = fuel_pairs[i].iso[j].type;
+                for (int k = 0; k < fuel_pairs[i].iso[j].fluence.size(); k++){
+                    new_iso.fluence.push_back(fuel_pairs[i].iso[j].fluence[k]);
+                }
+                for (int k = 0; k < fuel_pairs[i].iso[j].neutron_prod.size(); k++){
+                    new_iso.neutron_prod.push_back(fuel_pairs[i].iso[j].neutron_prod[k]/metric_distances[i]/met_dist_sum);
+                }
+                for (int k = 0; k < fuel_pairs[i].iso[j].neutron_dest.size(); k++){
+                    new_iso.neutron_dest.push_back(fuel_pairs[i].iso[j].neutron_dest[k]/metric_distances[i]/met_dist_sum);
+                }
+                for (int k = 0; k < fuel_pairs[i].iso[j].BUd.size(); k++){
+                    new_iso.BUd.push_back(fuel_pairs[i].iso[j].BUd[k]/metric_distances[i]/met_dist_sum);
+                }
+                for (int k = 0; k < fuel_pairs[i].iso[j].iso_vector.size(); k++){
+                    daughter new_daughter;
+                    new_daughter.name = fuel_pairs[i].iso[j].iso_vector[k].name;
+                    for(int ii = 0; ii < fuel_pairs[i].iso[j].iso_vector[k].mass.size(); ii++){
+                        new_daughter.mass.push_back(fuel_pairs[i].iso[j].iso_vector[k].mass[ii]/metric_distances[i]/met_dist_sum);
+                    }
+                }
+                new_fuel.iso.push_back(new_iso);
+            }
+        } else {
+            for(int j = 0; j < fuel_pairs[i].iso.size(); j++){
+                bool iso_check1 = false;
+                for(int m = 0; m < new_fuel.iso.size(); m++){
+                    if(fuel_pairs[i].iso[j].name == new_fuel.iso[m].name){
+                        iso_check1 = true;
+                        for (int k = 0; k < fuel_pairs[i].iso[j].neutron_prod.size(); k++){
+                            new_fuel.iso[m].neutron_prod[k] += fuel_pairs[i].iso[j].neutron_prod[k]/metric_distances[i]/met_dist_sum;
+                        }
+                        for (int k = 0; k < fuel_pairs[i].iso[j].neutron_dest.size(); k++){
+                            new_fuel.iso[m].neutron_dest[k] += fuel_pairs[i].iso[j].neutron_dest[k]/metric_distances[i]/met_dist_sum;
+                        }
+                        for (int k = 0; k < fuel_pairs[i].iso[j].BUd.size(); k++){
+                            new_fuel.iso[m].BUd[k] += fuel_pairs[i].iso[j].BUd[k]/metric_distances[i]/met_dist_sum;
+                        }
+                        for (int k = 0; k < fuel_pairs[i].iso[j].iso_vector.size(); k++){
+                            bool iso_check2 = false;
+                            for (int mm = 0; mm < new_fuel.iso[m].iso_vector.size(); mm++){
+                                if(fuel_pairs[i].iso[j].iso_vector[k].name == new_fuel.iso[m].iso_vector[mm].name){
+                                    iso_check2 = true;
+                                    for(int n = 0; n < new_fuel.iso[m].iso_vector[mm].mass.size(); n++){
+                                        new_fuel.iso[m].iso_vector[mm].mass[n] += fuel_pairs[i].iso[j].iso_vector[k].mass[n]/metric_distances[i]/met_dist_sum;
+                                    }
+                                }
+                            }
+                            if (iso_check2 == false){
+                                daughter new_daught;
+                                new_daught.name = fuel_pairs[i].iso[j].iso_vector[k].name;
+                                for(int n = 0; n < fuel_pairs[i].iso[j].iso_vector[k].mass.size(); n++){
+                                    new_daught.mass.push_back(fuel_pairs[i].iso[j].iso_vector[k].mass[n]/metric_distances[i]/met_dist_sum);
+                                }
+                                new_fuel.iso[m].iso_vector.push_back(new_daught);
+                            }
+                        }
+                    }
+                } if (iso_check1 == false){
+                    isoInformation new_iso;
+                    new_iso.name = fuel_pairs[i].iso[j].name;
+                    new_iso.region = fuel_pairs[i].iso[j].region;
+                    new_iso.blending = fuel_pairs[i].iso[j].blending;
+                    new_iso.fraction = fuel_pairs[i].iso[j].fraction;
+                    new_iso.type = fuel_pairs[i].iso[j].type;
+                    for (int k = 0; k < fuel_pairs[i].iso[j].fluence.size(); k++){
+                        new_iso.fluence.push_back(fuel_pairs[i].iso[j].fluence[k]);
+                    }
+                    for (int k = 0; k < fuel_pairs[i].iso[j].neutron_prod.size(); k++){
+                        new_iso.neutron_prod.push_back(fuel_pairs[i].iso[j].neutron_prod[k]/metric_distances[i]/met_dist_sum);
+                    }
+                    for (int k = 0; k < fuel_pairs[i].iso[j].neutron_dest.size(); k++){
+                        new_iso.neutron_dest.push_back(fuel_pairs[i].iso[j].neutron_dest[k]/metric_distances[i]/met_dist_sum);
+                    }
+                    for (int k = 0; k < fuel_pairs[i].iso[j].BUd.size(); k++){
+                        new_iso.BUd.push_back(fuel_pairs[i].iso[j].BUd[k]/metric_distances[i]/met_dist_sum);
+                    }
+                    for (int k = 0; k < fuel_pairs[i].iso[j].iso_vector.size(); k++){
+                        daughter new_daughter;
+                        new_daughter.name = fuel_pairs[i].iso[j].iso_vector[k].name;
+                        for(int ii = 0; ii < fuel_pairs[i].iso[j].iso_vector[k].mass.size(); ii++){
+                            new_daughter.mass.push_back(fuel_pairs[i].iso[j].iso_vector[k].mass[ii]/metric_distances[i]/met_dist_sum);
+                        }
+                    }
+                    new_fuel.iso.push_back(new_iso);
+                }
+            }
         }
-        test_iso.neutron_prod.push_back(temp_prod/met_dist_sum);
     }
-    for (int i = 0; i < test_pairs[0].neutron_dest.size(); i++){
-        double temp_dest = 0;
-        for (int j = 0; j < test_pairs.size(); j++){
-            temp_dest += test_pairs[j].neutron_dest[i]/metric_distances[j];
-        }
-        test_iso.neutron_dest.push_back(temp_dest/met_dist_sum);
-    }
-    for (int i = 0; i < test_pairs[0].BUd.size(); i++){
-        double temp_BUd = 0;
-        for (int j = 0; j < test_pairs.size(); j++){
-            temp_BUd += test_pairs[j].BUd[i]/metric_distances[j];
-        }
-        test_iso.BUd.push_back(temp_BUd/met_dist_sum);
-    }
-    return test_iso;
-
+    return new_fuel;
 }
 
 int main(){
     fuelBundle fuel;
-    //test
-
     fuel = InputReader();
 
     fuel = FuelNormalizer(fuel);
@@ -687,28 +737,15 @@ int main(){
     vector<nonActinide> nona; //"NONA"ctinide ;)
     nona = NonActinideReader(fuel.name + "/TAPE9.INP");
     fuel = NBuilder(fuel, nona);
-
     isoInformation singleiso;
-    singleiso = regioncollapse(fuel, flux);
+    //singleiso = regioncollapse(fuel, flux);
+    fuelBundle new_fuel = lib_interpol(fuel);
 
-    isoInformation singleiso2 = lib_interpol(fuel);
+    singleiso = regioncollapse(new_fuel, flux);
 
-    cout <<"burnup: "<< burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first << endl;
+    //cout << "Enrichment:    " << enrichcalc(30, new_fuel.batch, 0.001, new_fuel);
+    cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
 
-    /*bool test_check = false;
-    double old_burnup = 1;*/
-    /*double burnup_test = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first;
-    while (!test_check){
-        isoInformation singleiso2 = lib_interpol(fuel, test_libs, test_inter);
-        old_burnup = burnup_test;
-        burnup_test = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.001).first
-        if (std::abs(burnup_test - old_burnup)/burnup_test < 0.001) test_check = true;
-    }*/
-
-    /*while(1){
-        cin >> BU_end;
-        cout<< enrichcalc(BU_end, 100, 0.001, 1, input_stream)<<endl;
-    }*/
     return 0;
 }
 
