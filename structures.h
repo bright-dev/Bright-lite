@@ -46,10 +46,12 @@ struct interpol_pair {
 
 struct fuelBundle {
     std::string name;
+    std::string operation_type;
     int batch;
     bool libcheck;
     double pnl; //leakage
     double tres;
+    double target_BUd;
     std::vector<isoInformation> iso;
     std::vector<interpol_pair> interpol_pairs;
     std::vector<std::string> interpol_libs;
