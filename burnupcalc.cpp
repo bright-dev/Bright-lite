@@ -1,7 +1,6 @@
 #include "burnupcalc.h"
 #include <boost/math/special_functions/bessel.hpp>
 
-double interpolate_value_input;
 
 using namespace std;
 
@@ -146,10 +145,6 @@ double phicalc(int n, int N, double BU_total, isoInformation tempone){
     x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
     F_n = intpol(tempone.fluence[i-1],tempone.fluence[i],x0,x1,BU_n); //fluence at BU_n
-/*
-cout<<"Fn: "<< F_n<<" time:"<<tempone.time[i]<<endl;
-cout<<"x1: "<<x1<<" BU_n: "<<BU_n<<endl;
-*/
     dF_n = (tempone.fluence[i] - F_n); //delta fluence
     dB_n = x1 - BU_n; //delta burnup due to the delta fluence
     dt_n = (N * dB_n*180) / BU_total; //delta time due to the change in fluence
@@ -200,7 +195,8 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
 
 }
 
-pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double pnl, double tolerance) {
+pair<double, map<int, double> > burnupcalc(fuelBundle fuel, int N, double pnl, double tolerance, double flux) {
+    isoInformation tempone = regioncollapse(fuel, flux);
     pair<double, map<int,double> > rtn(0, map<int, double>());
     double time_f; // time when k reaches one, time in days
     double BU_total = 0;
@@ -208,18 +204,25 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     int i = 0;
     double BU1, BU2, BU3;
 
-	i = 0;
-    while (i < tempone.neutron_prod.size())
-    {
+
+    for (int i = 0; i < tempone.neutron_prod.size(); i++){
         tempone.k_inf.push_back(((tempone.neutron_prod[i]))*pnl/(tempone.neutron_dest[i]));
-        i++;
     }
-    i=0;
-    while (tempone.k_inf[i] > 1.0){
+
+    if (tempone.k_inf[0] < 1){
+        cout << "Core setup not critical" << endl;
+        return rtn;
+    }
+    for (int i = 0; i < tempone.k_inf.size(); i++){
         BU_total += tempone.BUd[i];
-        i++; // finds the number of entry when k drops under 1
+        if (tempone.k_inf[i] < 1.0){
+            BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
+            break;
+        }
+        if (i == tempone.k_inf.size() -1. ){
+            cout << "Fluence not high enough to bring core subcritical" << endl;
+        }
     }
-    BU_total = intpol(BU_total,BU_total+tempone.BUd[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
     time_f = intpol(tempone.fluence[i-1],tempone.fluence[i],tempone.k_inf[i-1],tempone.k_inf[i],1.0);
     BU1 = 2.* N * BU_total/(N+1);
     BU2 = BU1*1.1;
@@ -246,7 +249,7 @@ pair<double, map<int, double> > burnupcalc(isoInformation tempone, int N, double
     BU_total = BU3;
 
     rtn.first = BU_total;
-    //rtn.second = tomass(i, time_f, tempone);
+    rtn.second = tomass(i, time_f, tempone);
     return rtn;
 
 }
@@ -396,74 +399,98 @@ Double, the enrichment needed to achieve BU_end.
 
 */
 
-double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
+double enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel, double flux) {
     //THIS WORKS ONLY FOR TWO ISO'S
     double X;
-    double BU_guess;
-    double BU2, BU6;
+    double BU_guess, enrich_guess;
+    double enrich_previous, BU_previous;
+    double enrich_lower, enrich_upper;
+    double BU_lower, BU_upper;
+    vector <int> blend_vector;
 
     /** This is a super quick hack to benchmark enrichcalc */
-    isoInformation singleiso;
-    isoInformation singleiso1;
-    isoInformation singleiso2;
     fuelBundle fuel1;
     fuelBundle fuel2;
+    for (int i = 0; i < fuel.iso.size(); i++){
+        if (fuel.iso[i].blending == true){
+            blend_vector.push_back(i);
+        }
+    }
+    for (int i = 0; i < 100; i++){
+        X = i / 100.;
+        fuel.iso[blend_vector[0]].fraction = X;
+        fuel.iso[blend_vector[1]].fraction = 1 - X;
+        fuel = FuelNormalizer(fuel);
+        BU_lower = burnupcalc(fuel, fuel.batch, fuel.pnl, 0.01, flux).first;
+        if (BU_lower > 0){
+            enrich_lower = X;
+            break;
+        }
+    }
 
-    // accurate guess calc, extrapolating from two data points at 2 and 7% enrichment
-    fuel.iso[0].fraction = 0.02;
-    fuel.iso[1].fraction = 0.98;
-    fuel = FuelNormalizer(fuel);
-    singleiso = regioncollapse(fuel, fluxcalc(fuel));
-        cout << "TEST3" << endl;
-    BU2 = burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.01).first;
-
-
-    fuel.iso[0].fraction = 0.07;
-    fuel.iso[1].fraction = 0.93;
-    fuel1 = FuelNormalizer(fuel);
-    singleiso1 = regioncollapse(fuel1, fluxcalc(fuel1));
-    BU6 = burnupcalc(singleiso1, fuel.batch, fuel.pnl, 0.01).first;
-    X = 0.02 + (BU_end - BU2)*(0.06 - 0.02)/(BU6 - BU2);
+    for (int i = enrich_lower*100; i < enrich_lower*100+10; i++){
+        X = i / 100.;
+        fuel.iso[blend_vector[0]].fraction = X;
+        fuel.iso[blend_vector[1]].fraction = 1 - X;
+        fuel1 = FuelNormalizer(fuel);
+        BU_upper = burnupcalc(fuel1, fuel.batch, fuel.pnl, 0.01, flux).first;
+        if (i > 99){
+            cout << "IT'S ALL BROKEN" << endl;
+            return 0;
+        }
+        if (BU_upper > 2*BU_lower){
+            enrich_upper = X;
+            break;
+        }
+    }
+    X = enrich_lower + (BU_end - BU_lower)*(enrich_upper - enrich_lower)/(BU_upper - BU_lower);
+    if (BU_upper == 0){
+        cout << "Burn up code failed" << endl;
+        return 0;
+    }
 
     /** rest of the haxxor */
-    fuel.iso[0].fraction = X;
-    fuel.iso[1].fraction = 1-X;
+    fuel.iso[blend_vector[0]].fraction = X;
+    fuel.iso[blend_vector[1]].fraction = 1-X;
     fuel2 = FuelNormalizer(fuel);
-    singleiso2 = regioncollapse(fuel2, fluxcalc(fuel2));
-    BU_guess = burnupcalc(singleiso2, fuel.batch, fuel.pnl, 0.01).first;
-
+    BU_guess = burnupcalc(fuel2, fuel.batch, fuel.pnl, 0.01, flux).first;
+    if (BU_guess == 0){
+        cout << "Burn up code failed" << endl;
+        return 0;
+    }
     // enrichment iteration
-    while ((abs(BU_end - BU_guess)/BU_end) > 0.01){
-        if (BU_end < BU_guess){
-            isoInformation singleiso3;
-            fuelBundle fuel3;
-            X = X - 0.00001;
-            fuel.iso[0].fraction = X;
-            fuel.iso[1].fraction = 1-X;
-            fuel3 = FuelNormalizer(fuel);
-            singleiso3 = regioncollapse(fuel3, fluxcalc(fuel3));
-            BU_guess = burnupcalc(singleiso3, fuel.batch, fuel.pnl, 0.01).first;
+    if (abs(enrich_guess - enrich_lower) > abs(enrich_guess - enrich_upper)){
+        enrich_previous = enrich_lower;
+        BU_previous = BU_lower;
+    } else {
+        enrich_previous = enrich_upper;
+        BU_previous = BU_upper;
+    }
+    enrich_guess = X;
 
-        } else if (BU_end > BU_guess){
-            isoInformation singleiso4;
-            fuelBundle fuel4;
-            X = X + 0.00001;
-            fuel.iso[0].fraction = X;
-            fuel.iso[1].fraction = 1-X;
-            fuel4 = FuelNormalizer(fuel);
-            singleiso4 = regioncollapse(fuel4, fluxcalc(fuel4));
-            BU_guess = burnupcalc(singleiso4, fuel.batch, fuel.pnl, 0.01).first;
-        }
+    while ((abs(BU_end - BU_guess)/BU_end) > 0.01){
+        cout << enrich_previous << "   " << BU_previous << endl;
+        cout << enrich_guess << "   " << BU_guess << endl;
+        cout << "TEST" << endl;
+        fuelBundle fuel3;
+        X = enrich_previous + (BU_end - BU_previous)*(enrich_guess - enrich_previous)/(BU_guess - BU_previous);
+        BU_previous = BU_guess;
+        enrich_previous = enrich_guess;
+        fuel.iso[blend_vector[0]].fraction = X;
+        fuel.iso[blend_vector[1]].fraction = 1. - X;
+        fuel3 = FuelNormalizer(fuel);
+        BU_guess = burnupcalc(fuel3, fuel.batch, fuel.pnl, 0.01, flux).first;
+        enrich_guess = X;
     }
     return X;
 }
 
 fuelBundle InputReader(){
-    std::string name;
+    std::string name, mass;
     int region, N, t_res;
     char type, word[8];
     int nucid;
-    double mass, pnl, intpol_val;
+    double pnl, intpol_val, target_BUd;
     fuelBundle fuel;
     isoInformation temp;
 
@@ -478,6 +505,15 @@ fuelBundle InputReader(){
             iss >> name >> name;
             fuel.name = name;
         }
+        if (line.find("BURNUP") == 0){
+            fuel.operation_type = "BURNUP";
+        }
+        if (line.find("BLENDING") == 0){
+            fuel.operation_type = "BLENDING";
+            istringstream iss(line);
+            iss >> name >> target_BUd;
+            fuel.target_BUd = target_BUd;
+        }
         if(line.find("REGIONS") == 0){
             while(getline(fin, line)){
                 if(line.find("END") == 0) break;
@@ -486,7 +522,13 @@ fuelBundle InputReader(){
                 temp.name = nucid;
                 temp.region = region;
                 temp.type = type;
-                temp.fraction = mass;
+                if (mass == "X"){
+                    temp.blending = true;
+                    temp.fraction = 0.5;
+                } else {
+                    temp.blending = false;
+                    temp.fraction = atof(mass.c_str());
+                }
                 fuel.iso.push_back(temp);
             }
         }
@@ -532,7 +574,6 @@ fuelBundle InputReader(){
     fuel.batch = N;
     fuel.pnl = pnl;
     fuel.tres = t_res;
-
     fin.close();
 
     return fuel;
@@ -548,6 +589,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
             iso.name = input_fuel.iso[j].name;
             iso.fraction = input_fuel.iso[j].fraction;
             iso.type = input_fuel.iso[j].type;
+            iso.blending = input_fuel.iso[j].blending;
             iso.region = input_fuel.iso[j].region;
             lib_bundle.iso.push_back(iso);
         }
@@ -555,6 +597,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
         lib_bundle.batch = input_fuel.batch;
         lib_bundle.tres = input_fuel.tres;
         lib_bundle.pnl = input_fuel.pnl;
+        lib_bundle.target_BUd = input_fuel.target_BUd;
         fuel_pairs.push_back(lib_bundle);
     }
     for (int i = 0; i < fuel_pairs.size(); i++){
@@ -617,7 +660,6 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
     }
     double met_dist_sum;
     for (int i = 0; i < metric_distances.size(); i++){
-        cout << metric_distances[i] << endl;
         met_dist_sum += 1./metric_distances[i];
     }
     // Fuel Bundle instead of iso //
@@ -625,6 +667,8 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
     new_fuel.tres = input_fuel.tres;
     new_fuel.pnl = input_fuel.pnl;
     new_fuel.batch = input_fuel.batch;
+    new_fuel.operation_type = input_fuel.operation_type;
+    new_fuel.target_BUd = input_fuel.target_BUd;
     for(int i = 0; i < fuel_pairs.size(); i++){
         if(i==0){
             for(int j = 0; j < fuel_pairs[i].iso.size(); j++){
@@ -727,24 +771,27 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
 int main(){
     fuelBundle fuel;
     fuel = InputReader();
-
     fuel = FuelNormalizer(fuel);
     double flux;
     flux = fluxcalc(fuel);
-
     DataReader2(fuel.name, fuel.iso);
 
     vector<nonActinide> nona; //"NONA"ctinide ;)
     nona = NonActinideReader(fuel.name + "/TAPE9.INP");
     fuel = NBuilder(fuel, nona);
-    isoInformation singleiso;
-    //singleiso = regioncollapse(fuel, flux);
-    fuelBundle new_fuel = lib_interpol(fuel);
-
-    singleiso = regioncollapse(new_fuel, flux);
-
-    //cout << "Enrichment:    " << enrichcalc(30, new_fuel.batch, 0.001, new_fuel);
-    cout <<"burnup: "<< burnupcalc(singleiso, fuel.batch, fuel.pnl, 0.001).first << endl;
+    if (fuel.libcheck == true){
+        fuel = lib_interpol(fuel);
+    }
+    if (fuel.operation_type == "BURNUP"){
+        pair< double, map < int, double> > test = burnupcalc(fuel, fuel.batch, fuel.pnl, 0.001, flux);
+        cout <<"burnup: "<< test.first << endl;
+    } else {
+        cout << "Enrichment:    " << enrichcalc(fuel.target_BUd, fuel.batch, 0.001, fuel, flux) << endl;
+    }
+    /*typedef std::map<int, double>::iterator test_map;
+    for (test_map iterator = test.second.begin(); iterator != test.second.end(); iterator++){
+        cout << iterator->first << "       " << iterator->second << endl;
+    }*/
 
     return 0;
 }
