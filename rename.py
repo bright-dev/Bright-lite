@@ -26,7 +26,9 @@ def main():
         s = s.replace(stubcap, cap)
         s = s.replace(stubupp, upp)
         os.remove(f)
-        with open(f.replace('stub', low), 'w') as out:
+        d = os.path.dirname(f)
+        name = os.path.basename(f)
+        with open(os.path.join(d, name.replace('stub', low)), 'w') as out:
             out.write(s)
 
 if __name__ == "__main__":
