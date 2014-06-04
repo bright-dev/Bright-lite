@@ -3396,7 +3396,7 @@
    3  701720  6     0.0       0.0       0.0       0.0       0.0       0.0
    3                0.0       0.0       0.0       2.190E+01 1.000E+00 1.000E+00
   -1
- 381        ACTIVATION PRODUCT XSEC LIBRARY-- FFTF-PU/U  CORE REGION
+ 381        ACTIVATION MATERIAL XSEC LIBRARY-- FFTF-PU/U  CORE REGION
  381   10010 1.550E-04 0.0       0.0       0.0       0.0       0.0         -1.0
  381   10020 3.100E-07 6.757E-04 0.0       0.0       0.0       0.0         -1.0
  381   10030 3.510E-09 0.0       0.0       0.0       0.0       0.0         -1.0
