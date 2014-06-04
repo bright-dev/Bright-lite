@@ -16,7 +16,10 @@ struct isoInformation {
     int region;
     char type;
     bool blending;
+    bool fuel;
     double fraction;
+    double sigs;
+    double siga;
     std::vector<double> neutron_prod;
     std::vector<double> neutron_dest;
     std::vector<double> k_inf;
@@ -51,7 +54,12 @@ struct fuelBundle {
     bool libcheck;
     double pnl; //leakage
     double tres;
+    double batch_fluence;
     double target_BUd;
+    double fuel_radius;
+    double moderator_radius;
+    double moderator_sigs;
+    double moderator_siga;
     std::vector<isoInformation> iso;
     std::vector<interpol_pair> interpol_pairs;
     std::vector<std::string> interpol_libs;
