@@ -16,7 +16,8 @@ struct isoInformation {
     int region;
     char type;
     bool blending;
-    double fraction;
+    //double fraction;
+    std::vector<double> fraction;
     std::vector<double> neutron_prod;
     std::vector<double> neutron_dest;
     std::vector<double> k_inf;
@@ -55,6 +56,7 @@ struct fuelBundle {
     std::vector<isoInformation> iso;
     std::vector<interpol_pair> interpol_pairs;
     std::vector<std::string> interpol_libs;
+    std::vector<double> stream_fraction;
 };
 
 

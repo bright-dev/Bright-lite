@@ -28,30 +28,30 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     fuel.fluence.push_back(fuel_values[mm].fluence[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i]);
+                    fuel.neutron_prod.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]);
+                    fuel.neutron_dest.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i]);
 
                 }
                 for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
-                    fuel.BUd.push_back(fuel_values[mm].fraction*fuel_values[mm].BUd[i]);
+                    fuel.BUd.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].BUd[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
                     fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
                     for(int k = 0; k < fuel.iso_vector[i].mass.size(); k++){
-                        fuel.iso_vector[i].mass[k] = fuel_values[mm].fraction*fuel.iso_vector[i].mass[k];
+                        fuel.iso_vector[i].mass[k] = fuel_values[mm].fraction[0]*fuel.iso_vector[i].mass[k];
                     }
                 }
             }else{
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod[i] += fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
+                    fuel.neutron_prod[i] += fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i];
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest[i] += fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
+                    fuel.neutron_dest[i] += fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i];
                 }
                 for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
-                    fuel.BUd[i] += fuel_values[mm].fraction*fuel_values[mm].BUd[i];
+                    fuel.BUd[i] += fuel_values[mm].fraction[0]*fuel_values[mm].BUd[i];
                 }
                 for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
                     bool iso_check = true;
@@ -60,7 +60,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                             for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
                                 for(int ii = 0; ii < fuel_values[mm].iso_vector[i].mass.size(); ii ++){
                                     if ( k ==ii ){
-                                        fuel.iso_vector[j].mass[k] += fuel_values[mm].fraction*fuel_values[mm].iso_vector[i].mass[ii];
+                                        fuel.iso_vector[j].mass[k] += fuel_values[mm].fraction[0]*fuel_values[mm].iso_vector[i].mass[ii];
                                     }
                                 }
                             }
@@ -70,7 +70,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     if (iso_check == true) {
                         fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
                         for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()-1].mass.size()-1; k++){
-                            fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] = fuel.iso_vector[fuel.iso_vector.size()-1].mass[k]*fuel_values[mm].fraction;
+                            fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] = fuel.iso_vector[fuel.iso_vector.size()-1].mass[k]*fuel_values[mm].fraction[0];
                         }
                     }
                 }
@@ -79,17 +79,17 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
         else{
             if(fuel.neutron_prod.size()>1){
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
+                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i];
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
+                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i];
                 }
             }else{
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i]+(fuel_values[mm].fraction)*fuel_values[1].neutron_prod[i]);
+                    fuel.neutron_prod.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i]+(fuel_values[mm].fraction[0])*fuel_values[1].neutron_prod[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]+(fuel_values[mm].fraction)*fuel_values[1].neutron_dest[i]);
+                    fuel.neutron_dest.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i]+(fuel_values[mm].fraction[0])*fuel_values[1].neutron_dest[i]);
                 }
             }
         }
