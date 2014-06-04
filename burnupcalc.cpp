@@ -243,7 +243,38 @@ inputs: n is the batch number starting from zero, total bathces N, discharge bur
         isoInformation of the fuel
 **/
 
-double phicalc(int n, int N, double BU_total, isoInformation tempone){
+double phicalc(int n, int N, double fluence, isoInformation tempone){
+// batch n of N, batch n at fluence level fluence, batch n is type tempone
+    int i = 0;
+    double x0=0, x1, dF_n, dB_n, dt_n;
+    double BU_total = 0;
+
+    while (tempone.fluence[i] < fluence) // finds the discrete point i corresponding to the fluence just under fluence
+        {
+            x0 = tempone.fluence[i];
+            i++;
+        }
+
+    if(i == 0){
+        dF_n = tempone.fluence[1];
+        dt_n = N * 180;
+    }else{
+
+        x1 = tempone.fluence[i];
+        dF_n = fluence - x0; //delta fluence
+        for(int j = 0; j < i; j++){
+            BU_total += tempone.BUd[j];
+        }
+
+        dB_n = intpol(BU_total, BU_total+tempone.BUd[i], x0, x1, fluence) - BU_total;
+        dt_n = (N * dB_n*180) / BU_total; //delta time due to the change in fluence
+
+    }
+
+    return dF_n/dt_n; //flux of n'th batch, n indexed from zero
+}
+
+double SSphicalc(int n, int N, double BU_total, isoInformation tempone){
     int i = 0;
     double x0=0, x1, F_n, dF_n, dB_n, dt_n;
     double BU_n;
@@ -266,7 +297,7 @@ double phicalc(int n, int N, double BU_total, isoInformation tempone){
 
 }
 
-double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
+double SSkcalc(isoInformation tempone, double BU_total, int N, double pnl){
     double x0 = 0, x1 = 0, BU_n = 0, phi, pbatch[N], dbatch[N], p_total=0, d_total=0;
     int j = 0, i = 0;
 
@@ -282,7 +313,7 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
                     }
                 x1 = x0 + tempone.BUd[i]; // adds on more discrete point for linear interpolation
 
-                phi = phicalc(j, N, BU_total, tempone);
+                phi = SSphicalc(j, N, BU_total, tempone);
                 pbatch[j] = intpol(tempone.neutron_prod[i-1],tempone.neutron_prod[i], x0, x1, BU_n);
                 dbatch[j] = intpol(tempone.neutron_dest[i-1],tempone.neutron_dest[i], x0, x1, BU_n);
 
@@ -308,8 +339,112 @@ double kcalc(isoInformation tempone, double BU_total, int N, double pnl){
 
 }
 
-pair<double, map<int, double> > burnupcalc(fuelBundle fuel, int N, double pnl, double tolerance) {
-    isoInformation tempone = regioncollapse(fuel, fluxcalc(fuel));
+double kcalc(std::vector<isoInformation> isoBatches, std::vector<double> batch_fluence, double fluence, std::vector<double> batch_phi, double pnl){
+//takes isoInformation of all batches and returns the k at the fluence level
+//starting fluence levels are saved in the isoInformation structure
+//the variable fluence passed to this function is how much the bundles will be burned
+
+    double total_prod = 0;
+    double total_dest = 0;
+    int j;
+
+
+    for(int i = 0; i < isoBatches.size(); i++){
+        j = 0;
+        if(batch_fluence[i] + fluence*batch_phi[i] != 0){
+            while(isoBatches[i].fluence[j] < batch_fluence[i] + fluence*batch_phi[i]){
+                //finds the discrete point where fluence is less than the target fluence
+                j++;
+            }
+            total_prod += intpol(isoBatches[i].neutron_prod[j-1], isoBatches[i].neutron_prod[j],
+                                 isoBatches[i].fluence[j-1], isoBatches[i].fluence[j], batch_fluence[i] + fluence*batch_phi[i]);
+            total_dest += intpol(isoBatches[i].neutron_dest[j-1], isoBatches[i].neutron_dest[j],
+                                 isoBatches[i].fluence[j-1], isoBatches[i].fluence[j], batch_fluence[i] + fluence*batch_phi[i]);
+        }
+        else{
+            total_prod += isoBatches[i].neutron_prod[0];
+            total_dest += isoBatches[i].neutron_dest[0];
+        }
+    }
+
+    if(total_dest == 0){
+        cout << "Error in kcalc! Total neutron destruction is zero."<<endl;
+    }
+    return total_prod*pnl/total_dest;
+
+}
+
+pair<double, map<int, double> > burnupcalc(vector<fuelBundle> batches, double pnl, double tolerance, double flux) {
+
+    pair<double, map<int,double> > rtn(0, map<int, double>());
+    double F1, F2, F3, k_total = 0;
+    double fluence = 0; //added fluence to all the batches due to burnup
+    std::vector<isoInformation> isoBatches;
+    std::vector<double> batch_fluence;
+    std::vector<double> batch_phi;
+    double phimax = 0;
+    int N = batches.size();
+    double burnup = 0;
+    int oldest_batch = N; //index for oldest batch, index starts from zero
+
+    //collapse all the baches to isoInformation and build batch_fluence vector
+    for(int i = 0; i < batches.size(); i++){
+        isoBatches.push_back(regioncollapse(batches[i], 1));
+        batch_fluence.push_back(batches[i].batch_fluence);
+        batch_phi.push_back(phicalc(i, N, batch_fluence[i], isoBatches[i]));
+        if(batch_phi[i]>phimax){
+            phimax = batch_phi[i];
+        }
+        if(batches[i].batch_fluence > oldest_batch){
+            oldest_batch = i;
+        }
+    }
+
+    for(int i = 0; i < batch_phi.size(); i++){
+        //normalize batch_phi using max value
+        batch_phi[i] = batch_phi[i]/phimax;
+    }
+
+
+
+    if(kcalc(isoBatches, batch_fluence, fluence, batch_phi, pnl) < 1){
+        cout << "Error! Original core configuration is not critical." << endl;
+    }
+
+F1 = 0;
+F2 = 100;
+
+int i = 0;
+    while(abs(1-k_total)>tolerance){
+
+        F3 = F2 - (kcalc(isoBatches, batch_fluence, F2, batch_phi, pnl)-1)*(F2-F1)/
+                        ((kcalc(isoBatches, batch_fluence, F2, batch_phi, pnl))-(kcalc(isoBatches, batch_fluence, F1, batch_phi, pnl)));
+        k_total = kcalc(isoBatches, batch_fluence, F3, batch_phi, pnl);
+        F1 = F2;
+        F2 = F3;
+        i++;
+
+        if(i==50){
+            cout<< "Warning! Maximum iteration reached in function burnupcalc."<<endl;
+            F3 = (F1+F2+F3)/3;
+            break;
+        }
+    }//F3 is the fluence of the cycle
+
+
+    for(int j = 0; isoBatches[oldest_batch].fluence[j] < F3*batch_phi[oldest_batch]; j++){
+        burnup += isoBatches[oldest_batch].BUd[j];
+    }
+    cout << "Burnup: "<<burnup << "    k at this burnup: "<< k_total << endl;
+
+    rtn.first = burnup;
+    //rtn.second = tomass(i, time_f, tempone);
+    return rtn;
+
+}
+
+pair<double, map<int, double> > SSburnupcalc(fuelBundle fuel, int N, double pnl, double tolerance, double flux) {
+    //Stead State (SS) burnupcalc, takes only the starting bundle
     pair<double, map<int,double> > rtn(0, map<int, double>());
     double time_f; // time when k reaches one, time in days
     double BU_total = 0;
@@ -344,8 +479,8 @@ pair<double, map<int, double> > burnupcalc(fuelBundle fuel, int N, double pnl, d
     k_total = 2;
     int i=0;
     while(abs(1-k_total)>tolerance){
-        BU3 = BU2 - (kcalc(tempone, BU2, N, pnl)-1)*(BU2-BU1)/((kcalc(tempone, BU2, N, pnl))-(kcalc(tempone, BU1, N, pnl)));
-        k_total = kcalc(tempone, BU3, N, pnl);
+        BU3 = BU2 - (SSkcalc(tempone, BU2, N, pnl)-1)*(BU2-BU1)/((SSkcalc(tempone, BU2, N, pnl))-(SSkcalc(tempone, BU1, N, pnl)));
+        k_total = SSkcalc(tempone, BU3, N, pnl);
         BU1 = BU2;
         BU2 = BU3;
         i++;
@@ -371,7 +506,152 @@ fuelBundle enrich_collapse(fuelBundle fuel){
             fuel.iso[i].fraction[0] += fuel.iso[i].fraction[j] * fuel.stream_fraction[j-1];
         }
     }
+}
+
+fuelBundle fluxcalc_reader(fuelBundle fuel, string file_name){
+    //must be called AFTER InputReader, so that fuelbundle is built
+    //assumes the format [type of material][space]sigma_scatter[space]sigma_a in the input file
+    string line;
+    int nucid;
+    double sigs, siga;
+    double x;
+    char name[10];
+
+    ifstream fin(file_name);
+
+
+	while(getline(fin, line))
+	{
+        if(line.find("a") == 0){
+            istringstream iss(line);
+            iss >> name >> x;
+            fuel.fuel_radius = x;
+            continue;
+        }
+
+        if(line.find("b") == 0){
+            istringstream iss(line);
+            iss >> name >> x;
+            fuel.moderator_radius = x;
+            continue;
+        }
+
+        if(line.find("MODERATOR") == 0){
+            istringstream iss(line);
+            iss >> name >> sigs >> siga;
+            fuel.moderator_sigs = sigs;
+            fuel.moderator_siga = siga;
+            continue;
+        }
+
+        istringstream iss(line);
+        iss >> nucid >> sigs >> siga;
+
+        if(nucid){
+            for(int i = 0; i < fuel.iso.size(); i++){
+                if(fuel.iso[i].name == nucid){
+                    fuel.iso[i].sigs = sigs;
+                    fuel.iso[i].siga = siga;
+                    fuel.iso[i].fuel = true;
+                }
+            }
+        }
+	}
+
+
     return fuel;
+}
+
+double fluxcalc(fuelBundle fuel){
+// calculates the flux of each region in fuelBundle
+// probably will need to add reactor identifier as input in the future
+
+    int i = 0;
+    int r = 1; //number of regions
+    double frac35, frac38; // mass fraction of u235 and u238
+    double temp;
+
+    while(i < fuel.iso.size()){ // finds the number of regions and saves mass fraction of fuel
+        if(fuel.iso[i].region > r)
+            r = fuel.iso[i].region;
+        if(fuel.iso[i].name == 922350)
+            frac35 = fuel.iso[i].fraction;
+        if(fuel.iso[i].name == 922380)
+            frac38 = fuel.iso[i].fraction;
+        i++;
+    }
+    double a = fuel.fuel_radius; // radius of the fuel rod
+    double b = fuel.moderator_radius; // radius of the equivalent cell
+    double L_F; // diffusion length of fuel
+    double L_M; // diffusion length of moderator
+    double Sig_aF; // macroscopic abs. CS of fuel
+    double Sig_aM = fuel.moderator_siga; // macroscopic abs. CS of moderator
+    double V_F; // volume of fuel
+    double V_M; // volume of moderator
+    double Sig_trF; // macroscopic transport CS of fuel
+    double Sig_trM; // macroscopic transport CS of moderator
+    double Sig_tF; // macroscopic total CS of fuel
+    double Sig_tM; //macroscopic total CS of moderator
+    double Sig_sF; // macroscopic scatter CS of fuel
+    double Sig_sM = fuel.moderator_sigs; //macroscopic scatter CS of moderator
+    double D_F; // diffusion coef. of fuel
+    double D_M; // diffusion coef. of moderator
+    double A_F; // A number of fuel
+    double A_M; // A number of moderator
+    double x, y, z; // calculated equivalent dimensions
+    double F, E; // lattice functions
+    double f; // flux of fuel divided by total flux(fuel+moderator)
+/**************moderator****************/
+    Sig_tM = Sig_aM + Sig_sM;
+    A_F = 235;
+    A_M = 18;
+    Sig_trM = Sig_tM - 2/3/A_M*Sig_sM;
+    D_M = 1 / (3 * Sig_trM);
+    L_M = sqrt(D_M/Sig_aM);
+    y = a/L_M;
+    z = b/L_M;
+    V_M = pow(b,2)*3.141592 - pow(a,2)*3.141592;
+    V_F = pow(a,2)*3.141592;
+/****************************************/
+    vector<int> fuel_index;
+    for(int i = 0; i < fuel.iso.size(); i++){
+        if(fuel.iso[i].fuel == true){
+            fuel_index.push_back(i);
+        }
+    }
+
+    for(int fluence = 0; fluence < fuel.iso[0].neutron_dest.size(); fluence++){
+        Sig_aF = 0;
+        Sig_sF = 0;
+
+        for(int i = 0; i < fuel_index.size(); i++){
+            Sig_aF += fuel.iso[fuel_index[i]].neutron_dest[fluence] * fuel.iso[fuel_index[i]].fraction/100;
+            Sig_sF += fuel.iso[fuel_index[i]].sigs * fuel.iso[fuel_index[i]].fraction;
+        }
+
+        Sig_tF = Sig_aF+Sig_sF;
+        Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
+        D_F = 1 / (3 * Sig_trF);
+        L_F = sqrt(D_F/Sig_aF);
+        x = a/L_F;
+
+        /*****book example***
+        a=1.02;
+        b=14.3;
+        x=0.658;
+        y=0.0173;
+        z=0.242;
+        V_M=195.6;
+        V_F=1;
+        Sig_aM=0.0002728;
+        Sig_aF=0.3668;
+        *******************/
+
+        F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
+                                        boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
+    }
+    return fuel;
+    return (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
 }
 
 /**
@@ -425,7 +705,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
         fuel.stream_fraction[blend_vector[0]] = X;
         fuel.stream_fraction[blend_vector[1]] = 1 - X;
         fuel = enrich_collapse(fuel);
-        BU_lower = burnupcalc(fuel, fuel.batch, fuel.pnl, 0.01).first;
+        BU_lower = SSburnupcalc(fuel, fuel.batch, fuel.pnl, 0.01, flux).first;
         //cout << X << "  BU_LOWER   " << BU_lower << endl;
         if (i > 99){
             cout << "IT'S ALL BROKEN" << endl;
@@ -443,7 +723,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
         fuel.stream_fraction[blend_vector[0]] = X;
         fuel.stream_fraction[blend_vector[1]] = 1 - X;
         fuel1 = enrich_collapse(fuel);
-        BU_upper = burnupcalc(fuel1, fuel.batch, fuel.pnl, 0.01).first;
+        BU_upper = SSburnupcalc(fuel1, fuel.batch, fuel.pnl, 0.01, flux).first;
         //cout << X << "  BU_UPPER   " << BU_upper << endl;
         if (BU_upper > 2*BU_lower){
             enrich_upper = X;
@@ -460,6 +740,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
     fuel.stream_fraction[blend_vector[1]] = 1 - X;
     fuel2 = enrich_collapse(fuel);
     BU_guess = burnupcalc(fuel2, fuel.batch, fuel.pnl, 0.01).first;
+    BU_guess = SSburnupcalc(fuel2, fuel.batch, fuel.pnl, 0.01, flux).first;
     if (BU_guess == 0){
         cout << "Burn up code failed" << endl;
         rtn.first = 0;
@@ -485,7 +766,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
         fuel.stream_fraction[blend_vector[0]] = X;
         fuel.stream_fraction[blend_vector[1]] = 1 - X;
         fuel3 = enrich_collapse(fuel);
-        BU_guess = burnupcalc(fuel3, fuel.batch, fuel.pnl, 0.01).first;
+        BU_guess = SSburnupcalc(fuel3, fuel.batch, fuel.pnl, 0.01, flux).first;
         enrich_guess = X;
         /// TODO FIX THIS QUICK HACK
         if (i > 20) {
@@ -555,6 +836,7 @@ fuelBundle InputReader(){
                 while (iss >> mass){
                     temp.fraction.push_back(mass);
                 }
+                temp.fuel = false;
                 fuel.iso.push_back(temp);
             }
         }
@@ -807,13 +1089,35 @@ void iso_output(pair<double, map <int, double> > iso_vector){
 }
 
 int main(){
+
     fuelBundle fuel;
+
+    vector<int> iso_index;
+    vector<fuelBundle> batches;
+
+
     fuel = InputReader();
+
+    fuel = fluxcalc_reader(fuel, "fluxCalcinput");
     DataReader2(fuel.name, fuel.iso);
 
     vector<nonActinide> nona; //"NONA"ctinide ;)
     nona = NonActinideReader(fuel.name + "/TAPE9.INP");
     fuel = NBuilder(fuel, nona);
+
+
+    //this should probably be its own function
+    //builds bundle-vector and assigns fluence
+    batches.push_back(fuel);
+    batches[0].batch_fluence = 0;
+    for(int i = 0; i < fuel.batch-1; i++){
+        batches.push_back(batches[0]);
+        batches[i+1].batch_fluence = batches[i].batch_fluence + 600.2; //123.2 is a random choice
+    }
+
+    burnupcalc(batches, fuel.pnl, 0.001, 1);
+
+/*
     if (fuel.libcheck == true){
         fuel = lib_interpol(fuel);
     }
