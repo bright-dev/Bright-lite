@@ -6,22 +6,22 @@
   </control>
 
   <archetypes>
-    <spec><path>stubs</path><lib>StubFacility</lib><name>StubFacility</name></spec>
-    <spec><path>stubs</path><lib>StubRegion</lib><name>StubRegion</name></spec>
-    <spec><path>stubs</path><lib>StubInst</lib><name>StubInst</name></spec>
+    <spec><path>reactor</path><lib>ReactorFacility</lib><name>ReactorFacility</name></spec>
+    <spec><path>reactor</path><lib>ReactorRegion</lib><name>ReactorRegion</name></spec>
+    <spec><path>reactor</path><lib>ReactorInst</lib><name>ReactorInst</name></spec>
   </archetypes>
 
   <facility>
     <name>OneFacility</name>
     <config>
-      <StubFacility />
+      <ReactorFacility />
     </config>
   </facility>
 
   <region>
     <name>OneRegion</name>
     <config>
-      <StubRegion />
+      <ReactorRegion />
     </config>
     <institution>
       <name>OneInst</name>
@@ -32,7 +32,7 @@
         </entry>
       </initialfacilitylist>
       <config>
-        <StubInst />
+        <ReactorInst />
       </config>
     </institution>
   </region>
