@@ -1,0 +1,7 @@
+<<<<<<< HEAD
+*.layout
+*.depend
+*.exe
+=======
+build
+>>>>>>> 72f653ba2ccbc792bdff0f7525b8d8255be41baa
