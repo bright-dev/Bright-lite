@@ -13,7 +13,7 @@
 #include<map>
 #include "structures.h"
 #include "origenBuilder.h"
-#include "nucname.h"
+#include "cyclus.h"
 #include "structures.h"
 
 using namespace std;
