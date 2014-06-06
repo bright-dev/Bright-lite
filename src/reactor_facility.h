@@ -7,7 +7,6 @@
 
 namespace reactor {
 
-
 /// @class ReactorFacility
 ///
 /// This Facility is intended
@@ -60,6 +59,10 @@ class ReactorFacility : public cyclus::Facility  {
   virtual void Tock();
 
   std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
+
+  /// @brief Place accepted trade Materials in inventory
+  virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
+                                cyclus::Material::Ptr> >& responses);
 
   /// This facility has one output commodity and one input commodity
   #pragma cyclus var {"tooltip": "input commodity", \
