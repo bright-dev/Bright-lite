@@ -3,7 +3,10 @@
 namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
-    : cyclus::Facility(ctx) {};
+    : cyclus::Facility(ctx) {
+  cycle_end_ = 0;
+  
+};
 
 std::string ReactorFacility::str() {
   return Facility::str();
@@ -11,7 +14,13 @@ std::string ReactorFacility::str() {
 
 void ReactorFacility::Tick() {}
 
-void ReactorFacility::Tock() {}
+void ReactorFacility::Tock() {
+  cyclus::Context* ctx = context();
+  if (ctx->time() != cycle_end_)
+    return;
+
+  cycle_end_ = ctx->time() + 18;
+}
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
   using cyclus::RequestPortfolio;
@@ -22,7 +31,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 
   std::set<RequestPortfolio<Material>::Ptr> ports;
   cyclus::Context* ctx = context();
-  if (ctx->time()%18 != 0)
+  if (ctx->time() != cycle_end_)
     return ports;
 
   CompMap cm;

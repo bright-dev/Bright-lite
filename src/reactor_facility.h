@@ -110,6 +110,9 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
+
+ private:
+  int cycle_end_;
 };
 
 }  // namespace reactor
