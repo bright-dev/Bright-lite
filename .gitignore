@@ -2,3 +2,4 @@
 *.depend
 *.exe
 build
+*.h5
