@@ -75,8 +75,8 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
                       "doc": "the reactor's burnup & criticality behavior to use"}
-  std::vector<std::string> libraries;
-
+  std::vector<std::string> libraries; 
+  
   #pragma cyclus var {"tooltip": "number of batches", \
                       "default": 3}
   int batches;
@@ -113,6 +113,7 @@ class ReactorFacility : public cyclus::Facility  {
 
  private:
   int cycle_end_;
+  fuelBundle fuel_library_;
 };
 
 }  // namespace reactor

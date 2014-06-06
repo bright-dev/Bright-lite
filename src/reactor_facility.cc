@@ -5,7 +5,25 @@ namespace reactor {
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
   cycle_end_ = 0;
-  
+  std::ifstream inf(libraries[0] +"/manifest.txt");
+  std::string line;
+  std::string iso_name_;
+  fuel_library_.name = libraries[0];
+  while(getline(inf, line)){
+    istringstream iss;
+    isoInfomation iso;
+    iss >> iso_name;
+    iso.name = iso_name;
+    iso.fraction = 0;
+    fuel_library_.iso.push_back(iso);
+  }
+  if (libaries.size() == 1){
+    for(int i =0; i < fuel.iso.size(); i++){
+      DataReader2(fuel_library_.name, fuel_library_.iso)
+    }
+  } else {
+  ///interpolation stuff
+  }
 };
 
 std::string ReactorFacility::str() {
@@ -18,7 +36,16 @@ void ReactorFacility::Tock() {
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_)
     return;
-
+  /// Pop materials out of inventory
+  std::vector<cyclus::Material::Ptr> manifest;
+  manifest = cyclus::toolkit::ResCast<Material>(inventory.pop(inventory.size());
+  
+  /// convert materials into fuel bundles
+  std::vector<fuelBundle> batches;
+  /// pass fuel bundles to burn-up calc
+  
+  /// convert fuel bundles into materials
+  /// add to inventory
   cycle_end_ = ctx->time() + 18;
 }
 
