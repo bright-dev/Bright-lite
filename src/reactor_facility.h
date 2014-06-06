@@ -59,6 +59,8 @@ class ReactorFacility : public cyclus::Facility  {
   /// @param time the time of the tock
   virtual void Tock();
 
+  std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
+
   /// This facility has one output commodity and one input commodity
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes"}
