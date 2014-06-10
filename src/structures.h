@@ -14,10 +14,11 @@ struct daughter {
 struct isoInformation {
     int name; //changed this to int so it contains nucid
     int region;
-    char type;
+    std::string type;
     bool blending;
     //double fraction;
     bool fuel;
+    double batch_fluence;
     std::vector<double> fraction;
     double sigs;
     double siga;

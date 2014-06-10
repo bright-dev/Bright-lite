@@ -2,8 +2,10 @@
 #define CYCLUS_REACTORS_REACTOR_FACILITY_H_
 
 #include <string>
+#include <sstream>
 
 #include "cyclus.h"
+#include "burnupcalc.h"
 
 namespace reactor {
 
@@ -59,7 +61,15 @@ class ReactorFacility : public cyclus::Facility  {
   virtual void Tock();
 
   std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
+  
+  virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
+  GetMatlBids(
+    cyclus::CommodMap<cyclus::Material>::type& commod_requests);
 
+  void GetMatlTrades(
+    const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+    std::vector<std::pair<cyclus::Trade<cyclus::Material>,
+                          cyclus::Material::Ptr> >& responses);
   /// @brief Place accepted trade Materials in inventory
   virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                 cyclus::Material::Ptr> >& responses);
@@ -111,9 +121,14 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
 
+  #pragma cyclus var{"default": 0.001 \
+                     "tooltip": "The convergence requirement for the code"}
+  double tolerence;
+
  private:
   int cycle_end_;
   fuelBundle fuel_library_;
+  std::vector<fuelBundle> core_;
 };
 
 }  // namespace reactor
