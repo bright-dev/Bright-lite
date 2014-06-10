@@ -1,3 +1,5 @@
 *.layout
 *.depend
 *.exe
+build
+*.h5

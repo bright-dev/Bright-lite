@@ -978,6 +978,7 @@ void iso_output(pair<double, map <int, double> > iso_vector){
     }
 }
 
+/*
 int main(){
 
     fuelBundle fuel;
@@ -1007,7 +1008,6 @@ int main(){
 
     burnupcalc(batches, fuel.pnl, 0.001, 1);
 
-/*
     if (fuel.libcheck == true){
         fuel = lib_interpol(fuel);
     }
@@ -1029,7 +1029,6 @@ int main(){
     }
     */
     return 0;
-}
+} 
 
-
-
+*/
