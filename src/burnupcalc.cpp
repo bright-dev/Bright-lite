@@ -31,14 +31,14 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
     cout << total_dest << "     " << total_prod << endl;
     int datasize;
     for(int i=0; i<fuel.iso.size(); i++){
-        if(fuel.iso[i].type == *"A"){
+        if(fuel.iso[i].type == "A"){
             datasize = fuel.iso[i].neutron_prod.size();
             break;
         }
     }
 
     for(int i =0; i<fuel.iso.size(); i++){
-        if(fuel.iso[i].type == *"N"){
+        if(fuel.iso[i].type == "N"){
             for(int j=0; j< datasize; j++){
                 fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]);
                 fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]);
@@ -51,10 +51,10 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
 fuelBundle FuelNormalizer(fuelBundle fuel){
     double actmass = 0; // total mass (or fraction) of all actinides
     int i=0;
-    char *type = "A";
+    std::string type = "A";
 
     while (i < fuel.iso.size()){
-        if(fuel.iso[i].type == *type)
+        if(fuel.iso[i].type == type)
            actmass += fuel.iso[i].fraction[0]; // find the total mass of all actinides
         i++;
     }
@@ -110,7 +110,7 @@ map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
     int nucid;
     for (int i = 0; i < isoinfo.iso_vector.size(); i++){
         name_i = isoinfo.iso_vector[i].name;
-        nucid = pyne::nucname::zzaaam(name_i)/10;
+        nucid = pyne::nucname::zzaaam(name_i);
         mass_i = intpol(isoinfo.iso_vector[i].mass[ti-1],
                         isoinfo.iso_vector[i].mass[ti],
                         isoinfo.fluence[ti-1],
@@ -259,9 +259,9 @@ double kcalc(std::vector<isoInformation> isoBatches, std::vector<double> batch_f
 
 }
 
-pair<double, map<int, double> > burnupcalc(vector<fuelBundle> batches, double pnl, double tolerance, double flux) {
-
-    pair<double, map<int,double> > rtn(0, map<int, double>());
+map<double, map<int, double> > burnupcalc(vector<fuelBundle> batches, double pnl, double tolerance, double flux) {
+    map<double, map<int,double> > rtn;
+    rtn[0] = map<int, double>();
     double F1, F2, F3, k_total = 0;
     double fluence = 0; //added fluence to all the batches due to burnup
     std::vector<isoInformation> isoBatches;
@@ -316,16 +316,17 @@ int i = 0;
         }
     }//F3 is the fluence of the cycle
 
-
-    for(int j = 0; isoBatches[oldest_batch].fluence[j] < F3*batch_phi[oldest_batch]; j++){
+    int j = 0;
+    for(;isoBatches[oldest_batch].fluence[j] < F3*batch_phi[oldest_batch]; j++){
         burnup += isoBatches[oldest_batch].BUd[j];
     }
     cout << "Burnup: "<<burnup << "    k at this burnup: "<< k_total << endl;
 
-    rtn.first = burnup;
-    //rtn.second = tomass(i, time_f, tempone);
+    for(int i = 0; i < isoBatches.size(); i++){
+      isoBatches[i].batch_fluence += F3*batch_phi[i];
+      rtn[i] = tomass(j++, isoBatches[i].batch_fluence, isoBatches[i]);
+    }
     return rtn;
-
 }
 
 pair<double, map<int, double> > SSburnupcalc(fuelBundle fuel, int N, double pnl, double tolerance, double flux) {
@@ -1027,7 +1028,7 @@ int main(){
         pair< double, map < int, double> > test = enrichment.second;
         iso_output(test);
     }
-    */
+    
     return 0;
 } 
 

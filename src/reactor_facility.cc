@@ -4,26 +4,32 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-  cycle_end_ = 0;
+  
   std::ifstream inf(libraries[0] +"/manifest.txt");
   std::string line;
-  std::string iso_name_;
+  std::string iso_name;
   fuel_library_.name = libraries[0];
   while(getline(inf, line)){
-    istringstream iss;
-    isoInfomation iso;
+    std::istringstream iss;
+    isoInformation iso;
     iss >> iso_name;
-    iso.name = iso_name;
-    iso.fraction = 0;
+    iso.name = atoi(iso_name.c_str());
+    iso.fraction[0] = 0;
     fuel_library_.iso.push_back(iso);
   }
-  if (libaries.size() == 1){
-    for(int i =0; i < fuel.iso.size(); i++){
-      DataReader2(fuel_library_.name, fuel_library_.iso)
+  if (libraries.size() == 1){
+    for(int i =0; i < fuel_library_.iso.size(); i++){
+      DataReader2(fuel_library_.name, fuel_library_.iso);
     }
   } else {
   ///interpolation stuff
   }
+  core_ = std::vector<fuelBundle>(batches);
+  for(int i = 0; i < core_.size(); i++){
+    core_[i] = fuel_library_;
+    core_[i].batch_fluence = 0;
+  }
+  cycle_end_ = ctx->time();
 };
 
 std::string ReactorFacility::str() {
@@ -36,39 +42,49 @@ void ReactorFacility::Tock() {
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_)
     return;
-  /// Pop materials out of inventory
+  // Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
-  manifest = cyclus::ResCast<Material>(inventory.pop(inventory.size());
-  
-  /// convert materials into fuel bundles
-  std::vector<fuelBundle> core = std::vector<fuelBundle>(batches);
+  manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
+  // convert materials into fuel bundles
   cyclus::CompMap comp;
   cyclus::CompMap::iterator it;
+  fuelBundle bundle;
+  core_.push_back(bundle); 
+  core_[batches-1].batch_fluence = 0;
   for(int i = 0; i < manifest.size(); i++){
-     comp = manifest[i].comp().mass();
-     core[i] = fuel_library_;
+     comp = manifest[i]->comp()->mass();
      int j = 0;
-     int fl_iso = core[i].iso[j].name;
+     int fl_iso = core_[i].iso[j].name;
      int comp_iso;
      for (it = comp.begin(); it != comp.end(); ++it){
        comp_iso = pyne::nucname::zzaaam(it->first);
        if(fl_iso < comp_iso) {
-        while(fl_iso < comp_iso && j < core[i].iso.size()){
-          fl_iso = core[i].iso[j++].name;        
+        while(fl_iso < comp_iso && j < core_[i].iso.size()){
+          fl_iso = core_[i].iso[j++].name;        
         }
        }
        if(fl_iso == comp_iso){
-        core[i].iso[j].fraction[0] = it->second;
-        fl_iso = core[i].iso[j++].name;
+        core_[i].iso[j].fraction[0] = it->second;
+        fl_iso = core_[i].iso[j++].name;
       } 
     }
   }
   /// pass fuel bundles to burn-up calc
-  pair<double, map<int, double> > reactor_return;
-  reactor_return = burnupcalc(core, nonleakage, 0.0001, 1); 
+  std::map<double, std::map<int, double> > reactor_return;
+  reactor_return = burnupcalc(core_, nonleakage, 0.0001); 
   /// convert fuel bundles into materials
-  /// add to inventory
-  cycle_end_ = ctx->time() + 18;
+  int i = 0;
+  for(std::map<double, std::map<int, double> >::iterator rr = reactor_return.begin(); rr != reactor_return.end(); ++rr){
+    cyclus::CompMap out_comp;
+    for(std::map<int, double>::iterator c = rr->second.begin(); c != rr->second.end(); ++c){
+      out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
+    }
+    manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
+    inventory.Push(manifest[i]);
+    ++i;
+  }
+  // cycle end update
+  cycle_end_ = ctx->time() + ceil(reactor_return.rbegin()->first/28);
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
@@ -82,7 +98,6 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_)
     return ports;
-
   CompMap cm;
   Material::Ptr target = Material::CreateUntracked(core_mass/batches, 
                           Composition::CreateFromAtom(cm));
@@ -91,7 +106,42 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
   port->AddRequest(target, this, in_commod);
   port->AddConstraint(cc);
+  if(core_.size() == 0){
+    for (int i = 0; i < batches-1; i++){
+      port->AddRequest(target, this, in_commod);
+    }
+  } 
+  ports.insert(port);
+  return ports;
+}
 
+// MatlBids //
+std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
+  ReactorFacility::GetMatlBids(
+    cyclus::CommodMap<cyclus::Material>::type& requests) {
+  using cyclus::BidPortfolio;
+  using cyclus::CapacityConstraint;
+  using cyclus::Converter;
+  using cyclus::Material;
+  using cyclus::Request;
+
+  // respond to all requests of my commodity
+
+  std::vector<cyclus::Material::Ptr> manifest;
+  manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
+
+  BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+  std::vector<Request<Material>*>::iterator it;
+  for (it = requests.begin(); it != requests.end(); ++it) {
+    Request<Material>* req = *it;
+    if (req->commodity() == out_commod) {
+      Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0].comp());
+      port->AddBid(req, offer, this);
+    }
+  }
+  inventory.PushAll<Material>(manifest);
+
+  std::set<BidPortfolio<Material>::Ptr> ports;
   ports.insert(port);
   return ports;
 }
@@ -106,6 +156,18 @@ void ReactorFacility::AcceptMatlTrades(
   }
 }
 
+void ReactorFacility::GetMatlTrades(
+    const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+    std::vector<std::pair<cyclus::Trade<cyclus::Material>,
+                          cyclus::Material::Ptr> >& responses) {
+  using cyclus::Material;
+  using cyclus::Trade;
+
+  std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
+  for (it = trades.begin(); it != trades.end(); ++it) {
+    responses.push_back(std::make_pair(*it, inventory.Pop()));
+  }
+}
 extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {
   return new ReactorFacility(ctx);
 }
