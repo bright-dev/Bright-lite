@@ -38,12 +38,34 @@ void ReactorFacility::Tock() {
     return;
   /// Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
-  manifest = cyclus::toolkit::ResCast<Material>(inventory.pop(inventory.size());
+  manifest = cyclus::ResCast<Material>(inventory.pop(inventory.size());
   
   /// convert materials into fuel bundles
-  std::vector<fuelBundle> batches;
+  std::vector<fuelBundle> core = std::vector<fuelBundle>(batches);
+  cyclus::CompMap comp;
+  cyclus::CompMap::iterator it;
+  for(int i = 0; i < manifest.size(); i++){
+     comp = manifest[i].comp().mass();
+     core[i] = fuel_library_;
+     int j = 0;
+     int fl_iso = core[i].iso[j].name;
+     int comp_iso;
+     for (it = comp.begin(); it != comp.end(); ++it){
+       comp_iso = pyne::nucname::zzaaam(it->first);
+       if(fl_iso < comp_iso) {
+        while(fl_iso < comp_iso && j < core[i].iso.size()){
+          fl_iso = core[i].iso[j++].name;        
+        }
+       }
+       if(fl_iso == comp_iso){
+        core[i].iso[j].fraction[0] = it->second;
+        fl_iso = core[i].iso[j++].name;
+      } 
+    }
+  }
   /// pass fuel bundles to burn-up calc
-  
+  pair<double, map<int, double> > reactor_return;
+  reactor_return = burnupcalc(core, nonleakage, 0.0001, 1); 
   /// convert fuel bundles into materials
   /// add to inventory
   cycle_end_ = ctx->time() + 18;
