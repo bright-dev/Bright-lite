@@ -39,6 +39,7 @@ void ReactorFacility::Tock() {
   /// Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::toolkit::ResCast<Material>(inventory.pop(inventory.size());
+  
   /// convert materials into fuel bundles
   std::vector<fuelBundle> batches;
   /// pass fuel bundles to burn-up calc
