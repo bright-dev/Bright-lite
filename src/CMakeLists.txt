@@ -13,3 +13,6 @@ INSTALL(TARGETS brightlite
 
 install_cyclus_standalone("ReactorFacility" "reactor_facility" "reactor")
 TARGET_LINK_LIBRARIES(ReactorFacility brightlite)
+TARGET_LINK_LIBRARIES(ReactorFacility_unit_tests brightlite)
+
+
