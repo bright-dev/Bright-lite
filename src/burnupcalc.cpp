@@ -259,7 +259,7 @@ double kcalc(std::vector<isoInformation> isoBatches, std::vector<double> batch_f
 
 }
 
-map<double, map<int, double> > burnupcalc(vector<fuelBundle> batches, double pnl, double tolerance, double flux) {
+map<double, map<int, double> > burnupcalc(vector<fuelBundle> batches, double pnl, double tolerance) {
     map<double, map<int,double> > rtn;
     rtn[0] = map<int, double>();
     double F1, F2, F3, k_total = 0;

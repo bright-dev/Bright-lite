@@ -118,7 +118,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 // MatlBids //
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   ReactorFacility::GetMatlBids(
-    cyclus::CommodMap<cyclus::Material>::type& requests) {
+    cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
   using cyclus::BidPortfolio;
   using cyclus::CapacityConstraint;
   using cyclus::Converter;
@@ -131,15 +131,16 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
 
   BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+  std::vector<Request<Material>*>& requests = commod_requests[out_commod];
   std::vector<Request<Material>*>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
     Request<Material>* req = *it;
     if (req->commodity() == out_commod) {
-      Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0].comp());
+      Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0]->comp());
       port->AddBid(req, offer, this);
     }
   }
-  inventory.PushAll<Material>(manifest);
+  inventory.PushAll(manifest);
 
   std::set<BidPortfolio<Material>::Ptr> ports;
   ports.insert(port);
@@ -165,7 +166,7 @@ void ReactorFacility::GetMatlTrades(
 
   std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
   for (it = trades.begin(); it != trades.end(); ++it) {
-    responses.push_back(std::make_pair(*it, inventory.Pop()));
+    responses.push_back(std::make_pair(*it, cyclus::ResCast<Material>(inventory.Pop())));
   }
 }
 extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {
