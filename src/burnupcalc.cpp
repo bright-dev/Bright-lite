@@ -228,7 +228,6 @@ double kcalc(std::vector<isoInformation> isoBatches, std::vector<double> batch_f
 //takes isoInformation of all batches and returns the k at the fluence level
 //starting fluence levels are saved in the isoInformation structure
 //the variable fluence passed to this function is how much the bundles will be burned
-
     double total_prod = 0;
     double total_dest = 0;
     int j;
@@ -247,8 +246,8 @@ double kcalc(std::vector<isoInformation> isoBatches, std::vector<double> batch_f
                                  isoBatches[i].fluence[j-1], isoBatches[i].fluence[j], batch_fluence[i] + fluence*batch_phi[i]);
         }
         else{
-            total_prod += isoBatches[i].neutron_prod[0];
-            total_dest += isoBatches[i].neutron_dest[0];
+            total_prod += isoBatches[i].neutron_prod[1];
+            total_dest += isoBatches[i].neutron_dest[1];
         }
     }
 
@@ -270,17 +269,17 @@ map<double, map<int, double> > burnupcalc(vector<fuelBundle> batches, double pnl
     double phimax = 0;
     int N = batches.size();
     double burnup = 0;
-    int oldest_batch = N; //index for oldest batch, index starts from zero
+    int oldest_batch = N-1; //index for oldest batch, index starts from zero
 
     //collapse all the baches to isoInformation and build batch_fluence vector
-    for(int i = 0; i < batches.size(); i++){
+    for(int i = 0; i < N; i++){
         isoBatches.push_back(regioncollapse(batches[i], 1));
         batch_fluence.push_back(batches[i].batch_fluence);
         batch_phi.push_back(phicalc(i, N, batch_fluence[i], isoBatches[i]));
         if(batch_phi[i]>phimax){
             phimax = batch_phi[i];
         }
-        if(batches[i].batch_fluence > oldest_batch){
+        if(batches[i].batch_fluence > batches[oldest_batch].batch_fluence){
             oldest_batch = i;
         }
     }
@@ -317,14 +316,14 @@ int i = 0;
     }//F3 is the fluence of the cycle
 
     int j = 0;
-    for(;isoBatches[oldest_batch].fluence[j] < F3*batch_phi[oldest_batch]; j++){
+    for(j;isoBatches[oldest_batch].fluence[j] < F3*batch_phi[oldest_batch]; j++){
         burnup += isoBatches[oldest_batch].BUd[j];
     }
-    cout << "Burnup: "<<burnup << "    k at this burnup: "<< k_total << endl;
+    cout << "Burnup: "<< burnup << "    k at this burnup: "<< k_total << endl;
 
     for(int i = 0; i < isoBatches.size(); i++){
       isoBatches[i].batch_fluence += F3*batch_phi[i];
-      rtn[i] = tomass(j++, isoBatches[i].batch_fluence, isoBatches[i]);
+      rtn[isoBatches[i].batch_fluence] = tomass(j+1, isoBatches[i].batch_fluence, isoBatches[i]);
     }
     return rtn;
 }
