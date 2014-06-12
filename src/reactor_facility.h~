@@ -121,7 +121,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
 
-  #pragma cyclus var{"default": 0.001 \
+  #pragma cyclus var{"default": 0.001,p \
                      "tooltip": "The convergence requirement for the code"}
   double tolerence;
 

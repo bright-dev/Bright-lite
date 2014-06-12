@@ -7,7 +7,7 @@ endif()
 # add lib
 ADD_LIBRARY(brightlite burnupcalc.cpp origenBuilder.cpp)
 INSTALL(TARGETS brightlite
-    LIBRARY DESTINATION lib/cyclus/reactor_facility
+    LIBRARY DESTINATION lib/cyclus/reactor
     COMPONENT brightlite
     )
 

@@ -4,31 +4,6 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-  
-  std::ifstream inf(libraries[0] +"/manifest.txt");
-  std::string line;
-  std::string iso_name;
-  fuel_library_.name = libraries[0];
-  while(getline(inf, line)){
-    std::istringstream iss;
-    isoInformation iso;
-    iss >> iso_name;
-    iso.name = atoi(iso_name.c_str());
-    iso.fraction[0] = 0;
-    fuel_library_.iso.push_back(iso);
-  }
-  if (libraries.size() == 1){
-    for(int i =0; i < fuel_library_.iso.size(); i++){
-      DataReader2(fuel_library_.name, fuel_library_.iso);
-    }
-  } else {
-  ///interpolation stuff
-  }
-  core_ = std::vector<fuelBundle>(batches);
-  for(int i = 0; i < core_.size(); i++){
-    core_[i] = fuel_library_;
-    core_[i].batch_fluence = 0;
-  }
   cycle_end_ = ctx->time();
 };
 
@@ -36,21 +11,53 @@ std::string ReactorFacility::str() {
   return Facility::str();
 }
 
-void ReactorFacility::Tick() {}
+void ReactorFacility::Tick() {
+  std::cout << "TICK" << std::endl;
+  if(fuel_library_.name.size() == 0){
+    std::ifstream inf(libraries[0] +"/manifest.txt");
+    std::string line;
+    std::string iso_name;
+    fuel_library_.name = libraries[0];
+    while(getline(inf, line)){
+      std::istringstream iss(line);
+      isoInformation iso;
+      iss >> iso_name;
+      iso.name = atoi(iso_name.c_str());
+      iso.region = 0;
+      iso.fraction.push_back(0);
+      fuel_library_.iso.push_back(iso);
+    }
+    if (libraries.size() == 1){
+      DataReader2(fuel_library_.name, fuel_library_.iso);
+    } else {
+    ///interpolation stuff
+    }
+    core_ = std::vector<fuelBundle>(batches);
+    for(int i = 0; i < core_.size(); i++){
+      core_[i] = fuel_library_;
+      core_[i].batch_fluence = 0;
+    } 
+  }
+}
 
 void ReactorFacility::Tock() {
+  std::cout << "TOCK" << std::endl;
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_)
     return;
   // Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
+  std::cout << "inventory:   "<< inventory.count() << std::endl;
   manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
   // convert materials into fuel bundles
   cyclus::CompMap comp;
   cyclus::CompMap::iterator it;
-  fuelBundle bundle;
-  core_.push_back(bundle); 
+  if( core_.size() < batches){
+    fuelBundle bundle;
+    core_.push_back(bundle);
+  } 
   core_[batches-1].batch_fluence = 0;
+  std::cout << "MANIFEST:   " << manifest.size() << std::endl;
   for(int i = 0; i < manifest.size(); i++){
      comp = manifest[i]->comp()->mass();
      int j = 0;
@@ -59,14 +66,15 @@ void ReactorFacility::Tock() {
      for (it = comp.begin(); it != comp.end(); ++it){
        comp_iso = pyne::nucname::zzaaam(it->first);
        if(fl_iso < comp_iso) {
-        while(fl_iso < comp_iso && j < core_[i].iso.size()){
-          fl_iso = core_[i].iso[j++].name;        
-        }
+         while(fl_iso < comp_iso && j < core_[i].iso.size()-1){
+           fl_iso = core_[i].iso[j++].name;        
+         }
        }
        if(fl_iso == comp_iso){
-        core_[i].iso[j].fraction[0] = it->second;
-        fl_iso = core_[i].iso[j++].name;
-      } 
+         core_[i].iso[j].fraction[0] = it->second;
+         j+=1;
+         fl_iso = core_[i].iso[j].name;
+       } 
     }
   }
   /// pass fuel bundles to burn-up calc
@@ -93,7 +101,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   using cyclus::Composition;
   using cyclus::CompMap;
   using cyclus::CapacityConstraint;
-
+  std::cout << "Requests" << std::endl;
   std::set<RequestPortfolio<Material>::Ptr> ports;
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_)
@@ -101,16 +109,21 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   CompMap cm;
   Material::Ptr target = Material::CreateUntracked(core_mass/batches, 
                           Composition::CreateFromAtom(cm));
-  CapacityConstraint<Material> cc(1.0);
 
   RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
   port->AddRequest(target, this, in_commod);
+  double qty;
+  if(inventory.count() == 0){
+     for(int i = 0; i < batches - 1; i++){
+        port->AddRequest(target, this, in_commod);
+     }
+     qty = core_mass;
+  } else {
+     qty = core_mass/batches;
+  }
+  CapacityConstraint<Material> cc(qty);
+
   port->AddConstraint(cc);
-  if(core_.size() == 0){
-    for (int i = 0; i < batches-1; i++){
-      port->AddRequest(target, this, in_commod);
-    }
-  } 
   ports.insert(port);
   return ports;
 }
@@ -125,7 +138,13 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   using cyclus::Material;
   using cyclus::Request;
 
+  std::cout << "Bids" << std::endl;
+  cyclus::Context* ctx = context();
+  std::set<BidPortfolio<Material>::Ptr> ports;
+  if (ctx->time() != cycle_end_)
+    return ports;
   // respond to all requests of my commodity
+  if (inventory.count() == 0){return ports;}
 
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
@@ -142,7 +161,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   }
   inventory.PushAll(manifest);
 
-  std::set<BidPortfolio<Material>::Ptr> ports;
+  
   ports.insert(port);
   return ports;
 }
