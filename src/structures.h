@@ -68,7 +68,10 @@ struct fuelBundle {
     std::vector<double> stream_fraction;
 };
 
-
+struct fuelInfo{
+    double fluence;
+    std::map<int, double> burnup_info;
+};
 
 
 #endif // STRUCTURES_H_INCLUDED

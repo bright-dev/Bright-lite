@@ -12,7 +12,7 @@ std::string ReactorFacility::str() {
 }
 
 void ReactorFacility::Tick() {
-  std::cout << "TICK" << std::endl;
+  std::cout << "tick:   "<< inventory.count() << std::endl;
   if(fuel_library_.name.size() == 0){
     std::ifstream inf(libraries[0] +"/manifest.txt");
     std::string line;
@@ -41,23 +41,24 @@ void ReactorFacility::Tick() {
 }
 
 void ReactorFacility::Tock() {
-  std::cout << "TOCK" << std::endl;
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_)
     return;
   // Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
-  std::cout << "inventory:   "<< inventory.count() << std::endl;
+  std::cout << "tock:   "<< inventory.count() << std::endl;
   manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
   // convert materials into fuel bundles
   cyclus::CompMap comp;
   cyclus::CompMap::iterator it;
-  if( core_.size() < batches){
+  while( core_.size() < batches){
     fuelBundle bundle;
     core_.push_back(bundle);
   } 
-  core_[batches-1].batch_fluence = 0;
-  //std::cout << "MANIFEST:   " << manifest.size() << std::endl;
+  for (int i = 0; i < core_.size(); i++){
+     core_[i].batch_fluence = 0;
+  }
+  std::cout << "MANIFEST:   " << manifest.size() << std::endl;
   for(int i = 0; i < manifest.size(); i++){
      comp = manifest[i]->comp()->mass();
      int j = 0;
@@ -72,6 +73,8 @@ void ReactorFacility::Tock() {
        }
        if(fl_iso == comp_iso){
          core_[i].iso[j].fraction[0] = it->second;
+         std::cout << core_[i].iso[j].name << "	";
+         std::cout << core_[i].iso[j].fraction[0] << std::endl;
          j+=1;
          fl_iso = core_[i].iso[j].name;
        } 
@@ -93,6 +96,7 @@ void ReactorFacility::Tock() {
   }
   // cycle end update
   cycle_end_ = ctx->time() + ceil(reactor_return.rbegin()->first/28);
+  std::cout << cycle_end_ - ctx->time() << std::endl;
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
@@ -101,11 +105,12 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   using cyclus::Composition;
   using cyclus::CompMap;
   using cyclus::CapacityConstraint;
-
   std::set<RequestPortfolio<Material>::Ptr> ports;
   cyclus::Context* ctx = context();
-  if (ctx->time() != cycle_end_)
+  if (ctx->time() != cycle_end_){
     return ports;
+  }
+  std::cout << "request:   "<< inventory.count() << std::endl;
   CompMap cm;
   Material::Ptr target = Material::CreateUntracked(core_mass/batches, 
                           Composition::CreateFromAtom(cm));
@@ -140,8 +145,10 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
 
   cyclus::Context* ctx = context();
   std::set<BidPortfolio<Material>::Ptr> ports;
-  if (ctx->time() != cycle_end_)
+  if (ctx->time() != cycle_end_){
     return ports;
+  }
+  std::cout << "bids:   "<< inventory.count() << std::endl;
   // respond to all requests of my commodity
   if (inventory.count() == 0){return ports;}
 
@@ -159,8 +166,9 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
     }
   }
   inventory.PushAll(manifest);
-
+  CapacityConstraint<Material> cc(core_mass/batches);
   
+  port->AddConstraint(cc);  
   ports.insert(port);
   return ports;
 }
@@ -176,6 +184,7 @@ void ReactorFacility::AcceptMatlTrades(
 }
 
 void ReactorFacility::GetMatlTrades(
+
     const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                           cyclus::Material::Ptr> >& responses) {
@@ -183,8 +192,9 @@ void ReactorFacility::GetMatlTrades(
   using cyclus::Trade;
 
   std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
+  cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
   for (it = trades.begin(); it != trades.end(); ++it) {
-    responses.push_back(std::make_pair(*it, cyclus::ResCast<Material>(inventory.Pop())));
+    responses.push_back(std::make_pair(*it, discharge));
   }
 }
 extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {
