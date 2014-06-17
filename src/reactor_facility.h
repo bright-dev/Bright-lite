@@ -33,7 +33,7 @@ namespace reactor {
 /// describing the behavior at the tick and tock as well as the behavior
 /// upon sending and receiving materials and messages.
 class ReactorFacility : public cyclus::Facility  {
- public:  
+ public:
   /// Constructor for ReactorFacility Class
   /// @param ctx the cyclus context for access to simulation-wide parameters
   explicit ReactorFacility(cyclus::Context* ctx);
@@ -43,7 +43,7 @@ class ReactorFacility : public cyclus::Facility  {
   /// (e.g., reading from the database, instantiating a new object, etc.).
   /// @warning The Prime Directive must have a space before it! (A fix will be
   /// in 2.0 ^TM)
-  
+
   #pragma cyclus
 
   #pragma cyclus note {"doc": "A reactor facility is provided as a skeleton " \
@@ -51,9 +51,9 @@ class ReactorFacility : public cyclus::Facility  {
 
   /// A verbose printer for the ReactorFacility
   virtual std::string str();
-  
+
   /// The handleTick function specific to the ReactorFacility.
-  /// @param time the time of the tick  
+  /// @param time the time of the tick
   virtual void Tick();
 
   /// The handleTick function specific to the ReactorFacility.
@@ -61,7 +61,7 @@ class ReactorFacility : public cyclus::Facility  {
   virtual void Tock();
 
   std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
-  
+
   virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests);
@@ -85,8 +85,8 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
                       "doc": "the reactor's burnup & criticality behavior to use"}
-  std::vector<std::string> libraries; 
-  
+  std::vector<std::string> libraries;
+
   #pragma cyclus var {"tooltip": "number of batches", \
                       "default": 3}
   int batches;

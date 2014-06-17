@@ -139,7 +139,7 @@ vector<nonActinide> NonActinideReader(string file_name){
     }
 }
 
-isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
+isoInformation BuildIsotope2(ifstream &input, isoInformation &iso, double flux_value){
     int i = 0;
     string buffer;
     double value;
@@ -157,7 +157,7 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
         } else {
             while (iss >> value){
                 if (i == 0){
-                    iso.fluence.push_back(value);
+                    iso.fluence.push_back(value*flux_value*84600);
                 } else if (i == 1){
                     iso.neutron_prod.push_back(value);
                 } else if (i == 2){
@@ -172,14 +172,29 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso){
     return (iso);
 }
 
+double flux_finder(std::string type){
+    ifstream inf(type + "/params.txt");
+    string buffer;
+    double value;
+    string line;
+    while(getline(inf, line)){
+        istringstream iss(line);
+        iss >> buffer >> value;
+        if (buffer == "FLUX"){
+            return value;
+        }
+    }
+}
+
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
+    double flux_value = flux_finder(type);
     for (int i = 0; i < input_stream.size(); i++){
         if(true){       //cem added this
             ifstream inf(type + "/" +to_string(input_stream[i].name) + ".txt");
             if(!inf){
                 cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
             }
-            BuildIsotope2(inf, input_stream[i]);
+            BuildIsotope2(inf, input_stream[i], flux_value);
             inf.close();
         }
     }
