@@ -26,6 +26,10 @@ void ReactorFacility::Tick() {
       iso.fraction.push_back(0);
       fuel_library_.iso.push_back(iso);
     }
+    fuel_library_.base_flux = flux_finder(fuel_library_.name);
+    fuel_library_.base_mass = core_mass;
+    fuel_library_.base_power = generated_power;
+    fuel_library_.batch_fluence = 0;
     if (libraries.size() == 1){
       DataReader2(fuel_library_.name, fuel_library_.iso);
     } else {
@@ -34,7 +38,6 @@ void ReactorFacility::Tick() {
     core_ = std::vector<fuelBundle>(batches);
     for(int i = 0; i < core_.size(); i++){
       core_[i] = fuel_library_;
-      core_[i].batch_fluence = 0;
     }
   }
 }
@@ -45,16 +48,15 @@ void ReactorFacility::Tock() {
     return;
   // Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
-  std::cout << "tock:   "<< inventory.count() << std::endl;
   manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
   // convert materials into fuel bundles
   cyclus::CompMap comp;
   cyclus::CompMap::iterator it;
-  while( core_.size() < batches){
+  while(core_.size() < batches){
     fuelBundle bundle;
+    bundle = fuel_library_;
     core_.push_back(bundle);
   }
-  core_[batches-1].batch_fluence = 0;
   for(int i = 0; i < manifest.size(); i++){
      comp = manifest[batches-1]->comp()->mass();
      int j = 0;
@@ -80,7 +82,7 @@ void ReactorFacility::Tock() {
   /// convert fuel bundles into materials
   int i = 0;
   for(int i = 0; i < reactor_return.size(); i++){
-    core_[i].batch_fluence += reactor_return[i].fluence;
+    core_[i].batch_fluence = reactor_return[i].fluence;
     cyclus::CompMap out_comp;
     for(std::map<int, double>::iterator c = reactor_return[i].burnup_info.begin(); c != reactor_return[i].burnup_info.end(); ++c){
       if(c->second < 0){
@@ -94,7 +96,7 @@ void ReactorFacility::Tock() {
     inventory.Push(manifest[i]);
   }
   // cycle end update
-  cycle_end_ = ctx->time() + ceil(reactor_return[reactor_return.size()-1].fluence/28);
+  cycle_end_ = ctx->time() + ceil(reactor_return[reactor_return.size()-1].fluence/(86400*fuel_library_.base_flux*28));
   std::cout << cycle_end_ - ctx->time() << std::endl;
 }
 
@@ -190,6 +192,7 @@ void ReactorFacility::GetMatlTrades(
 
   std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
   cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
+  core_.erase(core_.begin());
   for (it = trades.begin(); it != trades.end(); ++it) {
     responses.push_back(std::make_pair(*it, discharge));
   }

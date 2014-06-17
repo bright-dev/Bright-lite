@@ -19,6 +19,9 @@ struct isoInformation {
     //double fraction;
     bool fuel;
     double batch_fluence;
+    double base_power;
+    double base_mass;
+    double base_flux;
     std::vector<double> fraction;
     double sigs;
     double siga;
@@ -57,6 +60,9 @@ struct fuelBundle {
     double pnl; //leakage
     double tres;
     double batch_fluence;
+    double base_flux;
+    double base_power;
+    double base_mass;
     double target_BUd;
     double fuel_radius;
     double moderator_radius;
