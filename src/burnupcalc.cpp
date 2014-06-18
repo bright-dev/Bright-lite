@@ -398,12 +398,14 @@ std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double 
     for(j;isoBatches[oldest_batch].fluence[j] < isoBatches[oldest_batch].batch_fluence; j++){
         burnup += isoBatches[oldest_batch].BUd[j];
     }
+    burnup += intpol(isoBatches[oldest_batch].BUd[j],isoBatches[oldest_batch].BUd[j+1], isoBatches[oldest_batch].fluence[j],
+                     isoBatches[oldest_batch].fluence[j+1],isoBatches[oldest_batch].batch_fluence);
+
     cout << "Burnup: "<< burnup << "    k at this burnup: "<< k_total<< endl;
 
     for(int i = 0; i < isoBatches.size(); i++){
       fuelInfo fuel_info;
       fuel_info.fluence = isoBatches[i].batch_fluence;
-      cout << fuel_info.fluence << endl;
       fuel_info.burnup_info = tomass(j+1, isoBatches[i].batch_fluence, isoBatches[i]);
       rtn.push_back(fuel_info);
     }

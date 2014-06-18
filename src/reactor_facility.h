@@ -76,8 +76,9 @@ class ReactorFacility : public cyclus::Facility  {
 
   /// This facility has one output commodity and one input commodity
   #pragma cyclus var {"tooltip": "input commodity", \
-                      "doc": "commodity that the brightlite reactor consumes"}
-  std::string in_commod;
+                      "doc": "commodity that the brightlite reactor consumes", \
+                      "schematype": "token"}
+  std::vector<std::string> in_commods;
 
   #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies"}
