@@ -89,12 +89,19 @@ void ReactorFacility::Tock() {
     }
   }
   /// reorder fuelBundles.
-  std::vector<fuelBundle> temp_core;
+  std::vector<fuelBundle> temp_core(batch);
+  std::vector<isoInformation> temp_isos(batches);
   k_test = 0
   for (int i = 0; i < batches; i++){
-    for (int j = 0; j < batches-i; j++){
-
-    }
+    temp_isos.push_back(regioncollapse(core_[i], 1));
+  }
+  for(int j = 0; j < batches; j++){
+      for (int i = 0; i < temp_isos; i++){
+        if (k_test < temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1]){
+            k_test = temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1];
+            temp_core[i] = core_[i]
+        }
+      }
   }
   /// pass fuel bundles to burn-up calc
   std::vector<fuelInfo> reactor_return;
