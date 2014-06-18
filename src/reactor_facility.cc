@@ -57,8 +57,17 @@ void ReactorFacility::Tock() {
     bundle = fuel_library_;
     core_.push_back(bundle);
   }
+
+  /*for(int i = 0; i < core_.size(); i++){
+    int j = 0;
+    while (core_[i].iso[0].fluence[j] < core_[i].batch_fluence){
+        j++;
+    }
+    std::cout << intpol(core_[i].iso[0].iso_vector[1].mass[j], core_[i].iso[0].iso_vector[1].mass[j+1],
+           core_[i].iso[0].fluence[j], core_[i].iso[0].fluence[j+1], core_[i].batch_fluence)*core_[i].iso[0].fraction[0] << std::endl;
+  }*/
   for(int i = 0; i < manifest.size(); i++){
-     comp = manifest[batches-1]->comp()->mass();
+     comp = manifest[i]->comp()->mass();
      int j = 0;
      int fl_iso = core_[i].iso[j].name;
      int comp_iso;
@@ -70,10 +79,21 @@ void ReactorFacility::Tock() {
          }
        }
        if(fl_iso == comp_iso){
-         core_[i].iso[j].fraction[0] = it->second;
+         if (core_[i].batch_fluence == 0){
+            core_[i].iso[j].fraction[0] = it->second;
+            std::cout << fl_iso << " " << it->second <<std::endl;
+         }
          j+=1;
          fl_iso = core_[i].iso[j].name;
        }
+    }
+  }
+  /// reorder fuelBundles.
+  std::vector<fuelBundle> temp_core;
+  k_test = 0
+  for (int i = 0; i < batches; i++){
+    for (int j = 0; j < batches-i; j++){
+
     }
   }
   /// pass fuel bundles to burn-up calc
@@ -90,14 +110,21 @@ void ReactorFacility::Tock() {
       } else {
         out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
       }
-
     }
     manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
     inventory.Push(manifest[i]);
   }
+  /*for(int i = 0; i < core_.size(); i++){
+    int j = 0;
+    while (core_[i].iso[0].fluence[j] < core_[i].batch_fluence){
+        j++;
+    }
+    std::cout << intpol(core_[i].iso[0].iso_vector[1].mass[j], core_[i].iso[0].iso_vector[1].mass[j+1],
+           core_[i].iso[0].fluence[j], core_[i].iso[0].fluence[j+1], core_[i].batch_fluence)*core_[i].iso[0].fraction[0] << std::endl;
+  }*/
   // cycle end update
   cycle_end_ = ctx->time() + ceil(reactor_return[reactor_return.size()-1].fluence/(86400*fuel_library_.base_flux*28));
-  std::cout << cycle_end_ - ctx->time() << std::endl;
+  std::cout << "Time :: " <<reactor_return[reactor_return.size()-1].fluence/(86400*fuel_library_.base_flux) << std::endl;
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
@@ -116,14 +143,14 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
                           Composition::CreateFromAtom(cm));
 
   RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
-  port->AddRequest(target, this, in_commod);
   double qty;
   if(inventory.count() == 0){
-     for(int i = 0; i < batches - 1; i++){
-        port->AddRequest(target, this, in_commod);
+     for(int i = 0; i < batches; i++){
+        port->AddRequest(target, this, in_commods[i+1]);
      }
      qty = core_mass;
   } else {
+     port->AddRequest(target, this, in_commods[0]);
      qty = core_mass/batches;
   }
   CapacityConstraint<Material> cc(qty);
