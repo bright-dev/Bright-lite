@@ -15,6 +15,7 @@
 
 
 double intpol(double y0, double y1, double x0, double x1, double x);
+isoInformation regioncollapse(fuelBundle fuel, double flux);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
 std::vector<fuelInfo> burnupcalc(std::vector<fuelBundle> batches, double pnl, double tolerance);
 std::pair<double, std::map<int, double> > SSburnupcalc(isoInformation tempone, int N, double pnl, double tolerance);
