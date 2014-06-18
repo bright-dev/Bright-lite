@@ -1,0 +1,91 @@
+<!-- 1 Source, 1 rx, 1 Sink -->
+
+<simulation>
+  <control>
+    <duration>200</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><path>reactor</path><name>ReactorFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Source</name>
+    <config>
+      <Source>
+        <commod>freshFuel</commod>
+        <recipe_name>commod_recipe</recipe_name>
+	<capacity>1000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+	  <val>uf</val> 
+	</in_commods>
+        <capacity>1000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx</name>
+    <config>
+      <ReactorFacility>
+        <in_commod>freshFuel</in_commod>
+        <out_commod>uf</out_commod>
+        <libraries><val>E5_60</val></libraries>
+        <target_burnup>60.0</target_burnup>
+        <core_mass>1000.0</core_mass>
+        <batches>3</batches>
+      </ReactorFacility>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Rx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>commod_recipe</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>
