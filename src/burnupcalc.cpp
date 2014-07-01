@@ -406,6 +406,7 @@ std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double 
     for(int i = 0; i < isoBatches.size(); i++){
       fuelInfo fuel_info;
       fuel_info.fluence = isoBatches[i].batch_fluence;
+      fuel_info.burnup = burnup;
       fuel_info.burnup_info = tomass(j+1, isoBatches[i].batch_fluence, isoBatches[i]);
       rtn.push_back(fuel_info);
     }

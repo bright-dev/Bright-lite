@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>400</duration>
+    <duration>100</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -32,7 +32,7 @@
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>commod_recipe1</recipe_name>
-	    <capacity>250.0</capacity>
+	    <capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -94,9 +94,9 @@
             <val>freshFuel4</val>
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>E5_50</val></libraries>
+        <libraries><val>E5_60</val></libraries>
         <target_burnup>60.0</target_burnup>
-        <nonleakage>0.97</nonleakage>
+        <nonleakage>0.91</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>4</batches>
       </ReactorFacility>

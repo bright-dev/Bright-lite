@@ -89,17 +89,39 @@ void ReactorFacility::Tock() {
     }
   }
   /// reorder fuelBundles.
-  std::vector<fuelBundle> temp_core(batches);
-  std::vector<isoInformation> temp_isos(batches);
-  int k_test = 0;
-  for (int i = 0; i < batches; i++){
-    temp_isos.push_back(regioncollapse(core_[i], 1.));
-  }
-  for(int j = 0; j < batches; j++){
-      for (int i = 0; i < temp_isos.size(); i++){
-        if (k_test < temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1]){
-            k_test = temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1];
-            temp_core[j] = core_[i];
+  if(core_[0].batch_fluence == 0){
+      std::vector<fuelBundle> temp_core(batches);
+      std::vector<isoInformation> temp_isos;
+      double k_test = 0;
+      for (int i = 0; i < batches; i++){
+        temp_isos.push_back(regioncollapse(core_[i], 1.));
+      }
+      for(int j = 0; j < batches; j++){
+          std::cout << temp_isos.size() << std::endl;
+          for (int i = 0; i < temp_isos.size(); i++){
+             if (k_test < temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1]){
+                 k_test = temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1];
+                 std::cout << k_test << std::endl;
+                 temp_core[batches-(j+1)] = core_[i];
+             }
+          }
+
+          for (int i = 0; i < temp_isos.size(); i++){
+             if (k_test == temp_isos[i].neutron_prod[1]/temp_isos[i].neutron_dest[1]){
+                core_.erase(core_.begin()+i);
+                temp_isos.erase(temp_isos.begin()+i);
+                int k = i;
+                for(k; k < temp_isos.size(); k++){
+                    temp_isos[k] = temp_isos[k+1];
+                }
+             }
+          }
+          k_test = 0;
+      }
+      core_ = temp_core;
+      for (int i = 0; i < core_.size(); i++){
+        for(int j = 0; j < core_[i].iso.size(); j++){
+            std::cout << core_[i].iso[j].name << "   " << core_[i].iso[j].fraction[0] << std::endl;
         }
       }
   }
@@ -217,7 +239,6 @@ void ReactorFacility::AcceptMatlTrades(
 }
 
 void ReactorFacility::GetMatlTrades(
-
     const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                           cyclus::Material::Ptr> >& responses) {
@@ -231,6 +252,39 @@ void ReactorFacility::GetMatlTrades(
     responses.push_back(std::make_pair(*it, discharge));
   }
 }
+
+double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
+    fuelBundle bundle;
+    bundle = fuel_library_;
+    comp = new_batch->comp()->mass();
+    int j = 0;
+    int fl_iso = bundle.iso[j].name;
+    int comp_iso;
+    for (it = comp.begin(); it != comp.end(); ++it){
+        comp_iso = pyne::nucname::zzaaam(it->first);
+        if(fl_iso < comp_iso) {
+            while(fl_iso < comp_iso && j < bundle.iso.size()-1){
+                fl_iso = bundle.iso[j++].name;
+            }
+        }
+        if(fl_iso == comp_iso){
+            if (bundle.batch_fluence == 0){
+                bundle.iso[j].fraction[0] = it->second;
+            }
+            j+=1;
+            fl_iso = bundle.iso[j].name;
+        }
+    }
+    std::vector<fuelBundle> temp_core;
+    for(int i = 1; i < core_.size(); i++){
+        temp_core.push_back(core_[i]);
+    }
+    temp_core.push_back(bundle);
+    std::vector<fuelInfo> reactor_return;
+    reactor_return = burnupcalc(core_, nonleakage, 0.0001);
+    return reactor_return.burnup;
+}
+
 extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {
   return new ReactorFacility(ctx);
 }
