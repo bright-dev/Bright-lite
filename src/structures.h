@@ -76,6 +76,7 @@ struct fuelBundle {
 
 struct fuelInfo{
     double fluence;
+    double burnup;
     std::map<int, double> burnup_info;
 };
 

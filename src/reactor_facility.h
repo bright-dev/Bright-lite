@@ -74,6 +74,7 @@ class ReactorFacility : public cyclus::Facility  {
   virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                 cyclus::Material::Ptr> >& responses);
 
+  double burnup_test(cyclus::Material::Ptr new_batch )
   /// This facility has one output commodity and one input commodity
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes", \
