@@ -73,11 +73,11 @@ class FuelfabFacility : public cyclus::Facility  {
                                         cyclus::Material::Ptr> >& responses);
 
     // and away we go!
-    #pragma cyclus var {"capacity": "max_inv_size"}
     std::vector<cyclus::toolkit::ResourceBuff> inventory;
 
     #pragma cyclus var {"tooltip": "maximum storage capacity of the facility"}
     double maximum_storage;
+
     #pragma cyclus var {"tooltip": "input commodities", \
                         "doc": "A list of the commodities that this facility can recieve"}
     std::map<std::string, double> in_commods;
@@ -85,6 +85,7 @@ class FuelfabFacility : public cyclus::Facility  {
     #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies"}
     std::string out_commod;
+
 };
 
 }  // namespace fuelfab

@@ -2,14 +2,14 @@
 
 <simulation>
   <control>
-    <duration>200</duration>
+    <duration>100</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
 
   <archetypes>
     <spec><lib>agents</lib><name>Source</name></spec>
-    <spec><path>reactor</path><name>ReactorFacility</name></spec>
+    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
@@ -21,7 +21,51 @@
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-	<capacity>1000.0</capacity>
+	<capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>freshFuel1</commod>
+        <recipe_name>commod_recipe1</recipe_name>
+	    <capacity>1000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source2</name>
+    <config>
+      <Source>
+        <commod>freshFuel2</commod>
+        <recipe_name>commod_recipe2</recipe_name>
+	    <capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source3</name>
+    <config>
+      <Source>
+        <commod>freshFuel3</commod>
+        <recipe_name>commod_recipe3</recipe_name>
+	    <capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source4</name>
+    <config>
+      <Source>
+        <commod>freshFuel4</commod>
+        <recipe_name>commod_recipe4</recipe_name>
+        <capacity>250.0</capacity>
       </Source>
     </config>
   </facility>
@@ -31,8 +75,8 @@
     <config>
       <Sink>
         <in_commods>
-	  <val>uf</val> 
-	</in_commods>
+          <val>uf</val>
+        </in_commods>
         <capacity>1000.0</capacity>
       </Sink>
     </config>
@@ -42,12 +86,19 @@
     <name>Rx</name>
     <config>
       <ReactorFacility>
-        <in_commod>freshFuel</in_commod>
+        <in_commods>
+            <val>freshFuel</val>
+            <val>freshFuel1</val>
+            <val>freshFuel2</val>
+            <val>freshFuel3</val>
+            <val>freshFuel4</val>
+        </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>E5_60</val></libraries>
+        <libraries><val>E5_50</val></libraries>
         <target_burnup>60.0</target_burnup>
+        <nonleakage>0.94</nonleakage>
         <core_mass>1000.0</core_mass>
-        <batches>3</batches>
+        <batches>4</batches>
       </ReactorFacility>
     </config>
   </facility>
@@ -60,6 +111,22 @@
       <initialfacilitylist>
         <entry>
           <prototype>Source</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Source1</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Source2</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Source3</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Source4</prototype>
           <number>1</number>
         </entry>
         <entry>
@@ -80,12 +147,63 @@
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3</comp>
+      <comp>3.6</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>97</comp>
+      <comp>96.4</comp>
     </nuclide>
   </recipe>
 
+  <recipe>
+    <name>commod_recipe1</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>1.8</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>98.2</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>commod_recipe2</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.204</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.796</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>commod_recipe3</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.656</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.344</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>commod_recipe4</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.1</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.9</comp>
+    </nuclide>
+  </recipe>
 </simulation>

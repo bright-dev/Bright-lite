@@ -247,7 +247,7 @@ vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
             }
         }
         if (pass == 0){
-             batch_phi[i] = (1/a.neutron_prod[1]);
+            batch_phi[i] = (1/a.neutron_prod[1]);
         } else {
             batch_phi[i] = (1/(intpol(a.neutron_prod[pass-1], a.neutron_prod[pass],
                 a.fluence[pass-1], a.fluence[pass], a.batch_fluence)));

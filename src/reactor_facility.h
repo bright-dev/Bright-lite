@@ -74,7 +74,9 @@ class ReactorFacility : public cyclus::Facility  {
   virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                 cyclus::Material::Ptr> >& responses);
 
-  double burnup_test(cyclus::Material::Ptr new_batch )
+  double burnup_test(cyclus::Material::Ptr new_batch);
+
+  void batch_reorder();
   /// This facility has one output commodity and one input commodity
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes", \
@@ -123,7 +125,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
 
-  #pragma cyclus var{"default": 0.001,p \
+  #pragma cyclus var{"default": 0.001, \
                      "tooltip": "The convergence requirement for the code"}
   double tolerence;
 
