@@ -12,6 +12,7 @@ std::string ReactorFacility::str() {
 }
 
 void ReactorFacility::Tick() {
+  std::cout << "Begin tick" << std::endl; /// <----------------------------------------
   if(fuel_library_.name.size() == 0){
     std::ifstream inf(libraries[0] +"/manifest.txt");
     std::string line;
@@ -25,11 +26,16 @@ void ReactorFacility::Tick() {
       iso.region = 0;
       iso.fraction.push_back(0);
       fuel_library_.iso.push_back(iso);
+          std::cout << "ISO: " << iso_name << std::endl; /// <-----------------------
     }
     fuel_library_.base_flux = flux_finder(fuel_library_.name);
     fuel_library_.base_mass = core_mass;
     fuel_library_.base_power = generated_power;
     fuel_library_.batch_fluence = 0;
+    fuel_library_.pnl = nonleakage;
+    
+    std::cout << "Library flux: " << flux_finder(fuel_library_.name) << ", Core mass: " << core_mass << ", Power: " <<generated_power <<std::endl; /// <------------------------
+    
     if (libraries.size() == 1){
       DataReader2(fuel_library_.name, fuel_library_.iso);
     } else {
@@ -39,13 +45,31 @@ void ReactorFacility::Tick() {
     for(int i = 0; i < core_.size(); i++){
       core_[i] = fuel_library_;
     }
+    
+/************************output file*********************************/
+    std::ofstream outfile("../output_cyclus_recent.txt");
+    
+    outfile << "Fuel library name: " << fuel_library_.name << "\n";
+    outfile << "Batches: " << batches << "\n";
+    outfile << "libcheck: " << fuel_library_.libcheck << "\n";
+    outfile << "Leakage: " << fuel_library_.pnl << "\n";
+    outfile << "Starting batch fluence: " << fuel_library_.batch_fluence << "\n";
+    outfile << "Base flux: " << fuel_library_.base_flux << "\n";
+    outfile << "Base power: " << fuel_library_.base_power << "\n";
+    outfile << "Base mass: " << fuel_library_.base_mass << "\n\n\n";
+
+    outfile.close();
+/************************End of output file*********************************/
   }
 }
 
 void ReactorFacility::Tock() {
+  std::cout << "Begin tock" << std::endl;/// <------------------------------------------
   cyclus::Context* ctx = context();
-  if (ctx->time() != cycle_end_)
+  if (ctx->time() != cycle_end_) {
+     std::cout << "time: "<< ctx->time()<< "  not end of cycle." << std::endl;/// <-------- 
     return;
+    }
   // Pop materials out of inventory
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
@@ -66,6 +90,8 @@ void ReactorFacility::Tock() {
     std::cout << intpol(core_[i].iso[0].iso_vector[1].mass[j], core_[i].iso[0].iso_vector[1].mass[j+1],
            core_[i].iso[0].fluence[j], core_[i].iso[0].fluence[j+1], core_[i].batch_fluence)*core_[i].iso[0].fraction[0] << std::endl;
   }*/
+  
+    std::cout << "Manifest size: "<< manifest.size() << std::endl;/// <--------------------
   for(int i = 0; i < manifest.size(); i++){
      comp = manifest[i]->comp()->mass();
      int j = 0;
@@ -121,9 +147,22 @@ void ReactorFacility::Tock() {
   // cycle end update
   cycle_end_ = ctx->time() + ceil(reactor_return[reactor_return.size()-1].fluence/(86400*fuel_library_.base_flux*28));
   std::cout << "Time :: " <<reactor_return[reactor_return.size()-1].fluence/(86400*fuel_library_.base_flux) << std::endl;
+  
+    /************************output file*********************************/
+    std::ofstream outfile;
+    outfile.open("../output_cyclus_recent.txt", std::ios::app);
+    
+    outfile << " Simulation time at discharge: " << ctx->time();    
+
+    outfile << "\n\n\n";
+   
+    outfile.close();
+    /************************End of output file**************************/
+  
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
+  std::cout << "Begin RequestPortfolio." << std::endl;/// <--------------------------------
   using cyclus::RequestPortfolio;
   using cyclus::Material;
   using cyclus::Composition;
@@ -160,6 +199,8 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
+    
+      std::cout << "Begin getmatlbids" << std::endl;/// <--------------------------------
   using cyclus::BidPortfolio;
   using cyclus::CapacityConstraint;
   using cyclus::Converter;
@@ -198,6 +239,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
 void ReactorFacility::AcceptMatlTrades(
       const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
       cyclus::Material::Ptr> >& responses) {
+ std::cout << "Begin acceptmatltrades" << std::endl;/// <--------------------------------
   std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                         cyclus::Material::Ptr> >::const_iterator it;
   for (it = responses.begin(); it != responses.end(); ++it) {
@@ -209,6 +251,7 @@ void ReactorFacility::GetMatlTrades(
     const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                           cyclus::Material::Ptr> >& responses) {
+std::cout << "Begin getmatltrades" << std::endl;/// <--------------------------------
   using cyclus::Material;
   using cyclus::Trade;
 
@@ -255,6 +298,7 @@ double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
 }
 
 void ReactorFacility::batch_reorder(){
+  std::cout << "Begin batch_reorder" << std::endl;/// <----------------------
       std::vector<fuelBundle> temp_core(batches);
       std::vector<isoInformation> temp_isos;
       double k_test = 0;
@@ -289,6 +333,24 @@ void ReactorFacility::batch_reorder(){
             std::cout << core_[i].iso[j].name << "   " << core_[i].iso[j].fraction[0] << std::endl;
         }
       }
+    
+    /************************output file*********************************/
+    std::ofstream outfile;
+    outfile.open("../output_cyclus_recent.txt", std::ios::app);
+    outfile << "Initial Core Loading Info:\n";
+    for(int i = 0; i < core_.size(); i++){
+        outfile << "Batch: " << i+1 << "\n";
+        for(int j = 0; j < core_[i].iso.size(); j++){
+            outfile << "  Isotope: " << core_[i].iso[j].name << "  Fraction: " << core_[i].iso[j].fraction[0] << '\n';
+        }
+    
+    }
+    outfile << "\n\n";
+   
+    outfile.close();
+    /************************End of output file**************************/
+      
+      
 }
 
 extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {

@@ -12,6 +12,7 @@ INSTALL(TARGETS brightlite
     )
 use_cyclus("Brightlite" "reactor_facility")
 use_cyclus("Brightlite" "fuelfab_facility")
+use_cyclus("Brightlite" "reprocess_facility")
 install_cyclus_module("Brightlite" "")
 TARGET_LINK_LIBRARIES(Brightlite brightlite)
 TARGET_LINK_LIBRARIES(Brightlite_unit_tests brightlite)

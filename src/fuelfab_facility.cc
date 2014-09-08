@@ -22,6 +22,8 @@ namespace fuelfab {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void FuelfabFacility::Tock() {
+        	std::cout << "tock from fuelfab facility" << std::endl;
+
 
     }
 

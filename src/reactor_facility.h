@@ -62,9 +62,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
 
-  virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
-  GetMatlBids(
-    cyclus::CommodMap<cyclus::Material>::type& commod_requests);
+  virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests);
 
   void GetMatlTrades(
     const std::vector< cyclus::Trade<cyclus::Material> >& trades,
