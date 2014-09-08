@@ -390,18 +390,43 @@ std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double 
             break;
         }
     }//F3 is the fluence of the cycle
+    
+    //finds the fluence during cycle
     batch_phi = fluence_finder(isoBatches, F3);
+    
+    //update batch fluences
     for(int i = 0; i < isoBatches.size(); i++){
       isoBatches[i].batch_fluence += batch_phi[i];
     }
+    
+    //find discharge burnup
     int j = 0;
     for(j;isoBatches[oldest_batch].fluence[j] < isoBatches[oldest_batch].batch_fluence; j++){
         burnup += isoBatches[oldest_batch].BUd[j];
     }
     burnup += intpol(isoBatches[oldest_batch].BUd[j],isoBatches[oldest_batch].BUd[j+1], isoBatches[oldest_batch].fluence[j],
-                     isoBatches[oldest_batch].fluence[j+1],isoBatches[oldest_batch].batch_fluence);
+                     isoBatches[oldest_batch].fluence[j+1],isoBatches[oldest_batch].batch_fluence); //increment at last data point
 
     cout << "Burnup: "<< burnup << "    k at this burnup: "<< k_total<< endl;
+    
+    /************************output file*********************************/
+    std::ofstream outfile;
+    outfile.open("../output_cyclus_recent.txt", std::ios::app);
+    
+    outfile << "Discharge burnup: " << burnup;
+    outfile << "\n   with k (core): " << k_total;   
+    
+    //depends on variable j, which was found during burnup calculation
+    for(int i = 0; i < isoBatches[oldest_batch].iso_vector.size(); i++){
+        outfile << "\n    Isotope:" << isoBatches[oldest_batch].iso_vector[i].name << "  Fraction:";
+        outfile << intpol(isoBatches[oldest_batch].iso_vector[i].mass[j],isoBatches[oldest_batch].iso_vector[i].mass[j+1], isoBatches[oldest_batch].fluence[j],isoBatches[oldest_batch].fluence[j+1],isoBatches[oldest_batch].batch_fluence)/1000;
+     }
+
+    outfile << "\n";
+   
+    outfile.close();
+    /************************End of output file**************************/
+
 
     for(int i = 0; i < isoBatches.size(); i++){
       fuelInfo fuel_info;
