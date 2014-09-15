@@ -186,10 +186,13 @@ double flux_finder(std::string type){
     }
 }
 
+
+
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
+//returns iso for this batch with the structural components factored in
     double flux_value = flux_finder(type);
     for (int i = 0; i < input_stream.size(); i++){
-        if(true){       //cem added this
+        if(true){   
             ifstream inf(type + "/" +to_string(input_stream[i].name) + ".txt");
             if(!inf){
                 cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
@@ -198,6 +201,14 @@ vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_st
             inf.close();
         }
     }
+    vector<nonActinide> nonacts = NonActinideReader(type + "/TAPE9.INP");
+    
+    cout << "Nonanananana: \n";
+    for(int i = 0; i < nonacts.size(); i++){
+        //cout << nonacts[i].name << "  " << nonacts[i].total_prod << "  " << nonacts[i].total_dest;
+        //cout << endl;
+    }
+    
     return input_stream;
 }
 

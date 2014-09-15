@@ -12,7 +12,6 @@ std::string ReactorFacility::str() {
 }
 
 void ReactorFacility::Tick() {
-  std::cout << "Begin tick" << std::endl; /// <----------------------------------------
   if(fuel_library_.name.size() == 0){
     std::ifstream inf(libraries[0] +"/manifest.txt");
     std::string line;
@@ -35,7 +34,6 @@ void ReactorFacility::Tick() {
     fuel_library_.pnl = nonleakage;
     
     std::cout << "Library flux: " << flux_finder(fuel_library_.name) << ", Core mass: " << core_mass << ", Power: " <<generated_power <<std::endl; /// <------------------------
-    
     if (libraries.size() == 1){
       DataReader2(fuel_library_.name, fuel_library_.iso);
     } else {
@@ -49,14 +47,14 @@ void ReactorFacility::Tick() {
 /************************output file*********************************/
     std::ofstream outfile("../output_cyclus_recent.txt");
     
-    outfile << "Fuel library name: " << fuel_library_.name << "\n";
-    outfile << "Batches: " << batches << "\n";
-    outfile << "libcheck: " << fuel_library_.libcheck << "\n";
-    outfile << "Leakage: " << fuel_library_.pnl << "\n";
-    outfile << "Starting batch fluence: " << fuel_library_.batch_fluence << "\n";
-    outfile << "Base flux: " << fuel_library_.base_flux << "\n";
-    outfile << "Base power: " << fuel_library_.base_power << "\n";
-    outfile << "Base mass: " << fuel_library_.base_mass << "\n\n\n";
+    outfile << "Fuel library name: " << fuel_library_.name << "\r\n";
+    outfile << "Batches: " << batches << "\r\n";
+    outfile << "libcheck: " << fuel_library_.libcheck << "\r\n";
+    outfile << "Leakage: " << fuel_library_.pnl << "\r\n";
+    outfile << "Starting batch fluence: " << fuel_library_.batch_fluence << "\r\n";
+    outfile << "Base flux: " << fuel_library_.base_flux << "\r\n";
+    outfile << "Base power: " << fuel_library_.base_power << "\r\n";
+    outfile << "Base mass: " << fuel_library_.base_mass << "\r\n\r\n\r\n";
 
     outfile.close();
 /************************End of output file*********************************/
@@ -64,7 +62,7 @@ void ReactorFacility::Tick() {
 }
 
 void ReactorFacility::Tock() {
-  std::cout << "Begin tock" << std::endl;/// <------------------------------------------
+  std::cout << "Begin tock\n" << std::endl;/// <------------------------------------------
   cyclus::Context* ctx = context();
   if (ctx->time() != cycle_end_) {
      std::cout << "time: "<< ctx->time()<< "  not end of cycle." << std::endl;/// <-------- 
@@ -107,7 +105,6 @@ void ReactorFacility::Tock() {
        if(fl_iso == comp_iso){
          if (core_[i].batch_fluence == 0){
             core_[i].iso[j].fraction[0] = it->second;
-            std::cout << fl_iso << " " << it->second <<std::endl;
          }
          j+=1;
          fl_iso = core_[i].iso[j].name;
@@ -118,13 +115,16 @@ void ReactorFacility::Tock() {
   if(core_[0].batch_fluence == 0){
     batch_reorder();
   }
+  
+  
+  
   /// pass fuel bundles to burn-up calc
   std::vector<fuelInfo> reactor_return;
   reactor_return = burnupcalc(core_, nonleakage, 0.0001);
   /// convert fuel bundles into materials
   int i = 0;
   for(int i = 0; i < reactor_return.size(); i++){
-    core_[i].batch_fluence = reactor_return[i].fluence;
+    core_[i].batch_fluence += reactor_return[i].fluence;
     cyclus::CompMap out_comp;
     for(std::map<int, double>::iterator c = reactor_return[i].burnup_info.begin(); c != reactor_return[i].burnup_info.end(); ++c){
       if(c->second < 0){
@@ -152,9 +152,9 @@ void ReactorFacility::Tock() {
     std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
     
-    outfile << "Simulation time at discharge: " << ctx->time();    
+    outfile << " Simulation time at discharge: " << cycle_end_;    
 
-    outfile << "\n\n";
+    outfile << "\r\n\r\n\r\n";
    
     outfile.close();
     /************************End of output file**************************/
@@ -162,7 +162,6 @@ void ReactorFacility::Tock() {
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
-  std::cout << "Begin RequestPortfolio." << std::endl;/// <--------------------------------
   using cyclus::RequestPortfolio;
   using cyclus::Material;
   using cyclus::Composition;
@@ -200,7 +199,6 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
     
-      std::cout << "Begin getmatlbids" << std::endl;/// <--------------------------------
   using cyclus::BidPortfolio;
   using cyclus::CapacityConstraint;
   using cyclus::Converter;
@@ -236,22 +234,37 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   return ports;
 }
 
-void ReactorFacility::AcceptMatlTrades(
-      const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
-      cyclus::Material::Ptr> >& responses) {
- std::cout << "Begin acceptmatltrades" << std::endl;/// <--------------------------------
+void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
   std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                         cyclus::Material::Ptr> >::const_iterator it;
+  cyclus::Composition::Ptr compost;
   for (it = responses.begin(); it != responses.end(); ++it) {
+   
     inventory.Push(it->second);
+    compost = it->second->comp();
+    cyclus::CompMap cmap = compost->mass();
+    cyclus::CompMap::iterator cit;
+    /************************output file*********************************/
+    std::ofstream outfile;
+    outfile.open("../output_cyclus_recent.txt", std::ios::app);
+    outfile << "Composition of fresh batch:\r\n";
+    
+    for(cit = cmap.begin(); cit != cmap.end(); ++cit){
+        outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
+    }
+    outfile << "\r\n\n";
+   
+    outfile.close();
+    /************************End of output file**************************/   
   }
+  
+  
 }
 
 void ReactorFacility::GetMatlTrades(
     const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                           cyclus::Material::Ptr> >& responses) {
-std::cout << "Begin getmatltrades" << std::endl;/// <--------------------------------
   using cyclus::Material;
   using cyclus::Trade;
 
@@ -334,21 +347,7 @@ void ReactorFacility::batch_reorder(){
         }
       }
     
-    /************************output file*********************************/
-    std::ofstream outfile;
-    outfile.open("../output_cyclus_recent.txt", std::ios::app);
-    outfile << "Initial Core Loading Info:\n";
-    for(int i = 0; i < core_.size(); i++){
-        outfile << "Batch: " << i+1 << "\n";
-        for(int j = 0; j < core_[i].iso.size(); j++){
-            outfile << "  Isotope: " << core_[i].iso[j].name << "  Fraction: " << core_[i].iso[j].fraction[0] << '\n';
-        }
-    
-    }
-    outfile << "\n\n";
-   
-    outfile.close();
-    /************************End of output file**************************/
+
       
       
 }
