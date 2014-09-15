@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>30</duration>
+    <duration>3</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -94,9 +94,9 @@
             <val>freshFuel4</val>
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>E5_50</val></libraries>
+        <libraries><val>E7_100</val></libraries>
         <target_burnup>60.0</target_burnup>
-        <nonleakage>0.94</nonleakage>
+        <nonleakage>0.99</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>4</batches>
       </ReactorFacility>

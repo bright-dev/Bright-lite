@@ -230,8 +230,10 @@ double SSkcalc(isoInformation tempone, double BU_total, int N, double pnl){
 }
 
 vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
-    //Determine Flux
+    //Determine Flux from the inverse netruon production relation
     //cout << T_res << endl;
+    // base flux stored at fuels[0].base_flux
+    // needs batch_fluence to be correct in each batch
     std::vector<double> batch_phi(fuels.size());
     double pass = 0;
     double base_flux = fuels[0].base_flux;
@@ -245,10 +247,13 @@ vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
                 pass = j;
                 break;
             }
+
         }
         if (pass == 0){
             batch_phi[i] = (1/a.neutron_prod[1]);
         } else {
+            cout << "pass: " << pass << endl;////-----------------------------------------------
+            cout << "a.fluence[pass]: " << a.fluence[pass] << " a.batch_fluence: " << a.batch_fluence << endl<<endl;
             batch_phi[i] = (1/(intpol(a.neutron_prod[pass-1], a.neutron_prod[pass],
                 a.fluence[pass-1], a.fluence[pass], a.batch_fluence)));
         }
@@ -256,6 +261,7 @@ vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
             max_phi = batch_phi[i];
         }
     }
+    cout << "max phi: " << max_phi << endl;
     for(int i = 0; i < N; i++){
        batch_phi[i] /= max_phi;
     }
@@ -263,7 +269,9 @@ vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
     std::vector<double> fluence_guess(fuels.size());
     for(int i = 0; i < N; i++){
         fluence_guess[i] = batch_phi[i]*base_flux*T_res;
+        cout << "fluence: " << fluence_guess[i] << endl;
     }
+    /*
     bool test1 = true;
     int ks = 0;
     while(test1){
@@ -274,12 +282,14 @@ vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
             for(int j = 0; j < a.fluence.size(); j++){
                 if(a.fluence[j] < a.batch_fluence + fluence_guess[i]){
                     pass = j;
+                    cout << "pass herro: " << pass << endl;
                     break;
                 }
             }
             if (pass == 0){
                  batch_phi[i] = (1/a.neutron_prod[1]);
             } else {
+            cout << "herro!" << endl;
                 batch_phi[i] = (1/(intpol(a.neutron_prod[pass-1], a.neutron_prod[pass],
                     a.fluence[pass-1], a.fluence[pass], a.batch_fluence)));
             }
@@ -304,13 +314,15 @@ vector<double> fluence_finder(vector<isoInformation> fuels, double T_res){
         /*for(int i = 0; i < N; i++){
             std::cout << "I don't know?:   "<<fluence_guess[i];
             std::cout << "  " << batch_phi[i] << std::endl;
-        }*/
+        }
         if(ks > 50){
             std::cout << "OMFG" << std::endl;
             return fluence_guess;
         }
         ks++;
-    }
+    
+    }*/
+
     return fluence_guess;
 }
 
@@ -349,6 +361,13 @@ double kcalc(std::vector<isoInformation> isoBatches, vector<double> fluence, dou
 }
 
 std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double tolerance) {
+    //uses batches[].iso[].fraction[0] for fraction of each iso within the batch to generate isoBatches
+    cout << endl << "Burnupcalc" << endl;
+    for(int i = 0; i < batches.size(); i++){
+        cout << "batch fluence " << batches[i].batch_fluence << endl;
+        cout << batches[i].base_power << " " << batches[i].iso.size() << endl;
+    }
+    
     std::vector<fuelInfo> rtn;
     double F1, F2, F3, k_total = 0;
     double fluence = 0; //added fluence to all the batches due to burnup
@@ -362,16 +381,29 @@ std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double 
     //collapse all the baches to isoInformation
     for(int i = 0; i < N; i++){
         isoBatches.push_back(regioncollapse(batches[i], 1));
+        isoBatches[i].batch_fluence = batches[i].batch_fluence;
         if(batches[i].batch_fluence > batches[oldest_batch].batch_fluence){
             oldest_batch = i;
         }
     }
+    
+    for(int i = 0; i < N; i++){
+        cout << "fluences: " << isoBatches[i].batch_fluence << endl;
+    }
+    for(int i = 0; i < N; i++){
+        
+    }
+    
+    batch_phi = fluence_finder(isoBatches, 100);
+    
+    
+            
 
     if(kcalc(isoBatches, fluence_finder(isoBatches, 0), pnl) < 1){
         cout << "Error! Original core configuration is not critical." << endl;
     }
 
-    F1 = 0;
+    F1 = 0; 
     F2 = 400;
 
     int i = 0;
@@ -392,7 +424,15 @@ std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double 
     }//F3 is the fluence of the cycle
     
     //finds the fluence during cycle
+    cout << "F3 " << F3 << endl;
     batch_phi = fluence_finder(isoBatches, F3);
+    ////////////////////////////////////////////////////////
+    for(int i = 0; i < batch_phi.size(); i++){
+        cout<< batch_phi[i] << endl;
+    }
+    for(int i = 0; i < batch_phi.size(); i++){
+        cout<< isoBatches[i].batch_fluence << endl;
+    }
     
     //update batch fluences
     for(int i = 0; i < isoBatches.size(); i++){
@@ -414,15 +454,23 @@ std::vector<fuelInfo> burnupcalc(vector<fuelBundle> batches, double pnl, double 
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
     
     outfile << "Discharge burnup: " << burnup;
-    outfile << "\n   with k (core): " << k_total;   
+    outfile << "\r\n   with k (core): " << k_total;   
+    outfile << "\r\n Added fluences this burnup cycle:";
     
+    for(int i = 0; i < isoBatches.size(); i++){
+        outfile << "\r\n  Batch " << i+1 << ": " << batch_phi[i];    
+    }
+    
+    outfile << "\r\n Fluence at discharge: " << isoBatches[oldest_batch].batch_fluence;
+    
+    outfile << "\r\n    Discharge fuel fractions '[ISOTOPE]  [FRACTION]':";
     //depends on variable j, which was found during burnup calculation
     for(int i = 0; i < isoBatches[oldest_batch].iso_vector.size(); i++){
-        outfile << "\n    Isotope:" << isoBatches[oldest_batch].iso_vector[i].name << "  Fraction:";
+        outfile << "\r\n       " << isoBatches[oldest_batch].iso_vector[i].name << "  ";
         outfile << intpol(isoBatches[oldest_batch].iso_vector[i].mass[j],isoBatches[oldest_batch].iso_vector[i].mass[j+1], isoBatches[oldest_batch].fluence[j],isoBatches[oldest_batch].fluence[j+1],isoBatches[oldest_batch].batch_fluence)/1000;
      }
 
-    outfile << "\n";
+    outfile << "\r\n";
    
     outfile.close();
     /************************End of output file**************************/
