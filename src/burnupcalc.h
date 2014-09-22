@@ -11,15 +11,21 @@
 #include "structures.h"
 #include "origenBuilder.h"
 #include "cyclus.h"
+//#include <eigen3/Eigen/Eigen>
+//#include <armadillo>
+
 
 
 
 double intpol(double y0, double y1, double x0, double x1, double x);
-isoInformation regioncollapse(fuelBundle fuel, double flux);
+fuelBundle regionCollapse(fuelBundle fuel);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
-std::vector<fuelInfo> burnupcalc(std::vector<fuelBundle> batches, double pnl, double tolerance);
-std::pair<double, std::map<int, double> > SSburnupcalc(isoInformation tempone, int N, double pnl, double tolerance);
-double enrichcalc(double BU_end, int N, double tolerance, std::string type, std::vector<isoInformation> input_stream);
-fuelBundle InputReader();
+fuelBundle phicalc_simple(fuelBundle core);
+fuelBundle phicalc_cylindrical(fuelBundle core);
+double dest_to_siga(double dest);
+double prod_to_nusigf(double prod);
+double kcalc(fuelBundle core);
+fuelBundle burnupcalc(fuelBundle core, int mode, double tolerance);
+
 #endif // BURNUPCALC_H_INCLUDED
 

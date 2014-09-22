@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>3</duration>
+    <duration>300</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -69,6 +69,17 @@
       </Source>
     </config>
   </facility>
+  
+  <facility>
+    <name>Source5</name>
+    <config>
+      <Source>
+        <commod>freshFuel5</commod>
+        <recipe_name>commod_recipe5</recipe_name>
+        <capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
 
   <facility>
     <name>Sink</name>
@@ -92,13 +103,17 @@
             <val>freshFuel2</val>
             <val>freshFuel3</val>
             <val>freshFuel4</val>
+            <val>freshFuel5</val>
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>E7_100</val></libraries>
         <target_burnup>60.0</target_burnup>
         <nonleakage>0.99</nonleakage>
-        <core_mass>1000.0</core_mass>
-        <batches>4</batches>
+        <core_mass>1250.0</core_mass>
+        <batches>5</batches>
+        <flux_mode>2</flux_mode>
+        <cylindrical_delta>10</cylindrical_delta>
+        <burnupcalc_timestep>100</burnupcalc_timestep>
       </ReactorFacility>
     </config>
   </facility>
@@ -130,6 +145,10 @@
           <number>1</number>
         </entry>
         <entry>
+          <prototype>Source5</prototype>
+          <number>1</number>
+        </entry>        
+        <entry>
           <prototype>Rx</prototype>
           <number>1</number>
         </entry>
@@ -147,11 +166,11 @@
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3.6</comp>
+      <comp>4.2</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96.4</comp>
+      <comp>95.8</comp>
     </nuclide>
   </recipe>
 
@@ -204,6 +223,19 @@
     <nuclide>
       <id>U238</id>
       <comp>96.9</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe5</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.9</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.1</comp>
     </nuclide>
   </recipe>
 </simulation>
