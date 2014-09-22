@@ -18,6 +18,50 @@
 
 using namespace std;
 
+fuelBundle StructReader(fuelBundle core){
+//reads in structural material fractions from input file and adds the total
+//values to core.struct_prod and core.struct_dest
+
+    int nucid;
+    double fraction;
+    double tot_dest = 0;
+    double tot_prod = 0;
+
+    string line;
+    ifstream fin("./" + core.name + "/structural.txt");
+    
+    vector<nonActinide> nonas;
+    
+    nonas = NonActinideReader("./" + core.name + "/TAPE9.INP");
+
+    
+    
+	while(getline(fin, line))
+	{
+        istringstream iss(line);
+        iss >> nucid >> fraction;
+        
+        for(int i = 0; i < nonas.size(); i++){
+            if(nonas[i].name == nucid){
+                nucid = nucid % 10000;
+                nucid = nucid / 10;         
+            
+                tot_prod += nonas[i].total_prod * fraction * 1000*0.602/nucid;
+                tot_dest += nonas[i].total_dest * fraction * 1000*0.602/nucid;               
+            }
+        }
+        
+        //cout << nucid << "  " << fraction << endl;        
+
+    }
+    cout << "Structs: " << tot_prod << " " << tot_dest << endl;
+    
+    core.struct_prod = tot_prod;
+    core.struct_dest = tot_dest;
+    
+
+    return core;
+}
 
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
@@ -28,30 +72,30 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     fuel.fluence.push_back(fuel_values[mm].fluence[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i]);
+                    fuel.neutron_prod.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i]);
+                    fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]);
 
                 }
                 for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
-                    fuel.BUd.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].BUd[i]);
+                    fuel.BUd.push_back(fuel_values[mm].fraction*fuel_values[mm].BUd[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
                     fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
                     for(int k = 0; k < fuel.iso_vector[i].mass.size(); k++){
-                        fuel.iso_vector[i].mass[k] = fuel_values[mm].fraction[0]*fuel.iso_vector[i].mass[k];
+                        fuel.iso_vector[i].mass[k] = fuel_values[mm].fraction*fuel.iso_vector[i].mass[k];
                     }
                 }
             }else{
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod[i] += fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i];
+                    fuel.neutron_prod[i] += fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest[i] += fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i];
+                    fuel.neutron_dest[i] += fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
                 }
                 for (int i = 0; i < fuel_values[mm].BUd.size(); i++){
-                    fuel.BUd[i] += fuel_values[mm].fraction[0]*fuel_values[mm].BUd[i];
+                    fuel.BUd[i] += fuel_values[mm].fraction*fuel_values[mm].BUd[i];
                 }
                 for (int i = 0; i < fuel_values[mm].iso_vector.size(); i++){
                     bool iso_check = true;
@@ -60,7 +104,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                             for(int k = 0; k < fuel.iso_vector[j].mass.size(); k++){
                                 for(int ii = 0; ii < fuel_values[mm].iso_vector[i].mass.size(); ii ++){
                                     if ( k ==ii ){
-                                        fuel.iso_vector[j].mass[k] += fuel_values[mm].fraction[0]*fuel_values[mm].iso_vector[i].mass[ii];
+                                        fuel.iso_vector[j].mass[k] += fuel_values[mm].fraction*fuel_values[mm].iso_vector[i].mass[ii];
                                     }
                                 }
                             }
@@ -70,7 +114,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
                     if (iso_check == true) {
                         fuel.iso_vector.push_back(fuel_values[mm].iso_vector[i]);
                         for(int k = 0; k < fuel.iso_vector[fuel.iso_vector.size()-1].mass.size()-1; k++){
-                            fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] = fuel.iso_vector[fuel.iso_vector.size()-1].mass[k]*fuel_values[mm].fraction[0];
+                            fuel.iso_vector[fuel.iso_vector.size()-1].mass[k] = fuel.iso_vector[fuel.iso_vector.size()-1].mass[k]*fuel_values[mm].fraction;
                         }
                     }
                 }
@@ -79,17 +123,17 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
         else{
             if(fuel.neutron_prod.size()>1){
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i];
+                    fuel.neutron_prod[i] = fuel.neutron_prod[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i];
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i];
+                    fuel.neutron_dest[i] = fuel.neutron_dest[i] + fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i];
                 }
             }else{
                 for (int i = 0; i < fuel_values[mm].neutron_prod.size(); i++){
-                    fuel.neutron_prod.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_prod[i]+(fuel_values[mm].fraction[0])*fuel_values[1].neutron_prod[i]);
+                    fuel.neutron_prod.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_prod[i]+(fuel_values[mm].fraction)*fuel_values[1].neutron_prod[i]);
                 }
                 for (int i = 0; i < fuel_values[mm].neutron_dest.size(); i++){
-                    fuel.neutron_dest.push_back(fuel_values[mm].fraction[0]*fuel_values[mm].neutron_dest[i]+(fuel_values[mm].fraction[0])*fuel_values[1].neutron_dest[i]);
+                    fuel.neutron_dest.push_back(fuel_values[mm].fraction*fuel_values[mm].neutron_dest[i]+(fuel_values[mm].fraction)*fuel_values[1].neutron_dest[i]);
                 }
             }
         }
@@ -138,6 +182,7 @@ vector<nonActinide> NonActinideReader(string file_name){
         }
     }
 }
+
 
 isoInformation BuildIsotope2(ifstream &input, isoInformation &iso, double flux_value){
     int i = 0;
@@ -201,14 +246,7 @@ vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_st
             inf.close();
         }
     }
-    vector<nonActinide> nonacts = NonActinideReader(type + "/TAPE9.INP");
-    
-    cout << "Nonanananana: \n";
-    for(int i = 0; i < nonacts.size(); i++){
-        //cout << nonacts[i].name << "  " << nonacts[i].total_prod << "  " << nonacts[i].total_dest;
-        //cout << endl;
-    }
-    
+
     return input_stream;
 }
 

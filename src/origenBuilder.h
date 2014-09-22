@@ -10,8 +10,8 @@
 #include "structures.h"
 
 isoInformation BuildIsotope(std::ifstream &input);
+fuelBundle StructReader(fuelBundle core);
 isoInformation DataReader(isoInformation test1, int type, std::vector<isoInformation> input_stream);
-
 isoInformation BuildIsotope2(std::ifstream &input, isoInformation &iso);
 std::vector<isoInformation> DataReader2(std::string type, std::vector<isoInformation> &input_stream);
 double flux_finder(std::string type);

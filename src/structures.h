@@ -22,13 +22,14 @@ struct isoInformation {
     double base_power;
     double base_mass;
     double base_flux;
-    std::vector<double> fraction;
+    double fraction; //fraction of this isotope in the batch/stream
     double sigs;
     double siga;
     std::vector<double> neutron_prod;
     std::vector<double> neutron_dest;
     std::vector<double> k_inf;
     std::vector<double> BUd;
+    std::vector<double> BU; //total BU
     std::vector<double> fluence;
     std::vector<daughter> iso_vector;
 };
@@ -52,23 +53,45 @@ struct interpol_pair {
     double scaled_value;
 };
 
+struct batch_info {
+    std::string name;
+    double batch_fluence; //fluence at the end of cycle, not used during burnup/composition calc
+    std::vector<double> fraction; //blending fraction
+    std::vector<isoInformation> iso;
+    double batch_area; //[cm2] the total area of the batch for cylindrical flux calc
+    isoInformation collapsed_iso;
+    double BUg; //burnup guess, used during burnup/composition calc
+    double Fg; //fluence guess, used during burnup/composition calc
+    double rflux; //relative flux of batch
+    std::map<int, double> comp; //current composition of batch at this batch_fluence
+};
+
 struct fuelBundle {
     std::string name;
     std::string operation_type;
-    int batch;
+    int tot_batch;
     bool libcheck;
     double pnl; //leakage
-    double tres;
-    double batch_fluence;
+    double tres; //residence time
     double base_flux;
     double base_power;
     double base_mass;
-    double target_BUd;
+    double target_BU; //target discharge burnup, used for first guess in burnupcalc
+    double fuel_area; //[cm2] the total area of the fuel for cylindrical flux calc
+    double cylindrical_delta; //the increment used in cylindrical flux calc
+    double mod_Sig_a; //Macroscopic absorption  cross section of the moderator
+    double mod_Sig_tr; //Macroscopic transport cross section of the moderator
+    double mod_Sig_f; //Macroscopic fission cross section of the moderator
+    double mod_thickness; //radial thickness of the moderator [cm]
+    double fuel_Sig_tr; //transport cs of the fuel
     double fuel_radius;
     double moderator_radius;
     double moderator_sigs;
     double moderator_siga;
-    std::vector<isoInformation> iso;
+    double struct_prod; //neutron production rate of structural materials
+    double struct_dest; //neutron destruction rate of structural materials
+    std::vector<batch_info> batch;
+    std::vector<isoInformation> all_iso; //change to manifest
     std::vector<interpol_pair> interpol_pairs;
     std::vector<std::string> interpol_libs;
     std::vector<double> stream_fraction;
