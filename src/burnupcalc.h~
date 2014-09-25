@@ -1,18 +1,17 @@
 #ifndef BURNUPCALC_H_INCLUDED
 #define BURNUPCALC_H_INCLUDED
 
-#include<iostream>
-#include<vector>
-#include<regex>
-#include<iterator>
-#include<fstream>
-#include<algorithm>
-#include<map>
+#include <iostream>
+#include <vector>
+#include <regex>
+#include <iterator>
+#include <fstream>
+#include <algorithm>
+#include <map>
 #include "structures.h"
 #include "origenBuilder.h"
 #include "cyclus.h"
 //#include <eigen3/Eigen/Eigen>
-//#define  ARMA_DONT_USE_WRAPPER
 //#include <armadillo>
 
 

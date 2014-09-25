@@ -13,6 +13,36 @@ std::string ReactorFacility::str() {
 
 void ReactorFacility::Tick() {
     std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
+    std::cout << "\n     list: " << std::endl;
+    
+    std::cout << batches << std::endl;
+    std::cout << nonleakage << std::endl;
+    std::cout << max_inv_size << std::endl;
+    std::cout << target_burnup << std::endl;
+    std::cout << generated_power << std::endl;
+    std::cout << core_mass << std::endl;
+    std::cout << efficiency << std::endl;
+    std::cout << fuel_area << std::endl;
+    std::cout << cylindrical_delta << std::endl;
+    std::cout << mod_Sig_a << std::endl;
+    std::cout << mod_Sig_tr << std::endl;
+    std::cout << mod_Sig_f << std::endl;
+    std::cout << mod_thickness << std::endl;
+    std::cout << fuel_Sig_tr << std::endl;
+    std::cout << burnupcalc_timestep << std::endl;
+    std::cout << flux_mode << std::endl;
+    std::cout << tolerence << std::endl;
+    std::cout << disadv_a << std::endl;
+    std::cout << disadv_b << std::endl;
+    std::cout << disadv_mod_siga << std::endl;
+    std::cout << disadv_mod_sigs << std::endl;
+    std::cout << disadv_fuel_sigs << std::endl;
+    std::cout << "\nend  list " << std::endl;
+    
+    
+    
+    
+    
     
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
@@ -42,6 +72,13 @@ void ReactorFacility::Tick() {
         fuel_library_.mod_Sig_f = mod_Sig_f;
         fuel_library_.mod_thickness = mod_thickness;
         fuel_library_.fuel_Sig_tr = fuel_Sig_tr;
+        fuel_library_.disadv_a = disadv_a;
+        fuel_library_.disadv_b = disadv_b;
+        fuel_library_.disadv_mod_siga = disadv_mod_siga;
+        fuel_library_.disadv_mod_sigs = disadv_mod_sigs;
+        fuel_library_.disadv_fuel_sigs = disadv_fuel_sigs;
+        
+        
         
 
         if (libraries.size() == 1){
@@ -83,6 +120,12 @@ void ReactorFacility::Tick() {
         outfile << "   Moderator Sig_tr: " << fuel_library_.mod_Sig_tr << " [cm-1]\r\n";
         outfile << "   Moderator Sig_f: " << fuel_library_.mod_Sig_f << " [cm-1]\r\n";
         }
+        outfile << "\r\n|Thermal disadvantage calculation:\r\n";
+        outfile << "| Fuel radius: " << fuel_library_.disadv_a << " [cm]\r\n";
+        outfile << "| Moderator radius: " << fuel_library_.disadv_b << " [cm]\r\n";
+        outfile << "| Moderator Sigma_a: " << fuel_library_.disadv_mod_siga << " [cm-1]\r\n";
+        outfile << "| Moderator Sigma_s: " << fuel_library_.disadv_mod_sigs << " [cm-1]\r\n";
+        outfile << "| Fuel Sigma_s: " << fuel_library_.disadv_fuel_sigs << " [cm-1]\r\n\r\n";
         outfile << "Base flux: " << fuel_library_.base_flux << "\r\n";
         outfile << "Base power: " << fuel_library_.base_power << "\r\n";
         outfile << "Base mass: " << fuel_library_.base_mass << "\r\n\r\n\r\n";
@@ -184,15 +227,15 @@ void ReactorFacility::Tock() {
   }
 
   // cycle end update
-  cycle_end_ = ctx->time() + ceil(fuel_library_.batch[0].batch_fluence/(86400*fuel_library_.base_flux*28));
-  std::cout << "Cycle length: " << ceil(fuel_library_.batch[0].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
+  cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
+  std::cout << "Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
   std::cout << "Time :: " <<cycle_end_ << std::endl;
   
-    /************************output file*********************************
+    /************************output file*********************************/
     std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
     
-    outfile << " Simulation time at discharge: " << cycle_end_;    
+    outfile << " Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << " [months]";    
 
     outfile << "\r\n\r\n\r\n";
    

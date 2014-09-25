@@ -1,13 +1,13 @@
 #ifndef BURNUPCALC_H_INCLUDED
 #define BURNUPCALC_H_INCLUDED
 
-#include<iostream>
-#include<vector>
-#include<regex>
-#include<iterator>
-#include<fstream>
-#include<algorithm>
-#include<map>
+#include <iostream>
+#include <vector>
+#include <regex>
+#include <iterator>
+#include <fstream>
+#include <algorithm>
+#include <map>
 #include "structures.h"
 #include "origenBuilder.h"
 #include "cyclus.h"
@@ -22,10 +22,11 @@ fuelBundle regionCollapse(fuelBundle fuel);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
 fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_cylindrical(fuelBundle core);
-double dest_to_siga(double dest);
-double prod_to_nusigf(double prod);
+double nusigf_finder(batch_info batch);
+double siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
 fuelBundle burnupcalc(fuelBundle core, int mode, double tolerance);
+fuelBundle DA_calc(fuelBundle fuel);
 
 #endif // BURNUPCALC_H_INCLUDED
 
