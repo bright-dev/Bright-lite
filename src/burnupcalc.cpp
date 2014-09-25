@@ -130,7 +130,7 @@ fuelBundle phicalc_simple(fuelBundle core){
     for(int i = 0; i < core.batch.size(); i++){
         int ii;
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
-        cout << "ii: " << ii << endl;
+        
         if(ii == 0){
             core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
         } else{
@@ -153,24 +153,39 @@ fuelBundle phicalc_simple(fuelBundle core){
     return core;
 }
 
-double prod_to_nusigf(double prod){
-    double NuSig_f;
+double nusigf_finder(batch_info batch){
+    double Nusig_f;
+    int ii;
+    double prod = 0;
+    int A = 235;
     
-    NuSig_f = prod*19.1;
+    //find the index to interpolate on
+    for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
+        
+    prod = intpol(batch.collapsed_iso.neutron_prod[ii-1], batch.collapsed_iso.neutron_prod[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     
-    NuSig_f = 0.0203;
+    //Nusig_f[barn] = prod rate / Avagadros number * mass * barn
+    Nusig_f = prod/(6.0221413E+23)*A*1E24;    
     
-    return NuSig_f;
+    return Nusig_f;
 }
 
-double dest_to_siga(double dest){
-    double Sig_a;
+double siga_finder(batch_info batch){
+//returns the microscopic cross section [barn] at fluence Fg
+    double sig_a;
+    int ii;
+    double dest = 0;
+    int A = 235;
     
-    Sig_a = dest*19.1;
+    //find the index to interpolate on
+    for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
     
-    Sig_a = 0.0200;
+    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     
-    return Sig_a;
+    //sig_a[barn] = dest rate / Avagadros number * mass * barn
+    sig_a = dest/(6.0221413E+23)*A*1E24;
+    
+    return sig_a;
 }
 
 
@@ -207,10 +222,9 @@ cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++);
         
         prod = intpol(core.batch[i].collapsed_iso.neutron_prod[ii-1], core.batch[i].collapsed_iso.neutron_prod[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
-        NuSigma_f[i] = prod_to_nusigf(prod);
+        NuSigma_f[i] = 0.0203;
         
-        dest = intpol(core.batch[i].collapsed_iso.neutron_dest[ii-1], core.batch[i].collapsed_iso.neutron_dest[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
-        Sigma_a[i] = dest_to_siga(dest);    
+        Sigma_a[i] = 1;  
         
         Sigma_tr[i] = core.fuel_Sig_tr;
         D[i] = 1/(Sigma_tr[i]*3.);
@@ -351,7 +365,6 @@ fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
     //assign the batch_fluence to Fg
     for(int i = 0; i < N; i++){
         core.batch[i].Fg = core.batch[i].batch_fluence;
-        cout << "batch flunce in burnupcalc: " << core.batch[i].batch_fluence <<endl;
     }  
       
     //turn zero fluences to one to avoid zero rates
@@ -388,11 +401,12 @@ fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
         //update fluences
         for(int i = 0; i < N; i++){
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
-            cout << "    batch: " << i+1 << "  rflux:" << core.batch[i].rflux << "  Fg:" << core.batch[i].Fg << endl;
         }
         
+        //disadvantage calculation
+        core = DA_calc(core);
+        
         kcore = kcalc(core);
-        cout << "k: " << kcalc(core) << endl;
     }
     
     //update core fluences
@@ -450,69 +464,9 @@ fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
     return core;
 }
 
-/*
-fuelBundle fluxcalc_reader(fuelBundle fuel, string file_name){
-    //must be called AFTER InputReader, so that fuelbundle is built
-    //assumes the format [type of material][space]sigma_scatter[space]sigma_a in the input file
-    string line;
-    int nucid;
-    double sigs, siga;
-    double x;
-    char name[10];
-
-    ifstream fin(file_name);
 
 
-	while(getline(fin, line))
-	{
-        if(line.find("a") == 0){
-            istringstream iss(line);
-            iss >> name >> x;
-            fuel.fuel_radius = x;
-            continue;
-        }
-
-        if(line.find("b") == 0){
-            istringstream iss(line);
-            iss >> name >> x;
-            fuel.moderator_radius = x;
-            continue;
-        }
-
-        if(line.find("MODERATOR") == 0){
-            istringstream iss(line);
-            iss >> name >> sigs >> siga;
-            fuel.moderator_sigs = sigs;
-            fuel.moderator_siga = siga;
-            continue;
-        }
-
-        istringstream iss(line);
-        iss >> nucid >> sigs >> siga;
-
-        if(nucid){
-            for(int i = 0; i < fuel.all_iso.size(); i++){
-                if(fuel.all_iso[i].name == nucid){
-                    fuel.all_iso[i].sigs = sigs;
-                    fuel.all_iso[i].siga = siga;
-                    fuel.all_iso[i].fuel = true;
-                }
-            }
-        }
-	}
-
-
-    return fuel;
-}
-*/
-
-
-
-
-
-
-/*
-double fluxcalc(fuelBundle fuel){
+fuelBundle DA_calc(fuelBundle fuel){
 // calculates the flux of each region in fuelBundle
 // probably will need to add reactor identifier as input in the future
 
@@ -522,20 +476,21 @@ double fluxcalc(fuelBundle fuel){
     double temp;
 
 
-    double a = fuel.fuel_radius; // radius of the fuel rod
-    double b = fuel.moderator_radius; // radius of the equivalent cell
+    double a = fuel.disadv_a; // radius of the fuel rod
+    double b = fuel.disadv_b; // radius of the equivalent cell
+    double Sig_sF = fuel.disadv_fuel_sigs; // macroscopic scatter CS of fuel
+    double Sig_sM = fuel.disadv_mod_sigs; //macroscopic scatter CS of moderator    
+    double Sig_aM = fuel.disadv_mod_siga; // macroscopic abs. CS of moderator
+        
     double L_F; // diffusion length of fuel
     double L_M; // diffusion length of moderator
     double Sig_aF; // macroscopic abs. CS of fuel
-    double Sig_aM = fuel.moderator_siga; // macroscopic abs. CS of moderator
     double V_F; // volume of fuel
     double V_M; // volume of moderator
     double Sig_trF; // macroscopic transport CS of fuel
     double Sig_trM; // macroscopic transport CS of moderator
     double Sig_tF; // macroscopic total CS of fuel
     double Sig_tM; //macroscopic total CS of moderator
-    double Sig_sF; // macroscopic scatter CS of fuel
-    double Sig_sM = fuel.moderator_sigs; //macroscopic scatter CS of moderator
     double D_F; // diffusion coef. of fuel
     double D_M; // diffusion coef. of moderator
     double A_F; // A number of fuel
@@ -558,54 +513,44 @@ double fluxcalc(fuelBundle fuel){
     V_F = pow(a,2)*3.141592;
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    vector<int> fuel_index;
-    for(int i = 0; i < fuel.iso.size(); i++){
-        if(fuel.iso[i].fuel == true){
-            fuel_index.push_back(i);
-        }
-    }
 
-    for(int fluence = 0; fluence < fuel.iso[0].neutron_dest.size(); fluence++){
-        Sig_aF = 0;
-        Sig_sF = 0;
+    Sig_aF = 0;
+    Sig_sF = 0;
 
-        for(int i = 0; i < fuel_index.size(); i++){
-            cout << fuel.iso[fuel_index[i]].sigs << endl;
-            Sig_aF += (fuel.iso[fuel_index[i]].neutron_dest[fluence] * fuel.iso[fuel_index[i]].fraction[1]/100);
-            Sig_sF += fuel.iso[fuel_index[i]].sigs * fuel.iso[fuel_index[i]].fraction[1];
-        }
+    Sig_tF = Sig_aF+Sig_sF;
+    Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
+    D_F = 1 / (3 * Sig_trF);
+    L_F = sqrt(D_F/Sig_aF);
+    x = a/L_F;
 
-        Sig_tF = Sig_aF+Sig_sF;
-        Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
-        D_F = 1 / (3 * Sig_trF);
-        L_F = sqrt(D_F/Sig_aF);
-        x = a/L_F;
+    /*****book example***
+    a=1.02;
+    b=14.3;
+    x=0.658;
+    y=0.0173;
+    z=0.242;
+    V_M=195.6;
+    V_F=1;
+    Sig_aM=0.0002728;
+    Sig_aF=0.3668;
+    *******************/
+
+    F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
+    /*
+    E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
+                                   boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
+                                    boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
+    f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
+    cout << "Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
 */
-        /*****book example***
-        a=1.02;
-        b=14.3;
-        x=0.658;
-        y=0.0173;
-        z=0.242;
-        V_M=195.6;
-        V_F=1;
-        Sig_aM=0.0002728;
-        Sig_aF=0.3668;
-        *******************/
-/*
-        F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
-        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
-                                       boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
-                                        boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
-        f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
-        cout << "Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
 
-    }
 
-    return (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+    return fuel;//(Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
 }
-*/
+
 
 /*
 pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {

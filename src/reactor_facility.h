@@ -76,6 +76,37 @@ class ReactorFacility : public cyclus::Facility  {
 
   void batch_reorder();
   /// This facility has one output commodity and one input commodity
+
+
+  #pragma cyclus var {"default": 0.001, \
+                     "tooltip": "The convergence requirement for the code"}
+  double tolerence;
+
+  #pragma cyclus var {"default": 0.4095, \
+                     "units": "cm", \
+                     "tooltip": "Fuel pin radius used for thermal disadvantage calculation."}
+  double disadv_a;  
+
+  #pragma cyclus var {"default": 0.70749, \
+                     "units": "cm", \
+                     "tooltip": "Moderator radius used for thermal disadvantage calculation."}
+  double disadv_b;  
+
+  #pragma cyclus var {"default": 0.222, \
+                     "units": "cm-1", \
+                     "tooltip": "Moderator macroscopic abs cross-section for thermal disadvantage calculation."}
+  double disadv_mod_siga;
+
+  #pragma cyclus var {"default": 3.44, \
+                     "units": "cm-1", \
+                     "tooltip": "Moderator macroscopic scattering cross-section for thermal disadvantage calculation."}
+  double disadv_mod_sigs;
+
+  #pragma cyclus var {"default": 0.43, \
+                     "units": "cm-1", \
+                     "tooltip": "Fuel macroscopic scattering cross-section for thermal disadvantage calculation."}
+  double disadv_fuel_sigs;
+
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes", \
                       "schematype": "token"}
@@ -165,9 +196,6 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
 
-  #pragma cyclus var{"default": 0.001, \
-                     "tooltip": "The convergence requirement for the code"}
-  double tolerence;
 
  private:
   int cycle_end_;

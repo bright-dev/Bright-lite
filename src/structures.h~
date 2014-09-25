@@ -58,8 +58,6 @@ struct batch_info {
     double batch_fluence; //fluence at the end of cycle, not used during burnup/composition calc
     std::vector<double> fraction; //blending fraction
     std::vector<isoInformation> iso;
-    double struct_prod; //neutron production rate of structural materials
-    double struct_dest; //neutron destruction rate of structural materials
     double batch_area; //[cm2] the total area of the batch for cylindrical flux calc
     isoInformation collapsed_iso;
     double BUg; //burnup guess, used during burnup/composition calc
@@ -90,6 +88,13 @@ struct fuelBundle {
     double moderator_radius;
     double moderator_sigs;
     double moderator_siga;
+    double disadv_a; //disadvantage calc fuel rad
+    double disadv_b; //disadvantage calc mod rad
+    double disadv_mod_siga; //disadvantage calc moderator Sig a
+    double disadv_mod_sigs; //disadvantage calc mod Sig s
+    double disadv_fuel_sigs; //disadvantage calc fuel Sig s
+    double struct_prod; //neutron production rate of structural materials
+    double struct_dest; //neutron destruction rate of structural materials
     std::vector<batch_info> batch;
     std::vector<isoInformation> all_iso; //change to manifest
     std::vector<interpol_pair> interpol_pairs;

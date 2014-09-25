@@ -63,6 +63,7 @@ struct batch_info {
     double BUg; //burnup guess, used during burnup/composition calc
     double Fg; //fluence guess, used during burnup/composition calc
     double rflux; //relative flux of batch
+    double DA; //thermal disadvantage, phi_M/phi_F
     std::map<int, double> comp; //current composition of batch at this batch_fluence
 };
 
@@ -88,6 +89,11 @@ struct fuelBundle {
     double moderator_radius;
     double moderator_sigs;
     double moderator_siga;
+    double disadv_a; //disadvantage calc fuel rad
+    double disadv_b; //disadvantage calc mod rad
+    double disadv_mod_siga; //disadvantage calc moderator Sig a
+    double disadv_mod_sigs; //disadvantage calc mod Sig s
+    double disadv_fuel_sigs; //disadvantage calc fuel Sig s
     double struct_prod; //neutron production rate of structural materials
     double struct_dest; //neutron destruction rate of structural materials
     std::vector<batch_info> batch;
