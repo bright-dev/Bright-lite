@@ -22,10 +22,13 @@ fuelBundle regionCollapse(fuelBundle fuel);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
 fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_cylindrical(fuelBundle core);
-double dest_to_siga(double dest);
-double prod_to_nusigf(double prod);
+double nusigf_finder(batch_info batch);
+fuelBundle struct_update(fuelBundle fuel);
+double siga_finder(batch_info batch);
+double Siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
-fuelBundle burnupcalc(fuelBundle core, int mode, double tolerance);
+fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
+fuelBundle DA_calc(fuelBundle fuel);
 
 #endif // BURNUPCALC_H_INCLUDED
 

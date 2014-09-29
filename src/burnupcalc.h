@@ -24,8 +24,9 @@ fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_cylindrical(fuelBundle core);
 double nusigf_finder(batch_info batch);
 double siga_finder(batch_info batch);
+double Siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
-fuelBundle burnupcalc(fuelBundle core, int mode, double tolerance);
+fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
 fuelBundle DA_calc(fuelBundle fuel);
 
 #endif // BURNUPCALC_H_INCLUDED

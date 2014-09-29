@@ -71,16 +71,6 @@ fuelBundle regionCollapse(fuelBundle fuel){
             cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
         }
         
-        //add the structural material effects
-        for(int j = 0; j < fuel.batch[i].collapsed_iso.neutron_prod.size(); j++){
-            //IF theres no rate from actinide, theres no rate from struct
-            if(fuel.batch[i].collapsed_iso.neutron_prod[j] != 0){
-                fuel.batch[i].collapsed_iso.neutron_prod[j] += fuel.struct_prod;
-            }
-            if(fuel.batch[i].collapsed_iso.neutron_dest[j] != 0){
-                fuel.batch[i].collapsed_iso.neutron_dest[j] += fuel.struct_dest;
-            }
-        }
         
         if(fuel.batch[i].collapsed_iso.neutron_prod[0] == 0 || fuel.batch[i].collapsed_iso.neutron_dest[0] == 0){
             fuel.batch[i].collapsed_iso.neutron_prod.erase(fuel.batch[i].collapsed_iso.neutron_prod.begin());
@@ -99,7 +89,7 @@ fuelBundle regionCollapse(fuelBundle fuel){
 
     return fuel;
 };
-// need to add units
+
 
 map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
     map<int, double> out = map<int, double>();
@@ -182,10 +172,32 @@ double siga_finder(batch_info batch){
     
     dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     
-    //sig_a[barn] = dest rate / Avagadros number * mass * barn
-    sig_a = dest/(6.0221413E+23)*A*1E24;
+    //sig_a[barn] = dest rate [cm2/kg] / Avagadros number * mass * barn
+    sig_a = dest/(6.0221413E+23)*A*1E24/100;
     
     return sig_a;
+}
+
+double Siga_finder(batch_info batch){
+//returns the macroscopic cross section [cm-1] at fluence Fg
+    double Sig_a;
+    int ii;
+    double dest = 0;
+    double rho = 0.01097; // [g/cm3]
+    
+    //find the index to interpolate on
+    for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
+    
+    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
+    
+    if(ii == 0){
+        dest = batch.collapsed_iso.neutron_dest[0];
+    }
+    
+    //Sig_a[cm-1] = dest rate * density
+    Sig_a = dest*rho;
+    
+    return Sig_a;
 }
 
 
@@ -314,7 +326,6 @@ cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
     */
     
 
-
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux = 1;
     }
@@ -334,11 +345,20 @@ double kcalc(fuelBundle core){
     //  to find the prod and dest values for each batch
     int j;
     for(int i = 0; i < N; i++){
+        //find dicrete point j to interpolate on
         for(j = 0; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){}
-
+  
+        //add the production rate of batch i to total production
         prod_tot += intpol(core.batch[i].collapsed_iso.neutron_prod[j-1], core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+        
+        //add structural material production of this batch, scaled up using disadvantage factor
+        prod_tot += core.struct_prod * core.batch[i].DA;
       
+        //add the destruction rate of batch i to total destruction
         dest_tot += intpol(core.batch[i].collapsed_iso.neutron_dest[j-1], core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);   
+        
+        //add structural material destruction of this batch, scaled up using disadvantage factor
+        dest_tot += core.struct_dest * core.batch[i].DA;
              
     }
     if(pnl < 0 || pnl > 1){
@@ -349,13 +369,13 @@ double kcalc(fuelBundle core){
     return prod_tot * pnl / dest_tot;    
 }
 
-fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
+fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
     cout << endl << "Burnupcalc" << endl;
     
-    double BUg = 40; //burnup guess, gets updated if a guess in passed
+    double BUg = 40; //burnup guess, gets updated if a guess in passed. unused
     int N = core.batch.size(); //number of batches
     double dt = delta*24*60*60; //ten days [s]
     double kcore, kcore_prev;
@@ -398,9 +418,15 @@ fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
             cout << endl << "Error in mode input for batch-level flux calculation." << endl;
             return core;
         }
+        
+        //disadvantage calculation
+        if(DA_mode == 1){
+            core = DA_calc(core);
+        }
+        
         //update fluences
         for(int i = 0; i < N; i++){
-            core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+            core.batch[i].Fg += core.batch[i].rflux * core.base_flux / core.batch[i].DA * dt;
         }
         
         kcore = kcalc(core);
@@ -422,6 +448,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
         core.batch[i].comp.clear();
         int ii;
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].batch_fluence; ii++){}
+        
+        cout << "here we are: " << core.batch[i].collapsed_iso.fluence[ii-1] << " " << core.batch[i].batch_fluence << "  " << core.batch[i].collapsed_iso.fluence[ii] << endl;
         
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
             core.batch[i].comp[core.batch[i].collapsed_iso.iso_vector[j].name] = 
@@ -464,14 +492,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, double delta) {
 
 
 fuelBundle DA_calc(fuelBundle fuel){
-// calculates the flux of each region in fuelBundle
-// probably will need to add reactor identifier as input in the future
-
-    int i = 0;
-    int r = 1; //number of regions
-    double frac35, frac38; // mass fraction of u235 and u238
-    double temp;
-
+// calculates the flux within each batch in fuelBundle
+// DA = phi_thermal_Mod / phi_thermal_Fuel
 
     double a = fuel.disadv_a; // radius of the fuel rod
     double b = fuel.disadv_b; // radius of the equivalent cell
@@ -497,7 +519,7 @@ fuelBundle DA_calc(fuelBundle fuel){
     double f; // flux of fuel divided by total flux(fuel+moderator)
 
 
-////moderator
+    //moderator
     Sig_tM = Sig_aM + Sig_sM;
     A_F = 235;
     A_M = 18;
@@ -509,43 +531,43 @@ fuelBundle DA_calc(fuelBundle fuel){
     V_M = pow(b,2)*3.141592 - pow(a,2)*3.141592;
     V_F = pow(a,2)*3.141592;
 
+    cout << endl << "thermal disadvtg cals: " << endl;
+    for(int i = 0; i < fuel.batch.size(); i++){
+    
+        Sig_aF = Siga_finder(fuel.batch[i]);
+        cout << "Siga: " << Sig_aF << endl;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
+        Sig_tF = Sig_aF+Sig_sF;
+        Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
+        D_F = 1 / (3 * Sig_trF);
+        L_F = sqrt(D_F/Sig_aF);
+        x = a/L_F;
 
+        /*****book example***
+        //should get f = 0.8272 with the values below
+        //Lamarsh pg.316
+        a=1.02;
+        b=14.3;
+        x=0.658;
+        y=0.0173;
+        z=0.242;
+        V_M=195.6;
+        V_F=1;
+        Sig_aM=0.0002728;
+        Sig_aF=0.3668;
+        ******************/
 
-    Sig_aF = 0;
-    Sig_sF = 0;
+        F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
+        
+        E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) * boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) * boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
+                                        
+        f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
+        cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
+    
+        fuel.batch[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+    }
 
-    Sig_tF = Sig_aF+Sig_sF;
-    Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
-    D_F = 1 / (3 * Sig_trF);
-    L_F = sqrt(D_F/Sig_aF);
-    x = a/L_F;
-
-    /*****book example***
-    a=1.02;
-    b=14.3;
-    x=0.658;
-    y=0.0173;
-    z=0.242;
-    V_M=195.6;
-    V_F=1;
-    Sig_aM=0.0002728;
-    Sig_aF=0.3668;
-    *******************/
-
-    F = x * boost::math::cyl_bessel_i(0,x) / (2 * boost::math::cyl_bessel_i(1, x));
-    /*
-    E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) *
-                                   boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) *
-                                    boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
-    f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
-    cout << "Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
-*/
-
-
-    return fuel;//(Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
+    return fuel;
 }
 
 

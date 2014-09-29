@@ -189,9 +189,13 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Timestep [days] for the burnup calculation."}
   double burnupcalc_timestep;
   
-  #pragma cyclus var {"default": 1, \
+  #pragma cyclus var {"default": 2, \
                       "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
-  double flux_mode;
+  int flux_mode;
+  
+  #pragma cyclus var {"default": 1, \
+                      "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
+  int DA_mode;
 
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
