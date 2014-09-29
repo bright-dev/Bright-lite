@@ -12,37 +12,8 @@ std::string ReactorFacility::str() {
 }
 
 void ReactorFacility::Tick() {
-    std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
-    std::cout << "\n     list: " << std::endl;
-    
-    std::cout << batches << std::endl;
-    std::cout << nonleakage << std::endl;
-    std::cout << max_inv_size << std::endl;
-    std::cout << target_burnup << std::endl;
-    std::cout << generated_power << std::endl;
-    std::cout << core_mass << std::endl;
-    std::cout << efficiency << std::endl;
-    std::cout << fuel_area << std::endl;
-    std::cout << cylindrical_delta << std::endl;
-    std::cout << mod_Sig_a << std::endl;
-    std::cout << mod_Sig_tr << std::endl;
-    std::cout << mod_Sig_f << std::endl;
-    std::cout << mod_thickness << std::endl;
-    std::cout << fuel_Sig_tr << std::endl;
-    std::cout << burnupcalc_timestep << std::endl;
-    std::cout << flux_mode << std::endl;
-    std::cout << tolerence << std::endl;
-    std::cout << disadv_a << std::endl;
-    std::cout << disadv_b << std::endl;
-    std::cout << disadv_mod_siga << std::endl;
-    std::cout << disadv_mod_sigs << std::endl;
-    std::cout << disadv_fuel_sigs << std::endl;
-    std::cout << "\nend  list " << std::endl;
-    
-    
-    
-    
-    
+    //std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
+
     
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
@@ -134,15 +105,15 @@ void ReactorFacility::Tick() {
 /************************End of output file*********************************/
     }
     
-    std::cout << "end tick" << std::endl;
+    //std::cout << "end tick" << std::endl;
 }
 
 void ReactorFacility::Tock() {
-    std::cout << "Begin tock\n" << std::endl;/// <------------------------------------------
+    //std::cout << "Begin tock\n" << std::endl;
   
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
-        std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <-------- 
+        //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <-------- 
         return;
     }
     std::cout << "inv size: " << inventory.count() << "  quant: " << inventory.quantity() << std::endl;
@@ -210,7 +181,7 @@ void ReactorFacility::Tock() {
     }
   
   // pass fuel bundles to burn-up calc
-  fuel_library_ = burnupcalc(fuel_library_, flux_mode, burnupcalc_timestep);
+  fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
   
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
