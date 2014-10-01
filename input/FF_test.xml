@@ -1,0 +1,134 @@
+<!-- 1 Source, 1 rx, 1 Sink -->
+
+<simulation>
+  <control>
+    <duration>100</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Source</name>
+    <config>
+      <Source>
+        <commod>freshFuel</commod>
+        <recipe_name>U235</recipe_name>
+	<capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>freshFuel1</commod>
+        <recipe_name>U238</recipe_name>
+	    <capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>uf</val>
+        </in_commods>
+        <capacity>1000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>fuel</val>
+        </in_commods>
+        <out_commod>uf</out_commod>
+        <libraries><val>E5_60</val></libraries>
+        <target_burnup>60.0</target_burnup>
+        <nonleakage>0.94</nonleakage>
+        <core_mass>1000.0</core_mass>
+        <batches>4</batches>
+      </ReactorFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>FF</name>
+    <config>
+      <FuelfabFacility>
+        <in_commods>
+            <key>freshFuel</key>
+            <val>0.5</val>
+            <key>freshFuel1</key>
+            <val>1.0</val>
+        </in_commods>
+        <out_commod>fuel</out_commod>
+      </FuelfabFacility>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Source1</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Rx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>FF</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>U235</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>922350000</id>
+      <comp>100</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>U238</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>922380000</id>
+      <comp>100</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>
