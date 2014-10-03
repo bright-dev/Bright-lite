@@ -1,0 +1,172 @@
+<!-- 1 Source, 1 reprocess, 2 Sink -->
+
+<simulation>
+  <control>
+    <duration>4</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Source</name>
+    <config>
+      <Source>
+        <commod>spentFuel</commod>
+        <recipe_name>spentFuel</recipe_name>
+	<capacity>250.0</capacity>
+      </Source>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>Repro</name>
+    <config>
+      <ReprocessFacility>
+        <in_commod>
+            <val>spentFuel</val>
+        </in_commod>
+        <commod_out>
+            <key>reproFuel0</key>
+            <val>recipe0</val>
+            <key>reproFuel1</key>
+            <val>recipe1</val>
+            <key>reproFuel2</key>
+            <val>recipe2</val>            
+            <key>reproFuel3</key>
+            <val>recipe3</val>
+        </commod_out>
+      </ReprocessFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Sink1</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>reproFuel0</val>
+        </in_commods>
+        <capacity>1000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>Sink2</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>reproFuel1</val>
+        </in_commods>
+        <capacity>1000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Repro</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink1</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink2</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>spentFuel</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>1.6</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>98.4</comp>
+    </nuclide>
+    <nuclide>
+      <id>U236</id>
+      <comp>4.235</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>recipe0</name>
+    <nuclide>
+      <id>922350000</id>
+      <comp>10.9214</comp>
+    </nuclide>
+    <nuclide>
+      <id>922380000</id>
+      <comp>10.9345</comp>
+    </nuclide>
+    <nuclide>
+      <id>922360000</id>
+      <comp>10.089345</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>recipe1</name>
+    <nuclide>
+      <id>U235</id>
+      <comp>0.01</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>0.01</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>recipe2</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>0.02</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>0.01</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>recipe3</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>0.01</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>0.03</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>
