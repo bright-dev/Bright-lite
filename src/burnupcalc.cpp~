@@ -121,8 +121,18 @@ fuelBundle phicalc_simple(fuelBundle core){
         int ii;
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
         
+        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
+            cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (method2)" << endl;
+            cout << "  Values on max fluence will be used. Do not trust results." << endl;
+            ii = core.batch[i].collapsed_iso.fluence.size() - 1;            
+        }
+        
         if(ii == 0){
             core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
+            if(maxphi < core.batch[i].rflux){
+                maxphi = core.batch[i].rflux;
+            }        
+        
         } else{
 
             core.batch[i].rflux = 
@@ -151,6 +161,9 @@ double nusigf_finder(batch_info batch){
     
     //find the index to interpolate on
     for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
+    if(batch.collapsed_iso.fluence.back() < batch.Fg){
+        ii = batch.collapsed_iso.fluence.size() - 1;            
+    }    
         
     prod = intpol(batch.collapsed_iso.neutron_prod[ii-1], batch.collapsed_iso.neutron_prod[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     
@@ -169,6 +182,10 @@ double siga_finder(batch_info batch){
     
     //find the index to interpolate on
     for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
+    if(batch.collapsed_iso.fluence.back() < batch.Fg){
+        ii = batch.collapsed_iso.fluence.size() - 1;            
+    }    
+    
     
     dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     
@@ -187,6 +204,9 @@ double Siga_finder(batch_info batch){
     
     //find the index to interpolate on
     for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
+    if(batch.collapsed_iso.fluence.back() < batch.Fg){
+        ii = batch.collapsed_iso.fluence.size() - 1;            
+    }    
     
     dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     
@@ -232,6 +252,9 @@ cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
         double prod, dest;
         //find the index to interpolate on
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++);
+        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
+            ii = core.batch[i].collapsed_iso.fluence.size() - 1;            
+        }        
         
         prod = intpol(core.batch[i].collapsed_iso.neutron_prod[ii-1], core.batch[i].collapsed_iso.neutron_prod[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
         NuSigma_f[i] = 0.0203;
@@ -345,8 +368,14 @@ double kcalc(fuelBundle core){
     //  to find the prod and dest values for each batch
     int j;
     for(int i = 0; i < N; i++){
+        
         //find dicrete point j to interpolate on
-        for(j = 0; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){}
+        for(j = 0; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){} 
+        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
+            cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (kcalc)" << endl;
+            cout << "  Values on max fluence will be used. Do not trust results." << endl;
+            j = core.batch[i].collapsed_iso.fluence.size() - 1;
+        }        
   
         //add the production rate of batch i to total production
         prod_tot += intpol(core.batch[i].collapsed_iso.neutron_prod[j-1], core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
@@ -394,14 +423,22 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     
     
     
-    kcore = kcalc(core);
-    if(kcore < 1){
+    kcore = 3.141592;
+    kcore_prev = kcalc(core);
+    if(kcore_prev < 1){
         cout << endl << "Error! Core is not critical." << endl;
     }
+    
+    //<--------------------------------------------------
+    double cburnup[N];
+    for(int i = 0; i < N; i++){cburnup[i] = 0;}
+    //-------------------------------------------------->
+    
     
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
+        if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
         
         //find the normalized relative flux of each batch
         if(mode == 1){
@@ -426,18 +463,56 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         
         //update fluences
         for(int i = 0; i < N; i++){
-            core.batch[i].Fg += core.batch[i].rflux * core.base_flux / core.batch[i].DA * dt;
+            cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
+            core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
         
+        //<--------------------------------------------------
+        double added[N];
+        double fnow[N];
+        double bburnup[N];
+        double totburnup = 0;
+        
+        for(int i = 0; i < N; i++){
+            added[i] = core.batch[i].rflux * core.base_flux * dt;
+            fnow[i] = core.batch[i].Fg;
+            
+            int ii;
+            for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < fnow[i]-added[i]; ii++){}                 
+            bburnup[i] = intpol(core.batch[i].collapsed_iso.BU[ii-1],core.batch[i].collapsed_iso.BU[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], fnow[i]-added[i]);
+            
+            for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < fnow[i]; ii++){}
+            
+            bburnup[i] = intpol(core.batch[i].collapsed_iso.BU[ii-1],core.batch[i].collapsed_iso.BU[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], fnow[i]) - bburnup[i];
+            
+            totburnup += bburnup[i];
+            
+            cburnup[i] += bburnup[i];
+            //cout << "burnup this cycle of batch " << i+1 << ": " << bburnup[i] << endl;
+            
+        
+        
+        }
+        //------------------------------------------------->    
+               
         kcore = kcalc(core);
+        
     }
     
-    //update core fluences
+    //<--------------------------------------------------
+    for(int i = 0; i < N; i++){
+        //cout << "total burnup of batch " << i+1 << ": " << cburnup[i] << endl;
+    }
+    //------------------------------------------------->
 
+    
+    //update core fluences
     for(int i = 0; i < N; i++){
         //y0 is the fluence value before the last interation
         y0 = core.batch[i].Fg - core.batch[i].rflux * core.base_flux * dt;
         y1 = core.batch[i].Fg;
+        cout << y0 << " and " << y1 << endl; //<-------
+        cout << "  " << kcore_prev << " " << kcore << endl; //<-------
         core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
         cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
         
@@ -448,8 +523,11 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         core.batch[i].comp.clear();
         int ii;
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].batch_fluence; ii++){}
-        
-        cout << "here we are: " << core.batch[i].collapsed_iso.fluence[ii-1] << " " << core.batch[i].batch_fluence << "  " << core.batch[i].collapsed_iso.fluence[ii] << endl;
+        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].batch_fluence){
+            cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc1)" << endl;
+            cout << "  Values on max fluence will be used. Do not trust results." << endl;
+            ii = core.batch[i].collapsed_iso.fluence.size() - 1;
+        }         
         
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
             core.batch[i].comp[core.batch[i].collapsed_iso.iso_vector[j].name] = 
@@ -460,15 +538,24 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     //the oldest batch is always index=0
     int ii;
     for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
+    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
+        cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc2)" << endl;
+        cout << "  Values on max fluence will be used. Do not trust results." << endl;
+        ii = core.batch[0].collapsed_iso.fluence.size() - 1;
+    }  
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
     
-    cout << "Discharge burnup: " << burnup << endl;
+    cout << endl << "Discharge burnup: " << burnup << endl << endl;
         
     /************************output file*********************************/
     std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
     
     outfile << "Discharge burnup: " << burnup; 
+    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
+        outfile << "\r\n\r\nBatch fluence exceeded max fluence in library! Do not trust results.\r\n     Discharge values extrapolated from last two discrete points.\r\n\r\n";
+    }
+    
     outfile << "\r\n Fluences at the end of this burnup cycle:";
     
     for(int i = 0; i < N; i++){
@@ -531,11 +618,11 @@ fuelBundle DA_calc(fuelBundle fuel){
     V_M = pow(b,2)*3.141592 - pow(a,2)*3.141592;
     V_F = pow(a,2)*3.141592;
 
-    cout << endl << "thermal disadvtg cals: " << endl;
+    //cout << endl << "thermal disadvtg cals: " << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
     
         Sig_aF = Siga_finder(fuel.batch[i]);
-        cout << "Siga: " << Sig_aF << endl;
+        //cout << "Siga: " << Sig_aF << endl;
 
         Sig_tF = Sig_aF+Sig_sF;
         Sig_trF = Sig_tF - 2/3/A_F*Sig_sF;
@@ -562,7 +649,7 @@ fuelBundle DA_calc(fuelBundle fuel){
         E = (z*z - y*y) / (2 * y) * ( (boost::math::cyl_bessel_i(0, y) * boost::math::cyl_bessel_k(1, z)+ boost::math::cyl_bessel_k(0, y) * boost::math::cyl_bessel_i(1, z)) / (boost::math::cyl_bessel_i(1, z) * boost::math::cyl_bessel_k(1, y) - boost::math::cyl_bessel_k(1, z) * boost::math::cyl_bessel_i(1, y)));
                                         
         f = pow((((Sig_aM * V_M)/(Sig_aF * V_F)) * F + E), (-1.));
-        cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
+        //cout << f << "  Disadvtg: " << (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M)<<endl;
     
         fuel.batch[i].DA = (Sig_aF*V_F - f*Sig_aF*V_F)/(f*Sig_aM*V_M);
     }
@@ -965,7 +1052,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
     }
     return new_fuel;
 }
-
+/*
 fuelBundle burnup_collapse(fuelBundle fuel){
     for(int i = 0; i < fuel.iso.size(); i++){
         fuel.iso[i].fraction[0] = fuel.iso[i].fraction[1];

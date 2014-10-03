@@ -119,7 +119,12 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
-
+/*
+  #pragma cyclus var {"tooltip": "reactor interpolation parameters", \
+                      "default": "burnup" \
+                      "userlevel": 10}
+  std::map<std::string, std::double> intpol_pairs;  
+*/
   #pragma cyclus var {"tooltip": "number of batches", \
                       "default": 3}
   int batches;
@@ -194,7 +199,7 @@ class ReactorFacility : public cyclus::Facility  {
   int flux_mode;
   
   #pragma cyclus var {"default": 1, \
-                      "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
+                      "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
   int DA_mode;
 
   #pragma cyclus var {"capacity": "max_inv_size"}

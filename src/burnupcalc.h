@@ -12,10 +12,14 @@
 #include "origenBuilder.h"
 #include "cyclus.h"
 //#include <eigen3/Eigen/Eigen>
+
+#include <stdio.h>
+#include <math.h>
+#include <cblas.h>
+
+//#include "lapacke.h"
+
 //#include <armadillo>
-
-
-
 
 double intpol(double y0, double y1, double x0, double x1, double x);
 fuelBundle regionCollapse(fuelBundle fuel);

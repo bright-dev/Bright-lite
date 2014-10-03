@@ -30,7 +30,11 @@ void ReactorFacility::Tick() {
             iso.fraction = 0; //zero fraction
             fuel_library_.all_iso.push_back(iso); //adds this temp iso to fuel_library
         }
+        
+     
+        
         //adds general info about the fuel in fuel_library_
+        ///if theres value, dont update field
         fuel_library_.base_flux = flux_finder(fuel_library_.name);
         fuel_library_.base_mass = core_mass;
         fuel_library_.base_power = generated_power;
@@ -50,15 +54,17 @@ void ReactorFacility::Tick() {
         fuel_library_.disadv_fuel_sigs = disadv_fuel_sigs;
         
         
-        
-
         if (libraries.size() == 1){
         //adds a built isoInfo for each isotope that can be in fuel, stores it in all_iso
             DataReader2(fuel_library_.name, fuel_library_.all_iso); 
         } else {
         ///interpolation stuff
-        }
         
+        
+        
+        }           
+
+       
         batch_info empty_batch;
         //creates empty batch entries
         for(int i = 0; i < batches; i++){
