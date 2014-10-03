@@ -1,0 +1,17 @@
+#ifndef ORIGENBUILDER_H_INCLUDED
+#define ORIGENBUILDER_H_INCLUDED
+
+#include<iostream>
+#include<vector>
+#include<fstream>
+#include<sstream>
+#include<algorithm>
+
+#include "structures.h"
+
+isoInformation FuelBuilder(vector<isoInformation> fuel_values);
+std::vector<nonActinide> NonActinideReader(string file_name);
+double flux_finder(std::string type);
+std::vector<isoInformation> DataReader2(string type, std::vector<isoInformation> &input_stream);
+
+#endif // ORIGENBUILDER_H_INCLUDED
