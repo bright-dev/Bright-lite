@@ -96,7 +96,7 @@
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
         <target_burnup>60.0</target_burnup>
-        <nonleakage>0.97</nonleakage>
+        <nonleakage>0.973</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>3</batches>
         <flux_mode>2</flux_mode>
@@ -150,11 +150,11 @@
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>4.95</comp>
+      <comp>3.6</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>95.05</comp>
+      <comp>96.4</comp>
     </nuclide>
   </recipe>
 
