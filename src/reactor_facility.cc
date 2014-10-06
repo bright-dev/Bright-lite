@@ -14,7 +14,7 @@ std::string ReactorFacility::str() {
 void ReactorFacility::Tick() {
     //std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
 
-    
+
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
         std::ifstream inf(libraries[0] +"/manifest.txt"); //opens manifest file
@@ -30,9 +30,19 @@ void ReactorFacility::Tick() {
             iso.fraction = 0; //zero fraction
             fuel_library_.all_iso.push_back(iso); //adds this temp iso to fuel_library
         }
-        
-     
-        
+        if (libraries.size() < 2){
+        //adds a built isoInfo for each isotope that can be in fuel, stores it in all_iso
+            DataReader2(fuel_library_.name, fuel_library_.all_iso);
+        } else {
+            for(std::map<std::string, double>::iterator c = interpol_pairs.begin(); c != interpol_pairs.end(); ++c){
+                interpol_pair pair;
+                pair.metric = c -> first;
+                pair.value = c -> second;
+                fuel_library_.interpol_pairs.push_back(pair);
+            }
+            fuel_library_ = lib_interpol(fuel_library_);
+        }
+
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
         fuel_library_.base_flux = flux_finder(fuel_library_.name);
@@ -52,19 +62,8 @@ void ReactorFacility::Tick() {
         fuel_library_.disadv_mod_siga = disadv_mod_siga;
         fuel_library_.disadv_mod_sigs = disadv_mod_sigs;
         fuel_library_.disadv_fuel_sigs = disadv_fuel_sigs;
-        
-        
-        if (libraries.size() == 1){
-        //adds a built isoInfo for each isotope that can be in fuel, stores it in all_iso
-            DataReader2(fuel_library_.name, fuel_library_.all_iso); 
-        } else {
-        ///interpolation stuff
-        
-        
-        
-        }           
 
-       
+
         batch_info empty_batch;
         //creates empty batch entries
         for(int i = 0; i < batches; i++){
@@ -72,16 +71,16 @@ void ReactorFacility::Tick() {
             fuel_library_.batch[i].batch_fluence = 0; //fluence of the batch is set to zero
             fuel_library_.batch[i].fraction.push_back(1);//fraction of the batch is set to one
         }
-        
+
         /*
         core_ = std::vector<fuelBundle>(batches); //core_ is size of batches, which will be changed
         for(int i = 0; i < core_.size(); i++){
           core_[i] = fuel_library_[i];
         }*/
-    
+
 /************************output file*********************************/
         std::ofstream outfile("../output_cyclus_recent.txt");
-        
+
         outfile << "Fuel library name: " << fuel_library_.name << "\r\n";
         outfile << "Batches: " << batches << "\r\n";
         outfile << "libcheck: " << fuel_library_.libcheck << "\r\n";
@@ -110,32 +109,32 @@ void ReactorFacility::Tick() {
         outfile.close();
 /************************End of output file*********************************/
     }
-    
+
     //std::cout << "end tick" << std::endl;
 }
 
 void ReactorFacility::Tock() {
     //std::cout << "Begin tock\n" << std::endl;
-  
+
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
-        //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <-------- 
+        //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
         return;
     }
     std::cout << "inv size: " << inventory.count() << "  quant: " << inventory.quantity() << std::endl;
-    
+
     // Pop materials out of inventory
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
 
-    
-    std::cout << "inv size: " << inventory.count() << "  quant: " << inventory.quantity() << std::endl;  
+
+    std::cout << "inv size: " << inventory.count() << "  quant: " << inventory.quantity() << std::endl;
 
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
     std::cout << "manifest size: " << manifest.size() << std::endl;
     std::cout << "batch size: " << fuel_library_.batch.size() << std::endl;
-    
+
     if(manifest.size() > fuel_library_.batch.size()){
         for(int i = 0; i < manifest.size() - fuel_library_.batch.size(); i++){
             batch_info temp_batch;
@@ -148,7 +147,7 @@ void ReactorFacility::Tock() {
     for(int i = 0; i < manifest.size(); i++){
     //build correct isoinfo and fraction for each batch
     ///put the stuff in comp fraction to fuel_library_.batch.iso fraction using values in fuel_library_.all_iso
-        
+
         comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
         int comp_iso;
         //each iso in comp
@@ -156,9 +155,9 @@ void ReactorFacility::Tock() {
             comp_iso = pyne::nucname::zzaaam(it->first);
             //each iso in all_iso
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
-                
+
                 int fl_iso = fuel_library_.all_iso[j].name;
-                
+
                 if(fl_iso == comp_iso && fuel_library_.batch[i].batch_fluence == 0){
                 std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
                     isoInformation temp_iso;
@@ -175,20 +174,20 @@ void ReactorFacility::Tock() {
         std::cout << "  isosize" << fuel_library_.batch[i].iso.size() <<std::endl;
         std::cout << "    fluence: " << fuel_library_.batch[i].batch_fluence << std::endl;
     }
-    
+
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
-    
+
     std::cout << std::endl;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         std::cout << fuel_library_.batch[i].iso[0].name << " " << fuel_library_.batch[i].iso[0].fraction << "  k: " << fuel_library_.batch[i].collapsed_iso.neutron_prod[1]/fuel_library_.batch[i].collapsed_iso.neutron_dest[1] << std::endl;
         std::cout << fuel_library_.batch[i].iso[1].name << " " << fuel_library_.batch[i].iso[1].fraction << std::endl;
-    
+
     }
-  
+
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
-  
+
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
     cyclus::CompMap out_comp;
@@ -207,18 +206,18 @@ void ReactorFacility::Tock() {
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
   std::cout << "Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
   std::cout << "Time :: " <<cycle_end_ << std::endl;
-  
+
     /************************output file*********************************/
     std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
-    
-    outfile << " Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << " [months]";    
+
+    outfile << " Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << " [months]";
 
     outfile << "\r\n\r\n\r\n";
-   
+
     outfile.close();
     /************************End of output file**************************/
-  
+
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
@@ -259,7 +258,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
-    
+
   using cyclus::BidPortfolio;
   using cyclus::CapacityConstraint;
   using cyclus::Converter;
@@ -302,7 +301,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
     cyclus::Composition::Ptr compost;
     std::cout << "inv size: " << inventory.count() << std::endl;
     for (it = responses.begin(); it != responses.end(); ++it) {
-    
+
         inventory.Push(it->second);
         compost = it->second->comp();
         cyclus::CompMap cmap = compost->mass();
@@ -315,14 +314,14 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         std::ofstream outfile;
         outfile.open("../output_cyclus_recent.txt", std::ios::app);
         outfile << "Composition of fresh batch:\r\n";
-        
+
         for(cit = cmap.begin(); cit != cmap.end(); ++cit){
             outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
         }
         outfile << "\r\n\n";
-       
+
         outfile.close();
-/************************End of output file**************************/   
+/************************End of output file**************************/
   }
   std::cout << "inv size: " << inventory.count() << std::endl;
   std::cout << "end acceptmatltrades" << std::endl;
@@ -384,7 +383,7 @@ void ReactorFacility::batch_reorder(){
 //collapses each batch first, then orders them
     std::cout << "Begin batch_reorder" << std::endl;/// <----------------------
     double k0, k1;
-    
+
     fuel_library_ = StructReader(fuel_library_);
 
     fuel_library_ = regionCollapse(fuel_library_);
@@ -400,7 +399,7 @@ void ReactorFacility::batch_reorder(){
 
     fuelBundle temp_fuel = fuel_library_;
     fuel_library_.batch.clear();
-    
+
     //goes through all the batches and orders them from lowest k to highest
     //uses temp_fuel to store the unordered batches
     while(temp_fuel.batch.size() != 0){
@@ -414,7 +413,7 @@ void ReactorFacility::batch_reorder(){
             }
         }
         fuel_library_.batch.push_back(temp_fuel.batch[lowest]);
-        temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);    
+        temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
     std::cout << "end reorder" << std::endl;
 }

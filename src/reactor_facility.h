@@ -85,12 +85,12 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"default": 0.4095, \
                      "units": "cm", \
                      "tooltip": "Fuel pin radius used for thermal disadvantage calculation."}
-  double disadv_a;  
+  double disadv_a;
 
   #pragma cyclus var {"default": 0.70749, \
                      "units": "cm", \
                      "tooltip": "Moderator radius used for thermal disadvantage calculation."}
-  double disadv_b;  
+  double disadv_b;
 
   #pragma cyclus var {"default": 0.222, \
                      "units": "cm-1", \
@@ -119,6 +119,11 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
+
+  #pragma cyclus var {"tooltip": "The parameter to be interpolated on and" + \
+                      "the interpolation value", \
+                      "userlevel": 1}
+  std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
                       "default": 3}
@@ -150,49 +155,49 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"default": 0.33, \
                       "tooltip": "Thermal to electric conversion rate."}
   double efficiency;
-  
+
   #pragma cyclus var {"default": 89197, \
                       "units": "cm2", \
                       "tooltip": "Total area of the fuel in core. Used for cylindrical flux calculation."}
   double fuel_area;
-  
+
   #pragma cyclus var {"default": 5, \
                       "tooltip": "Delta to be used for cylindrical flux calculation."}
   double cylindrical_delta;
-  
+
   #pragma cyclus var {"default": 0.0222, \
                       "units": "cm-1", \
                       "tooltip": "Macroscopic absorption cross section of the moderator."}
   double mod_Sig_a;
-  
+
   #pragma cyclus var {"default": 3.46, \
                       "units": "cm-1", \
                       "tooltip": "Macroscopic transport cross section of the moderator."}
   double mod_Sig_tr;
-  
+
   #pragma cyclus var {"default": 0.0, \
                       "units": "cm-1", \
                       "tooltip": "Macroscopic fission cross section of the moderator."}
   double mod_Sig_f;
-  
+
   #pragma cyclus var {"default": 100, \
                       "units": "cm", \
                       "tooltip": "Radial thickness of the moderator used for cylindrical flux calculation."}
   double mod_thickness;
-  
+
   #pragma cyclus var {"default": 3.94, \
                       "units": "cm-1", \
                       "tooltip": "Macroscopic transport cross section of the fuel."}
   double fuel_Sig_tr;
-  
+
   #pragma cyclus var {"default": 10, \
                       "tooltip": "Timestep [days] for the burnup calculation."}
   double burnupcalc_timestep;
-  
+
   #pragma cyclus var {"default": 2, \
                       "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
   int flux_mode;
-  
+
   #pragma cyclus var {"default": 1, \
                       "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
   int DA_mode;
