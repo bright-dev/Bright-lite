@@ -4,7 +4,7 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-  cycle_end_ = ctx->time();
+      cycle_end_ = ctx->time();
 };
 
 std::string ReactorFacility::str() {
@@ -13,8 +13,6 @@ std::string ReactorFacility::str() {
 
 void ReactorFacility::Tick() {
     //std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
-
-
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
         std::ifstream inf(libraries[0] +"/manifest.txt"); //opens manifest file
@@ -34,6 +32,9 @@ void ReactorFacility::Tick() {
         //adds a built isoInfo for each isotope that can be in fuel, stores it in all_iso
             DataReader2(fuel_library_.name, fuel_library_.all_iso);
         } else {
+            for(int i = 0; i < libraries.size(); i++){
+                fuel_library_.interpol_libs.push_back(libraries[i]);
+            }
             for(std::map<std::string, double>::iterator c = interpol_pairs.begin(); c != interpol_pairs.end(); ++c){
                 interpol_pair pair;
                 pair.metric = c -> first;
@@ -41,10 +42,11 @@ void ReactorFacility::Tick() {
                 fuel_library_.interpol_pairs.push_back(pair);
             }
             fuel_library_ = lib_interpol(fuel_library_);
+            //mass_check(fuel_library_);
         }
-
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
+        fuel_library_.name = libraries[0];
         fuel_library_.base_flux = flux_finder(fuel_library_.name);
         fuel_library_.base_mass = core_mass;
         fuel_library_.base_power = generated_power;

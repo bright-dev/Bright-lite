@@ -865,7 +865,6 @@ fuelBundle InputReader(){
 */
 
 fuelBundle lib_interpol(fuelBundle input_fuel){
-    /// TODO Add NONA to these libs before or after combining ///
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < input_fuel.interpol_libs.size(); i++){
         fuelBundle lib_bundle;
@@ -934,19 +933,21 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
     // distances
     vector<double> metric_distances;
     for(int i = 0; i < input_fuel.interpol_libs.size(); i++){
-        double distance_measure = 0;
+        double distance_measure = 1;
         for (int j = 0; j < metrics.size(); j++){
-            distance_measure += pow(input_fuel.interpol_pairs[j].scaled_value - metrics[j][i], 2);
+            distance_measure *= pow(input_fuel.interpol_pairs[j].scaled_value - metrics[j][i], 2);
         }
         if(distance_measure == 0){
             return fuel_pairs[i];
         }
         metric_distances.push_back(pow(distance_measure, alpha/2));
+        std::cout << distance_measure << std::endl;
     }
     double met_dist_sum;
     for (int i = 0; i < metric_distances.size(); i++){
-        met_dist_sum += 1./metric_distances[i];
+        met_dist_sum += metric_distances[i];
     }
+    std::cout << "Sum : " << met_dist_sum << std::endl;
     // Fuel Bundle instead of iso //
     fuelBundle new_fuel;
     new_fuel.tres = input_fuel.tres;
@@ -967,19 +968,19 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                     new_iso.fluence.push_back(fuel_pairs[i].all_iso[j].fluence[k]);
                 }
                 for (int k = 0; k < fuel_pairs[i].all_iso[j].neutron_prod.size(); k++){
-                    new_iso.neutron_prod.push_back(fuel_pairs[i].all_iso[j].neutron_prod[k]/metric_distances[i]/met_dist_sum);
+                    new_iso.neutron_prod.push_back(fuel_pairs[i].all_iso[j].neutron_prod[k]*metric_distances[i]/met_dist_sum);
                 }
                 for (int k = 0; k < fuel_pairs[i].all_iso[j].neutron_dest.size(); k++){
-                    new_iso.neutron_dest.push_back(fuel_pairs[i].all_iso[j].neutron_dest[k]/metric_distances[i]/met_dist_sum);
+                    new_iso.neutron_dest.push_back(fuel_pairs[i].all_iso[j].neutron_dest[k]*metric_distances[i]/met_dist_sum);
                 }
                 for (int k = 0; k < fuel_pairs[i].all_iso[j].BUd.size(); k++){
-                    new_iso.BUd.push_back(fuel_pairs[i].all_iso[j].BUd[k]/metric_distances[i]/met_dist_sum);
+                    new_iso.BUd.push_back(fuel_pairs[i].all_iso[j].BUd[k]*metric_distances[i]/met_dist_sum);
                 }
                 for (int k = 0; k < fuel_pairs[i].all_iso[j].iso_vector.size(); k++){
                     daughter new_daughter;
                     new_daughter.name = fuel_pairs[i].all_iso[j].iso_vector[k].name;
                     for(int ii = 0; ii < fuel_pairs[i].all_iso[j].iso_vector[k].mass.size(); ii++){
-                        new_daughter.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[ii]/metric_distances[i]/met_dist_sum);
+                        new_daughter.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[ii]*metric_distances[i]/met_dist_sum);
                     }
                 }
                 new_fuel.all_iso.push_back(new_iso);
@@ -991,13 +992,13 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                     if(fuel_pairs[i].all_iso[j].name == new_fuel.all_iso[m].name){
                         iso_check1 = true;
                         for (int k = 0; k < fuel_pairs[i].all_iso[j].neutron_prod.size(); k++){
-                            new_fuel.all_iso[m].neutron_prod[k] += fuel_pairs[i].all_iso[j].neutron_prod[k]/metric_distances[i]/met_dist_sum;
+                            new_fuel.all_iso[m].neutron_prod[k] += fuel_pairs[i].all_iso[j].neutron_prod[k]*metric_distances[i]/met_dist_sum;
                         }
                         for (int k = 0; k < fuel_pairs[i].all_iso[j].neutron_dest.size(); k++){
-                            new_fuel.all_iso[m].neutron_dest[k] += fuel_pairs[i].all_iso[j].neutron_dest[k]/metric_distances[i]/met_dist_sum;
+                            new_fuel.all_iso[m].neutron_dest[k] += fuel_pairs[i].all_iso[j].neutron_dest[k]*metric_distances[i]/met_dist_sum;
                         }
                         for (int k = 0; k < fuel_pairs[i].all_iso[j].BUd.size(); k++){
-                            new_fuel.all_iso[m].BUd[k] += fuel_pairs[i].all_iso[j].BUd[k]/metric_distances[i]/met_dist_sum;
+                            new_fuel.all_iso[m].BUd[k] += fuel_pairs[i].all_iso[j].BUd[k]*metric_distances[i]/met_dist_sum;
                         }
                         for (int k = 0; k < fuel_pairs[i].all_iso[j].iso_vector.size(); k++){
                             bool iso_check2 = false;
@@ -1005,7 +1006,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                                 if(fuel_pairs[i].all_iso[j].iso_vector[k].name == new_fuel.all_iso[m].iso_vector[mm].name){
                                     iso_check2 = true;
                                     for(int n = 0; n < new_fuel.all_iso[m].iso_vector[mm].mass.size(); n++){
-                                        new_fuel.all_iso[m].iso_vector[mm].mass[n] += fuel_pairs[i].all_iso[j].iso_vector[k].mass[n]/metric_distances[i]/met_dist_sum;
+                                        new_fuel.all_iso[m].iso_vector[mm].mass[n] += fuel_pairs[i].all_iso[j].iso_vector[k].mass[n]*metric_distances[i]/met_dist_sum;
                                     }
                                 }
                             }
@@ -1013,7 +1014,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                                 daughter new_daught;
                                 new_daught.name = fuel_pairs[i].all_iso[j].iso_vector[k].name;
                                 for(int n = 0; n < fuel_pairs[i].all_iso[j].iso_vector[k].mass.size(); n++){
-                                    new_daught.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[n]/metric_distances[i]/met_dist_sum);
+                                    new_daught.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[n]*metric_distances[i]/met_dist_sum);
                                 }
                                 new_fuel.all_iso[m].iso_vector.push_back(new_daught);
                             }
@@ -1030,19 +1031,19 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                         new_iso.fluence.push_back(fuel_pairs[i].all_iso[j].fluence[k]);
                     }
                     for (int k = 0; k < fuel_pairs[i].all_iso[j].neutron_prod.size(); k++){
-                        new_iso.neutron_prod.push_back(fuel_pairs[i].all_iso[j].neutron_prod[k]/metric_distances[i]/met_dist_sum);
+                        new_iso.neutron_prod.push_back(fuel_pairs[i].all_iso[j].neutron_prod[k]*metric_distances[i]/met_dist_sum);
                     }
                     for (int k = 0; k < fuel_pairs[i].all_iso[j].neutron_dest.size(); k++){
-                        new_iso.neutron_dest.push_back(fuel_pairs[i].all_iso[j].neutron_dest[k]/metric_distances[i]/met_dist_sum);
+                        new_iso.neutron_dest.push_back(fuel_pairs[i].all_iso[j].neutron_dest[k]*metric_distances[i]/met_dist_sum);
                     }
                     for (int k = 0; k < fuel_pairs[i].all_iso[j].BUd.size(); k++){
-                        new_iso.BUd.push_back(fuel_pairs[i].all_iso[j].BUd[k]/metric_distances[i]/met_dist_sum);
+                        new_iso.BUd.push_back(fuel_pairs[i].all_iso[j].BUd[k]*metric_distances[i]/met_dist_sum);
                     }
                     for (int k = 0; k < fuel_pairs[i].all_iso[j].iso_vector.size(); k++){
                         daughter new_daughter;
                         new_daughter.name = fuel_pairs[i].all_iso[j].iso_vector[k].name;
                         for(int ii = 0; ii < fuel_pairs[i].all_iso[j].iso_vector[k].mass.size(); ii++){
-                            new_daughter.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[ii]/metric_distances[i]/met_dist_sum);
+                            new_daughter.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[ii]*metric_distances[i]/met_dist_sum);
                         }
                     }
                     new_fuel.all_iso.push_back(new_iso);
@@ -1051,6 +1052,18 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
         }
     }
     return new_fuel;
+}
+
+void mass_check(fuelBundle fuel){
+    for(int i = 0; i < fuel.all_iso.size(); i++){
+        for(int k = 0; k < fuel.all_iso[i].fluence.size(); k++){
+            double mass = 0;
+            for(int j = 0; j < fuel.all_iso[i].iso_vector.size(); j++){
+                mass += fuel.all_iso[i].iso_vector[j].mass[k];
+            }
+            std::cout << mass << std::endl;
+        }
+    }
 }
 /*
 fuelBundle burnup_collapse(fuelBundle fuel){
