@@ -463,7 +463,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
         //update fluences
         for(int i = 0; i < N; i++){
-            cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
+            //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
 
@@ -511,10 +511,10 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         //y0 is the fluence value before the last interation
         y0 = core.batch[i].Fg - core.batch[i].rflux * core.base_flux * dt;
         y1 = core.batch[i].Fg;
-        cout << y0 << " and " << y1 << endl; //<-------
-        cout << "  " << kcore_prev << " " << kcore << endl; //<-------
+        //cout << y0 << " and " << y1 << endl; //<-------
+        //cout << "  " << kcore_prev << " " << kcore << endl; //<-------
         core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
-        cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
+        //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
 
     }
 
@@ -982,6 +982,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                     for(int ii = 0; ii < fuel_pairs[i].all_iso[j].iso_vector[k].mass.size(); ii++){
                         new_daughter.mass.push_back(fuel_pairs[i].all_iso[j].iso_vector[k].mass[ii]*metric_distances[i]/met_dist_sum);
                     }
+                    new_iso.iso_vector.push_back(new_daughter);
                 }
                 new_fuel.all_iso.push_back(new_iso);
             }
@@ -1021,6 +1022,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
                         }
                     }
                 } if (iso_check1 == false){
+                    //std::cout << fuel_pairs[i].all_iso[j].name << endl;
                     isoInformation new_iso;
                     new_iso.name = fuel_pairs[i].all_iso[j].name;
                     new_iso.region = fuel_pairs[i].all_iso[j].region;

@@ -173,19 +173,19 @@ void ReactorFacility::Tock() {
     }
     std::cout << "after building " << fuel_library_.batch.size() << std::endl;
     for(int i = 0 ; i < fuel_library_.batch.size(); i++){
-        std::cout << "  isosize" << fuel_library_.batch[i].iso.size() <<std::endl;
-        std::cout << "    fluence: " << fuel_library_.batch[i].batch_fluence << std::endl;
+        //std::cout << "  isosize" << fuel_library_.batch[i].iso.size() <<std::endl;
+        //std::cout << "    fluence: " << fuel_library_.batch[i].batch_fluence << std::endl;
     }
 
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
 
-    std::cout << std::endl;
+    /*std::cout << std::endl;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         std::cout << fuel_library_.batch[i].iso[0].name << " " << fuel_library_.batch[i].iso[0].fraction << "  k: " << fuel_library_.batch[i].collapsed_iso.neutron_prod[1]/fuel_library_.batch[i].collapsed_iso.neutron_dest[1] << std::endl;
         std::cout << fuel_library_.batch[i].iso[1].name << " " << fuel_library_.batch[i].iso[1].fraction << std::endl;
 
-    }
+    }*/
 
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);

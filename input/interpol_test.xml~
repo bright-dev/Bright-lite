@@ -103,7 +103,7 @@
 	   <val>42</val>
         </interpol_pairs>
         <target_burnup>60.0</target_burnup>
-        <nonleakage>0.966</nonleakage>
+        <nonleakage>0.955</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>4</batches>
         <flux_mode>2</flux_mode>
