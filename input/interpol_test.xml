@@ -100,7 +100,7 @@
         </libraries>
 	<interpol_pairs>
            <key>BURNUP</key>
-	   <val>42</val>
+	   <val>42.5</val>
         </interpol_pairs>
         <target_burnup>60.0</target_burnup>
         <nonleakage>0.955</nonleakage>
