@@ -34,6 +34,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
 fuelBundle DA_calc(fuelBundle fuel);
 fuelBundle lib_interpol(fuelBundle input_fuel);
 void mass_check(fuelBundle fuel);
+double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL);
 
 #endif // BURNUPCALC_H_INCLUDED
 

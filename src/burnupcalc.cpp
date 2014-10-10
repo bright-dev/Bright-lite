@@ -402,11 +402,11 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
-    cout << endl << "Burnupcalc" << endl;
+    //cout << endl << "Burnupcalc" << endl;
 
     double BUg = 40; //burnup guess, gets updated if a guess in passed. unused
     int N = core.batch.size(); //number of batches
-    double dt = delta*24*60*60; //ten days [s]
+    double dt = delta*24*60*60; //days to [s]
     double kcore, kcore_prev;
     double y0, y1, x0, x1;
     double burnup = 0;
@@ -438,7 +438,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
-        if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
+        //if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
 
         //find the normalized relative flux of each batch
         if(mode == 1){
@@ -657,6 +657,57 @@ fuelBundle DA_calc(fuelBundle fuel){
     return fuel;
 }
 
+double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL){
+    double burnup = 0;
+    double dt = delta*24*60*60; //days to [s]
+    fuelBundle core;
+    double BU, BU_est, F_est;
+    
+    //find when k drops under 1 for single batch
+    int ii = 0;
+    for(ii = 0; fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii] >= 1; ii++){
+        if(ii == fuel.neutron_prod.size()-1){
+            cout << endl << "SS_burnupcalc error! Fuel criticality doesn't drop below 1." << endl;
+            ii -= 1;
+            break;
+        }
+    }
+    
+    //find the just critical fluence for single batch
+    F_est = intpol(fuel.fluence[ii-1], fuel.fluence[ii], fuel.neutron_prod[ii-1]*PNL/fuel.neutron_dest[ii-1], fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii], 1);
+    
+    //find the corresponding BU
+    BU_est = intpol(fuel.BU[ii-1], fuel.BU[ii], fuel.fluence[ii-1], fuel.fluence[ii], F_est);
+    
+    //estimate the N batch BU
+    BU_est = 2. * N * BU_est / (N + 1.);
+    
+    //assign the linearly divided burnup and fluence to each batch
+    for(int i = 0; i < N; i++){
+        batch_info temp_batch;
+        temp_batch.collapsed_iso = fuel;
+        temp_batch.BUg = BU_est * i / N; //first batch gets zero BU
+        
+        
+        for(ii = 0; temp_batch.collapsed_iso.BU[ii] < temp_batch.BUg; ii++){}
+        temp_batch.Fg = intpol(temp_batch.collapsed_iso.fluence[ii-1], temp_batch.collapsed_iso.fluence[ii], temp_batch.collapsed_iso.BU[ii-1], temp_batch.collapsed_iso.BU[ii], temp_batch.BUg);
+        
+        if(temp_batch.Fg < 0){temp_batch.Fg = 0;}
+        
+        core.batch.push_back(temp_batch);
+                
+    }
+    
+    //calculate necessary parameters
+    for(int i = 0; i < N; i++){
+        cout << "here: " << core.batch[i].Fg << endl; 
+    }
+    
+
+
+
+    return burnup;
+}
 
 /*
 pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
