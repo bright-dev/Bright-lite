@@ -75,7 +75,8 @@ class FuelfabFacility : public cyclus::Facility  {
     // and away we go!
     std::vector<cyclus::toolkit::ResourceBuff> inventory;
 
-    #pragma cyclus var {"tooltip": "maximum storage capacity of the facility"}
+    #pragma cyclus var {"tooltip": "maximum storage capacity of the facility", \
+                        "default": 1E60}
     double maximum_storage;
 
     #pragma cyclus var {"tooltip": "input commodities", \

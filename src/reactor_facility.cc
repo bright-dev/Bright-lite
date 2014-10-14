@@ -157,9 +157,7 @@ void ReactorFacility::Tock() {
             comp_iso = pyne::nucname::zzaaam(it->first);
             //each iso in all_iso
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
-
                 int fl_iso = fuel_library_.all_iso[j].name;
-
                 if(fl_iso == comp_iso && fuel_library_.batch[i].batch_fluence == 0){
                 std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
                     isoInformation temp_iso;
@@ -240,7 +238,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
   double qty;
   if(inventory.count() == 0){
-     for(int i = 0; i < batches; i++){
+     for(int i = 0; i < in_commods.size(); i++){
         port->AddRequest(target, this, in_commods[i+1]);
      }
      qty = core_mass;

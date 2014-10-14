@@ -13,11 +13,13 @@ namespace fuelfab {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void FuelfabFacility::Tick() {
+        std::cout << "YAY1?" << std::endl;
         for(int i = 0; i < inventory.size(); i++){
             if(inventory[i].count() == 0){
                 inventory[i].set_capacity(maximum_storage/inventory.size());
             }
         }
+        std::cout << "YAY2?" << std::endl;
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,6 +35,7 @@ namespace fuelfab {
         using cyclus::Composition;
         using cyclus::CompMap;
         using cyclus::CapacityConstraint;
+        std::cout << "YAY3?" << std::endl;
         std::set<RequestPortfolio<Material>::Ptr> ports;
         cyclus::Context* ctx = context();
         CompMap cm;
@@ -48,20 +51,20 @@ namespace fuelfab {
             port->AddConstraint(cc);
             ports.insert(port);
         }
+        std::cout << "YAY4?" << std::endl;
         return ports;
     }
 
     // MatlBids //
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>FuelfabFacility::GetMatlBids(
             cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
-
         using cyclus::BidPortfolio;
         using cyclus::CapacityConstraint;
         using cyclus::Converter;
         using cyclus::Material;
         using cyclus::Request;
         using reactor::ReactorFacility;
-
+        std::cout << "YAY5?" << std::endl;
         cyclus::Context* ctx = context();
         std::set<BidPortfolio<Material>::Ptr> ports;
 
@@ -89,7 +92,7 @@ namespace fuelfab {
                     if (req->commodity() == out_commod) {
                         Material::Ptr offer = Material::CreateUntracked(20, manifest[0]->comp());
                         if (reactor->inventory.count() == 0){
-
+                            std::cout << "yay" << std::endl;
                         } else if(reactor->burnup_test(offer) == reactor->target_burnup){
                             port->AddBid(req, offer, this);
                             port->AddConstraint(cc);
@@ -107,7 +110,7 @@ namespace fuelfab {
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                             cyclus::Material::Ptr> >& responses) {
-
+        std::cout << "YAY6?" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
             int j = 0;
@@ -125,7 +128,7 @@ namespace fuelfab {
                                         cyclus::Material::Ptr> >& responses) {
         using cyclus::Material;
         using cyclus::Trade;
-
+        std::cout << "YAY7?" << std::endl;
         std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
         for(int i = 0; i < inventory.size(); i++){
             cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory[i].Pop());
