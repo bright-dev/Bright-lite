@@ -54,7 +54,7 @@ fuelBundle StructReader(fuelBundle core){
         //cout << nucid << "  " << fraction << endl;
 
     }
-    cout << "Structs: " << tot_prod << " " << tot_dest << endl;
+    //cout << "Structs: " << tot_prod << " " << tot_dest << endl;
 
     core.struct_prod = tot_prod;
     core.struct_dest = tot_dest;

@@ -19,7 +19,7 @@
 
 //#include "lapacke.h"
 
-#include <armadillo>
+//#include <armadillo>
 
 double intpol(double y0, double y1, double x0, double x1, double x);
 fuelBundle regionCollapse(fuelBundle fuel);
@@ -32,6 +32,8 @@ double Siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
 fuelBundle DA_calc(fuelBundle fuel);
+fuelBundle lib_interpol(fuelBundle input_fuel);
+void mass_check(fuelBundle fuel);
 
 #endif // BURNUPCALC_H_INCLUDED
 

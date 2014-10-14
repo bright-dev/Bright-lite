@@ -205,10 +205,15 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
-
+  
+  #pragma cyclus var {"default": 380, \
+                      "units": "months", \
+                      "tooltip": "Time before reactor is shutdown after startup."}
+  int reactor_life;
 
  private:
   int cycle_end_;
+  int start_time_;
   fuelBundle fuel_library_;
   fuelBundle core_;
 };
