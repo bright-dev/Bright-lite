@@ -22,7 +22,7 @@
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>250.0</capacity>
+	<capacity>2000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -33,7 +33,7 @@
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>250.0</capacity>
+	    <capacity>2000.0</capacity>
       </Source>
     </config>
   </facility>

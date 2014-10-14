@@ -14,7 +14,7 @@ std::string ReactorFacility::str() {
 
 void ReactorFacility::Tick() {
     //std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
-    
+
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
         std::ifstream inf(libraries[0] +"/manifest.txt"); //opens manifest file
@@ -113,27 +113,27 @@ void ReactorFacility::Tick() {
         outfile.close();
 /************************End of output file*********************************/
     }
-    
+
     //check if its time to decommission the facility
     if(start_time_ + reactor_life <= cycle_end_){
         //std::cout << "here: " << start_time_ + reactor_life << "  " << cycle_end_ << std::endl;
-        
+
         //take care of the fuel
-        
-        
-         
-        
-    
+
+
+
+
+
     }
-    
-    
-    
+
+
+
     //std::cout << "end tick" << std::endl;
 }
 
 void ReactorFacility::Tock() {
     //std::cout << "Begin tock\n" << std::endl;
-
+    if(inventory.count() == 0){return;}
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
         //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
@@ -146,7 +146,6 @@ void ReactorFacility::Tock() {
 
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
-
     if(manifest.size() > fuel_library_.batch.size()){
         for(int i = 0; i < manifest.size() - fuel_library_.batch.size(); i++){
             batch_info temp_batch;
@@ -154,7 +153,6 @@ void ReactorFacility::Tock() {
             fuel_library_.batch.push_back(temp_batch);
         }
     }
-
     //each batch
     for(int i = 0; i < manifest.size(); i++){
     //build correct isoinfo and fraction for each batch
@@ -179,18 +177,11 @@ void ReactorFacility::Tock() {
 
         }
     }
-    //std::cout << "before batch_reorder" << std::endl;
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
-    
-    //SS_burnupcalc(fuel_library_.batch[1].collapsed_iso, 3, 10, 0.98);
-    
-    
-  //std::cout << "before burnupcalc" << std::endl;  
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
   //std::cout << "after burnupcalc" << std::endl;
-
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
     cyclus::CompMap out_comp;
@@ -235,30 +226,24 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   if (ctx->time() != cycle_end_){
     return ports;
   }
-  
+
   CompMap cm;
   Material::Ptr target = Material::CreateUntracked(core_mass/batches,
                           Composition::CreateFromAtom(cm));
 
   RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
   double qty;
-  
+
   if(inventory.count() == 0){
-<<<<<<< HEAD
-     for(int i = 0; i < in_commods.size(); i++){
-        port->AddRequest(target, this, in_commods[i+1]);
-=======
-  
      for(int i = 0; i < batches; i++){
         //checks to see if there is a next in_commod to request, otherwise puts the first commod request
         if(in_commods.size() > i+1){
             port->AddRequest(target, this, in_commods[i+1]);
         } else {
             port->AddRequest(target, this, in_commods[0]);
-        }        
->>>>>>> 0063f21b31cae684fac22aade0d919243a482812
+        }
      }
-     
+
      qty = core_mass;
   } else {
      port->AddRequest(target, this, in_commods[0]);
@@ -282,18 +267,15 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   using cyclus::Converter;
   using cyclus::Material;
   using cyclus::Request;
-
   cyclus::Context* ctx = context();
   std::set<BidPortfolio<Material>::Ptr> ports;
   if (ctx->time() != cycle_end_){
     return ports;
   }
   // respond to all requests of my commodity
-  if (inventory.count() == 0){return ports;}
-
+  if (inventory.count() == 0){std::cout << "YAYa8?" << std::endl; return ports;}
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
-
   BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
   std::vector<Request<Material>*>& requests = commod_requests[out_commod];
   std::vector<Request<Material>*>::iterator it;
@@ -317,7 +299,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
     //std::cout << "begin accptmatltrades" << std::endl;
     std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
     cyclus::Composition::Ptr compost;
-    
+    std::cout << "YAYa9?" << std::endl;
     for (it = responses.begin(); it != responses.end(); ++it) {
 
         inventory.Push(it->second);
@@ -345,6 +327,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
+    std::cout << "YAYa10?" << std::endl;
     //std::cout << "begin getmatltrades" << std::endl;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
     cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
@@ -397,18 +380,14 @@ void ReactorFacility::batch_reorder(){
 //collapses each batch first, then orders them
     //std::cout << "Begin batch_reorder" << std::endl;
     double k0, k1;
-    
     fuel_library_ = StructReader(fuel_library_);
-    
     fuel_library_ = regionCollapse(fuel_library_);
-    
     bool test = false;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         if(fuel_library_.batch[i].batch_fluence != 0){
             test = true;
         }
     }
-
     if(test == true){return;}
 
     fuelBundle temp_fuel = fuel_library_;
@@ -429,6 +408,7 @@ void ReactorFacility::batch_reorder(){
         fuel_library_.batch.push_back(temp_fuel.batch[lowest]);
         temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
+        std::cout << "TEST" << std::endl;
     //std::cout << " End batch_reorder" << std::endl;
 }
 
