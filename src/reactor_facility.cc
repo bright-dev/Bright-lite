@@ -181,16 +181,17 @@ void ReactorFacility::Tock() {
 
         }
     }
-
+    //std::cout << "before batch_reorder" << std::endl;
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
     
-    SS_burnupcalc(fuel_library_.batch[1].collapsed_iso, 3, 10, 0.98);
+    //SS_burnupcalc(fuel_library_.batch[1].collapsed_iso, 3, 10, 0.98);
     
     
-    
+  //std::cout << "before burnupcalc" << std::endl;  
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+  //std::cout << "after burnupcalc" << std::endl;
 
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
@@ -208,8 +209,8 @@ void ReactorFacility::Tock() {
 
   // cycle end update
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
-  std::cout << "Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
-  std::cout << "Time :: " <<cycle_end_ << std::endl;
+  //std::cout << "Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
+  //std::cout << "Time :: " <<cycle_end_ << std::endl;
 
     /************************output file*********************************/
     std::ofstream outfile;
@@ -225,6 +226,7 @@ void ReactorFacility::Tock() {
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
+  //std::cout << "Getmatlrequests begin" << std::endl;
   using cyclus::RequestPortfolio;
   using cyclus::Material;
   using cyclus::Composition;
@@ -235,16 +237,25 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   if (ctx->time() != cycle_end_){
     return ports;
   }
+  
   CompMap cm;
   Material::Ptr target = Material::CreateUntracked(core_mass/batches,
                           Composition::CreateFromAtom(cm));
 
   RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
   double qty;
+  
   if(inventory.count() == 0){
+  
      for(int i = 0; i < batches; i++){
-        port->AddRequest(target, this, in_commods[i+1]);
+        //checks to see if there is a next in_commod to request, otherwise puts the first commod request
+        if(in_commods.size() > i+1){
+            port->AddRequest(target, this, in_commods[i+1]);
+        } else {
+            port->AddRequest(target, this, in_commods[0]);
+        }        
      }
+     
      qty = core_mass;
   } else {
      port->AddRequest(target, this, in_commods[0]);
@@ -383,11 +394,11 @@ void ReactorFacility::batch_reorder(){
 //collapses each batch first, then orders them
     //std::cout << "Begin batch_reorder" << std::endl;
     double k0, k1;
-
+    
     fuel_library_ = StructReader(fuel_library_);
-
+    
     fuel_library_ = regionCollapse(fuel_library_);
-
+    
     bool test = false;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         if(fuel_library_.batch[i].batch_fluence != 0){
@@ -415,7 +426,7 @@ void ReactorFacility::batch_reorder(){
         fuel_library_.batch.push_back(temp_fuel.batch[lowest]);
         temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
-    std::cout << " End batch_reorder" << std::endl;
+    //std::cout << " End batch_reorder" << std::endl;
 }
 
 

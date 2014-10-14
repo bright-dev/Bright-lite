@@ -52,8 +52,9 @@ fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
 fuelBundle regionCollapse(fuelBundle fuel){
 ///add micro region flux effects
 //struct effects accounted here
+    //cout << "Begin regionCollapse" << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
-
+    
         //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
         fuel.batch[i].collapsed_iso = FuelBuilder(fuel.batch[i].iso);
         //}
@@ -390,9 +391,9 @@ double kcalc(fuelBundle core){
         dest_tot += core.struct_dest * core.batch[i].DA;
 
     }
-    if(pnl < 0 || pnl > 1){
-        cout << endl << "Error in core nonleakage! Assumed new value: 1" << endl;
-        pnl = 1;
+    if(pnl < 0 || pnl > 1.5){
+        cout << endl << "Error in core nonleakage! Assumed new value: 1.000" << endl;
+        pnl = 1.000;
     }
 
     return prod_tot * pnl / dest_tot;
@@ -421,13 +422,17 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         if(core.batch[i].Fg == 0){core.batch[i].Fg = 1;}
     }
 
-
+    for(int i = 0; i < core.batch[0].collapsed_iso.fluence.size(); i++){
+        //cout << core.batch[0].collapsed_iso.fluence[i] << "  " << core.batch[0].collapsed_iso.BU[i] << "  " << core.batch[0].collapsed_iso.neutron_prod[i]/core.batch[0].collapsed_iso.neutron_dest[i] << endl;
+    }
+    //cout << "Batches: " << core.batch.size() << endl <<endl;
+    for(int i = 0; i < core.batch.size(); i++){
+        //cout << "fluence: " << core.batch[i].batch_fluence << endl;
+    }
 
     kcore = 3.141592;
     kcore_prev = kcalc(core);
-    if(kcore_prev < 1){
-        cout << endl << "Error! Core is not critical." << endl;
-    }
+
 
     //<--------------------------------------------------
     double cburnup[N];
@@ -497,8 +502,10 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
         kcore = kcalc(core);
 
+        //cout << "k=" << kcore << "  ";
     }
-
+    //cout << endl;
+    
     //<--------------------------------------------------
     for(int i = 0; i < N; i++){
         //cout << "total burnup of batch " << i+1 << ": " << cburnup[i] << endl;
@@ -702,7 +709,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL){
     for(int i = 0; i < N; i++){
         cout << "here: " << core.batch[i].Fg << endl; 
     }
-
+    
 
 
 
