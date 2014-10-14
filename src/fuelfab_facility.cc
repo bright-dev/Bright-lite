@@ -13,19 +13,21 @@ namespace fuelfab {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void FuelfabFacility::Tick() {
-        std::cout << "YAY1?" << std::endl;
+        if(inventory.size() == 0){
+            cyclus::toolkit::ResourceBuff resource;
+            for(int i = 0; i < in_commods.size(); i++){
+                inventory.push_back(resource);
+            }
+        }
         for(int i = 0; i < inventory.size(); i++){
             if(inventory[i].count() == 0){
                 inventory[i].set_capacity(maximum_storage/inventory.size());
             }
         }
-        std::cout << "YAY2?" << std::endl;
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void FuelfabFacility::Tock() {
-        	std::cout << "tock from fuelfab facility" << std::endl;
-
 
     }
 
@@ -35,7 +37,6 @@ namespace fuelfab {
         using cyclus::Composition;
         using cyclus::CompMap;
         using cyclus::CapacityConstraint;
-        std::cout << "YAY3?" << std::endl;
         std::set<RequestPortfolio<Material>::Ptr> ports;
         cyclus::Context* ctx = context();
         CompMap cm;
@@ -51,32 +52,33 @@ namespace fuelfab {
             port->AddConstraint(cc);
             ports.insert(port);
         }
-        std::cout << "YAY4?" << std::endl;
         return ports;
     }
 
     // MatlBids //
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>FuelfabFacility::GetMatlBids(
-            cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
+        cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
         using cyclus::BidPortfolio;
         using cyclus::CapacityConstraint;
         using cyclus::Converter;
         using cyclus::Material;
         using cyclus::Request;
         using reactor::ReactorFacility;
-        std::cout << "YAY5?" << std::endl;
         cyclus::Context* ctx = context();
         std::set<BidPortfolio<Material>::Ptr> ports;
 
         // respond to all requests of my commodity
         int inventory_test = 0;
         for(int i = 0; i < inventory.size(); i++){
-            inventory_test += 1;
+            if(inventory[i].count() > 0){
+                inventory_test += 1;
+            }
         }
         /** Quick Hack */
         CapacityConstraint<Material> cc(1);
-        if (inventory_test == 0){return ports;}
+        if (inventory_test == 0){std::cout << "YAY5?" << std::endl; return ports;}
         for (int i = 0; i < inventory.size(); i++){
+            std::cout << "YAY5.5?" << std::endl;
             std::vector<cyclus::Material::Ptr> manifest;
             manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
             CapacityConstraint<Material> cc(1);
@@ -102,15 +104,13 @@ namespace fuelfab {
                 }
             }
             inventory[i].PushAll(manifest);
-
         }
-
         return ports;
     }
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                             cyclus::Material::Ptr> >& responses) {
-        std::cout << "YAY6?" << std::endl;
+        std::cout << "YAY8?" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
             int j = 0;
