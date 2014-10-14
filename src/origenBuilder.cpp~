@@ -29,36 +29,36 @@ fuelBundle StructReader(fuelBundle core){
 
     string line;
     ifstream fin("./" + core.name + "/structural.txt");
-    
+
     vector<nonActinide> nonas;
-    
+
     nonas = NonActinideReader("./" + core.name + "/TAPE9.INP");
 
-    
-    
+
+
 	while(getline(fin, line))
 	{
         istringstream iss(line);
         iss >> nucid >> fraction;
-        
+
         for(int i = 0; i < nonas.size(); i++){
             if(nonas[i].name == nucid){
                 nucid = nucid % 10000;
-                nucid = nucid / 10;         
-            
-                tot_prod += nonas[i].total_prod * fraction * 1000*0.602/nucid;/// 19.1;
-                tot_dest += nonas[i].total_dest * fraction ;// 19.1;                
+                nucid = nucid / 10;
+
+                tot_prod += nonas[i].total_prod * fraction * 1000*0.602/nucid;
+                tot_dest += nonas[i].total_dest * fraction * 1000*0.602/nucid;
             }
         }
-        
-        //cout << nucid << "  " << fraction << endl;        
+
+        //cout << nucid << "  " << fraction << endl;
 
     }
     cout << "Structs: " << tot_prod << " " << tot_dest << endl;
-    
+
     core.struct_prod = tot_prod;
     core.struct_dest = tot_dest;
-    
+
 
     return core;
 }
@@ -231,13 +231,11 @@ double flux_finder(std::string type){
     }
 }
 
-
-
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
 //returns iso for this batch with the structural components factored in
     double flux_value = flux_finder(type);
     for (int i = 0; i < input_stream.size(); i++){
-        if(true){   
+        if(true){
             ifstream inf(type + "/" +to_string(input_stream[i].name) + ".txt");
             if(!inf){
                 cout << "Failed to read file for " + type + " " +  to_string(input_stream[i].name) << endl;
@@ -249,5 +247,4 @@ vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_st
 
     return input_stream;
 }
-
 

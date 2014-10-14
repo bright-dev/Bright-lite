@@ -19,6 +19,7 @@ struct isoInformation {
     //double fraction;
     bool fuel;
     double batch_fluence;
+    double batch_BU;
     double base_power;
     double base_mass;
     double base_flux;
