@@ -668,7 +668,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     core.base_flux = base_flux;
     double BU, BU_est, F_est;    
     double y0, y1;
-    double kcore_prev = 3.141592;
+    double kcore_prev;
 
     //find when k drops under 1 for single batch
     int ii = 0;
@@ -715,6 +715,8 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     double kcore = 3.141592;
     
     while(kcore > 1){
+        kcore_prev = kcore;
+    
         //calculate necessary parameters
         core = phicalc_simple(core);
         
