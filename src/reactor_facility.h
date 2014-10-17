@@ -117,7 +117,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies", \
-                      "uitype": "incommodity"}
+                      "uitype": "outcommodity"}
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
@@ -127,7 +127,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"tooltip": "The parameter to be interpolated on and" + \
                       "the interpolation value", \
                       "userlevel": 2, \
-                      "default": {"BURNUP": 42}}
+                      "default": {"BURNUP": 42.0}}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
