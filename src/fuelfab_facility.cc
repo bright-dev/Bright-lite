@@ -78,7 +78,6 @@ namespace fuelfab {
         CapacityConstraint<Material> cc(1);
         if (inventory_test == 0){std::cout << "YAY5?" << std::endl; return ports;}
         for (int i = 0; i < inventory.size(); i++){
-            std::cout << "YAY5.5?" << std::endl;
             std::vector<cyclus::Material::Ptr> manifest;
             manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
             CapacityConstraint<Material> cc(1);
@@ -88,13 +87,13 @@ namespace fuelfab {
             for (it = requests.begin(); it != requests.end(); ++it) {
                 Request<Material>* req = *it;
                 ReactorFacility* reactor = dynamic_cast<ReactorFacility*>(req->requester());
-                if (reactor == NULL){
+                if (!reactor){
                    throw cyclus::CastError("Nope!");
                 } else {
                     if (req->commodity() == out_commod) {
                         Material::Ptr offer = Material::CreateUntracked(20, manifest[0]->comp());
                         if (reactor->inventory.count() == 0){
-                            std::cout << "yay" << std::endl;
+                            reactor->start_up();
                         } else if(reactor->burnup_test(offer) == reactor->target_burnup){
                             port->AddBid(req, offer, this);
                             port->AddConstraint(cc);
@@ -110,7 +109,6 @@ namespace fuelfab {
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>,
                                             cyclus::Material::Ptr> >& responses) {
-        std::cout << "YAY8?" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
             int j = 0;
@@ -128,7 +126,6 @@ namespace fuelfab {
                                         cyclus::Material::Ptr> >& responses) {
         using cyclus::Material;
         using cyclus::Trade;
-        std::cout << "YAY7?" << std::endl;
         std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
         for(int i = 0; i < inventory.size(); i++){
             cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory[i].Pop());
@@ -137,7 +134,6 @@ namespace fuelfab {
             }
         }
     }
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     extern "C" cyclus::Agent* ConstructFuelfabFacility(cyclus::Context* ctx) {
         return new FuelfabFacility(ctx);

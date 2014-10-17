@@ -72,6 +72,7 @@ class FuelfabFacility : public cyclus::Facility  {
                                         std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses);
 
+    double start_time;
     // and away we go!
     std::vector<cyclus::toolkit::ResourceBuff> inventory;
 
