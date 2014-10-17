@@ -81,7 +81,8 @@ class FuelfabFacility : public cyclus::Facility  {
     double maximum_storage;
 
     #pragma cyclus var {"tooltip": "input commodities", \
-                        "doc": "A list of the commodities that this facility can recieve"}
+                        "doc": "A list of the commodities that this facility can recieve", \
+                        "uitype": ["oneOrMore", "incommodity", " "]}
     std::map<std::string, double> in_commods;
 
     #pragma cyclus var {"tooltip": "output commodity", \
