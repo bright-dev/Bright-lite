@@ -81,7 +81,7 @@ class ReprocessFacility : public cyclus::Facility  {
                       "uitype": "incommodity"}
   std::vector<std::string> in_commod;
 
-  #pragma cyclus var {"tooltip": "output commodity"\
+  #pragma cyclus var {"tooltip": "output commodity", \
                       "uitype": "outcommodity"}
   std::vector<std::string> commod_out;
 

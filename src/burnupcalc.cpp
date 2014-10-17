@@ -225,7 +225,7 @@ cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
 //the word 'region' is interchanged with the word 'batch' in comments, water layer is the outermost region
 
     int region = core.batch.size(); // number of regions (batches) not counting the outer region
-    double  = core.cylindrical_delta;
+    double delta = core.cylindrical_delta;
     double R[region+1]; //radial thickness of each region
     int N[region+1]; //number of mesh points in each region
     int NTotal; //total number of mesh points
