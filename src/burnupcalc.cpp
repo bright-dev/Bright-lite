@@ -660,11 +660,15 @@ fuelBundle DA_calc(fuelBundle fuel){
     return fuel;
 }
 
-double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL){
+double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux){
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
     fuelBundle core;
-    double BU, BU_est, F_est;
+    core.pnl = PNL;
+    core.base_flux = base_flux;
+    double BU, BU_est, F_est;    
+    double y0, y1;
+    double kcore_prev;
 
     //find when k drops under 1 for single batch
     int ii = 0;
@@ -698,16 +702,51 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL){
         if(temp_batch.Fg < 0){temp_batch.Fg = 0;}
 
         core.batch.push_back(temp_batch);
-
     }
-
-    //calculate necessary parameters
+    
+    //this function ignores structural material effects (for now)
+    core.struct_prod = 0;
+    core.struct_dest = 0;
+    for(int i = 0; i < core.batch.size(); i++){
+        core.batch[i].DA = 0;
+    }
+    
+    
+    double kcore = 3.141592;
+    
+    while(kcore > 1){
+        kcore_prev = kcore;
+    
+        //calculate necessary parameters
+        core = phicalc_simple(core);
+        
+        for(int i = 0; i < N; i++){
+            core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+            cout << "  Fg: " << core.batch[i].Fg << endl;
+        }
+        kcore = kcalc(core);
+        cout << "kcalc:" << kcore  << endl;
+    }
+    
+    //update core fluences
     for(int i = 0; i < N; i++){
-        cout << "here: " << core.batch[i].Fg << endl;
+        //y0 is the fluence value before the last interation
+        y0 = core.batch[i].Fg - core.batch[i].rflux * core.base_flux * dt;
+        y1 = core.batch[i].Fg;
+        //cout << y0 << " and " << y1 << endl; //<-------
+        //cout << "  " << kcore_prev << " " << kcore << endl; //<-------
+        core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
+        //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
+
+    }    
+    
+    for(ii = 0; core.batch[N-1].collapsed_iso.fluence[ii] < core.batch[N-1].batch_fluence; ii++){}
+    if(core.batch[N-1].collapsed_iso.fluence.back() < core.batch[N-1].batch_fluence){
+        cout << endl << "Maximum fluence error!(SS_burnupcalc) Batch fluence exceeded max library fluence. (burnupcalc2)" << endl;
+        cout << "  Values on max fluence will be used. Do not trust results." << endl;
+        ii = core.batch[N-1].collapsed_iso.fluence.size() - 1;
     }
-
-
-
+    burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);    
 
     return burnup;
 }
