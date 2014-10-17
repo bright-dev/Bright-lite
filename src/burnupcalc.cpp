@@ -722,10 +722,10 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         
         for(int i = 0; i < N; i++){
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
-            cout << "  Fg: " << core.batch[i].Fg << endl;
+            //cout << "  Fg: " << core.batch[i].Fg << endl;
         }
         kcore = kcalc(core);
-        cout << "kcalc:" << kcore  << endl;
+        //cout << "kcalc:" << kcore  << endl;
     }
     
     //update core fluences
