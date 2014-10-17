@@ -223,7 +223,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
   using cyclus::CapacityConstraint;
   std::set<RequestPortfolio<Material>::Ptr> ports;
   cyclus::Context* ctx = context();
-  if (ctx->time() != cycle_end_){
+  if (ctx->time() != cycle_end_ && inventory.count() != 0){
     return ports;
   }
 
@@ -347,21 +347,21 @@ double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
     cyclus::CompMap::iterator it;
     comp = new_batch->comp()->mass();
     int j = 0;
-    int fl_iso = bundle.iso[j].name;
+    int fl_iso = bundle.all_iso[j].name;
     int comp_iso;
     for (it = comp.begin(); it != comp.end(); ++it){
         comp_iso = pyne::nucname::zzaaam(it->first);
         if(fl_iso < comp_iso) {
-            while(fl_iso < comp_iso && j < bundle.iso.size()-1){
-                fl_iso = bundle.iso[j++].name;
+            while(fl_iso < comp_iso && j < bundle.all_iso.size()-1){
+                fl_iso = bundle.all_iso[j++].name;
             }
         }
         if(fl_iso == comp_iso){
             if (bundle.batch_fluence == 0){
-                bundle.iso[j].fraction[0] = it->second;
+                bundle.all_iso[j].fraction[0] = it->second;
             }
             j+=1;
-            fl_iso = bundle.iso[j].name;
+            fl_iso = bundle.all_iso[j].name;
         }
     }
     std::vector<fuelBundle> temp_core;
@@ -375,9 +375,22 @@ double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
 */
 }
 
+void ReactorFacility::start_up(){
+    std::vector<double> target_burnups;
+    for(int i = 0; i < batches; i++){
+        target_burnups.push_back(target_burnup*i/batches);
+    }
+    for(int i = 0; i < batches; i++){
+        std::pair<double, std::pair<double, std::map<int, double> > > test;
+        //test = blending_calc(fuel_library_, target_BUd, flux_mode, DA_mode, burnupcalc_timestep));
+        //std::cout << test.first << std::endl;
+    }
+
+}
+
 
 void ReactorFacility::batch_reorder(){
-//collapses each batch first, then orders them
+//collapses each batch first, thgien orders them
     //std::cout << "Begin batch_reorder" << std::endl;
     double k0, k1;
     fuel_library_ = StructReader(fuel_library_);
@@ -408,7 +421,6 @@ void ReactorFacility::batch_reorder(){
         fuel_library_.batch.push_back(temp_fuel.batch[lowest]);
         temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
-        std::cout << "TEST" << std::endl;
     //std::cout << " End batch_reorder" << std::endl;
 }
 

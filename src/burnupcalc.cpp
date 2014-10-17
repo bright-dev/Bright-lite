@@ -54,7 +54,7 @@ fuelBundle regionCollapse(fuelBundle fuel){
 //struct effects accounted here
     //cout << "Begin regionCollapse" << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
-    
+
         //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
         fuel.batch[i].collapsed_iso = FuelBuilder(fuel.batch[i].iso);
         //}
@@ -83,11 +83,7 @@ fuelBundle regionCollapse(fuelBundle fuel){
                 fuel.batch[i].collapsed_iso.iso_vector[j].mass.erase(fuel.batch[i].collapsed_iso.iso_vector[j].mass.begin());
             }
         }
-
     }
-
-
-
     return fuel;
 };
 
@@ -505,7 +501,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         //cout << "k=" << kcore << "  ";
     }
     //cout << endl;
-    
+
     //<--------------------------------------------------
     for(int i = 0; i < N; i++){
         //cout << "total burnup of batch " << i+1 << ": " << cburnup[i] << endl;
@@ -669,7 +665,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL){
     double dt = delta*24*60*60; //days to [s]
     fuelBundle core;
     double BU, BU_est, F_est;
-    
+
     //find when k drops under 1 for single batch
     int ii = 0;
     for(ii = 0; fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii] >= 1; ii++){
@@ -679,52 +675,52 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL){
             break;
         }
     }
-    
+
     //find the just critical fluence for single batch
     F_est = intpol(fuel.fluence[ii-1], fuel.fluence[ii], fuel.neutron_prod[ii-1]*PNL/fuel.neutron_dest[ii-1], fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii], 1);
-    
+
     //find the corresponding BU
     BU_est = intpol(fuel.BU[ii-1], fuel.BU[ii], fuel.fluence[ii-1], fuel.fluence[ii], F_est);
-    
+
     //estimate the N batch BU
     BU_est = 2. * N * BU_est / (N + 1.);
-    
+
     //assign the linearly divided burnup and fluence to each batch
     for(int i = 0; i < N; i++){
         batch_info temp_batch;
         temp_batch.collapsed_iso = fuel;
         temp_batch.BUg = BU_est * i / N; //first batch gets zero BU
-        
-        
+
+
         for(ii = 0; temp_batch.collapsed_iso.BU[ii] < temp_batch.BUg; ii++){}
         temp_batch.Fg = intpol(temp_batch.collapsed_iso.fluence[ii-1], temp_batch.collapsed_iso.fluence[ii], temp_batch.collapsed_iso.BU[ii-1], temp_batch.collapsed_iso.BU[ii], temp_batch.BUg);
-        
+
         if(temp_batch.Fg < 0){temp_batch.Fg = 0;}
-        
+
         core.batch.push_back(temp_batch);
-                
+
     }
-    
+
     //calculate necessary parameters
     for(int i = 0; i < N; i++){
-        cout << "here: " << core.batch[i].Fg << endl; 
+        cout << "here: " << core.batch[i].Fg << endl;
     }
-    
+
 
 
 
     return burnup;
 }
 
-/*
-pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, double tolerance, fuelBundle fuel) {
-    pair<double, pair<double, map<int, double> > > rtn;
+
+/*std::pair<double, std::pair<double, map<int,double> > > blending_calc(fuelBundle fuel, double BU_end, int mode, int da_mode, double time_step) {
+    std::pair<double, std::pair<double, std::map<int, double> > > rtn;
     double X;
     double BU_guess, enrich_guess;
     double enrich_previous, BU_previous;
     double enrich_lower, enrich_upper;
     double BU_lower, BU_upper;
-    vector <int> blend_vector;
+    std::vector <int> blend_vector;
 
     // This is a super quick hack to benchmark enrichcalc
     fuelBundle fuel1;
@@ -739,7 +735,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
         fuel.stream_fraction[blend_vector[0]] = X;
         fuel.stream_fraction[blend_vector[1]] = 1 - X;
         fuel = enrich_collapse(fuel);
-        BU_lower = SSburnupcalc(fuel, fuel.batch, fuel.pnl, 0.01, 1).first;
+        BU_lower = burnupcalc(fuel, mode, da_mode, time_step);
         //cout << X << "  BU_LOWER   " << BU_lower << endl;
         if (i > 99){
             cout << "IT'S ALL BROKEN" << endl;
@@ -757,7 +753,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
         fuel.stream_fraction[blend_vector[0]] = X;
         fuel.stream_fraction[blend_vector[1]] = 1 - X;
         fuel1 = enrich_collapse(fuel);
-        BU_upper = SSburnupcalc(fuel1, fuel.batch, fuel.pnl, 0.01, 1).first;
+        BU_upper = burnupcalc(fuel1, mode, da_mode, time_step);
         //cout << X << "  BU_UPPER   " << BU_upper << endl;
         if (BU_upper > 2*BU_lower){
             enrich_upper = X;
@@ -773,8 +769,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
     fuel.stream_fraction[blend_vector[0]] = X;
     fuel.stream_fraction[blend_vector[1]] = 1 - X;
     fuel2 = enrich_collapse(fuel);
-    BU_guess = SSburnupcalc(fuel2, fuel.batch, fuel.pnl, 0.01, 1).first;
-    BU_guess = SSburnupcalc(fuel2, fuel.batch, fuel.pnl, 0.01, 1).first;
+    BU_guess = burnupcalc(fuel2, mode, da_mode, time_step);
     if (BU_guess == 0){
         cout << "Burn up code failed" << endl;
         rtn.first = 0;
@@ -800,7 +795,7 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
         fuel.stream_fraction[blend_vector[0]] = X;
         fuel.stream_fraction[blend_vector[1]] = 1 - X;
         fuel3 = enrich_collapse(fuel);
-        BU_guess = SSburnupcalc(fuel3, fuel.batch, fuel.pnl, 0.01, 1).first;
+        BU_guess = burnupcalc(fuel3, mode, da_mode, time_step);
         enrich_guess = X;
         /// TODO FIX THIS QUICK HACK
         if (i > 20) {
@@ -814,10 +809,10 @@ pair<double, pair<double, map<int,double> > > enrichcalc(double BU_end, int N, d
     fuel.stream_fraction[blend_vector[0]] = X;
     fuel.stream_fraction[blend_vector[1]] = 1 - X;
     fuel3 = enrich_collapse(fuel);
-    rtn.second = SSburnupcalc(fuel3, fuel.batch,fuel.pnl, 0.01, 1);
+    rtn.second = burnupcalc(fuel3, mode, da_mode, time_step);
     return rtn;
-}
-*/
+}*/
+
 
 /*
 fuelBundle InputReader(){

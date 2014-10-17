@@ -74,6 +74,8 @@ class ReactorFacility : public cyclus::Facility  {
 
   double burnup_test(cyclus::Material::Ptr new_batch);
 
+  void start_up();
+
   void batch_reorder();
   /// This facility has one output commodity and one input commodity
 
@@ -109,11 +111,13 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reactor consumes", \
-                      "schematype": "token"}
+                      "schematype": "token", \
+                      "uitype": ["oneOrMore", "incommodity"]}
   std::vector<std::string> in_commods;
 
   #pragma cyclus var {"tooltip": "output commodity", \
-                      "doc": "commodity that the brightlite supplies"}
+                      "doc": "commodity that the brightlite supplies", \
+                      "uitype": "incommodity"}
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
@@ -205,7 +209,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
-  
+
   #pragma cyclus var {"default": 380, \
                       "units": "months", \
                       "tooltip": "Time before reactor is shutdown after startup."}
