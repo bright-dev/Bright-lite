@@ -127,7 +127,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"tooltip": "The parameter to be interpolated on and" + \
                       "the interpolation value", \
                       "userlevel": 2, \
-                      "default": {"BURNUP": 42.0}}
+                      "default": {"BURNUP": 42.0cd }}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \

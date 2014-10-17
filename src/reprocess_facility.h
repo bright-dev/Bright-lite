@@ -64,7 +64,7 @@ class ReprocessFacility : public cyclus::Facility  {
 
   std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
 
-  std::vector<std::map<int, double>> out_eff; //isotopic efficiencies of each output 
+  std::vector<std::map<int, double>> out_eff; //isotopic efficiencies of each output
   double pi;
 
   virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests);
@@ -77,14 +77,16 @@ class ReprocessFacility : public cyclus::Facility  {
   /// This facility has two output commodity and one input commodity
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reprocess facility consumes", \
-                      "schematype": "token"}
+                      "schematype": "token", \
+                      "uitype": "incommodity"}
   std::vector<std::string> in_commod;
 
-  #pragma cyclus var {"tooltip": "output commodity"}
+  #pragma cyclus var {"tooltip": "output commodity"\
+                      "uitype": "outcommodity"}
   std::vector<std::string> commod_out;
-  
+
   #pragma cyclus var {"tooltip": "Efficiency input file"}
-  std::string repro_input_path;  
+  std::string repro_input_path;
 
   #pragma cyclus var {"default": 1e299, \
                       "tooltip": "reactor maximum inventory size", \
@@ -98,8 +100,8 @@ class ReprocessFacility : public cyclus::Facility  {
   #pragma cyclus var {"default": 10, \
                       "tooltip": "Total conversion capacity."}
   double output_capacity;
-  
-  #pragma cyclus var 
+
+  #pragma cyclus var
   std::vector<cyclus::toolkit::ResourceBuff> out_inventory;
 
   #pragma cyclus var {"capacity": "max_inv_size"}
