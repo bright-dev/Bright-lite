@@ -404,12 +404,6 @@ void ReactorFacility::batch_reorder(){
         }
     }
     if(test == true){return;}
-    std::cout << "BEGIN SS_BURNUPCALC" << std::endl;
-    
-    double burnup = SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 3, 30, 0.98, fuel_library_.base_flux);
-    
-    std::cout << "Result: " << burnup << std::endl;
-    std::cout << "END SS_BURNUPCALC" << std::endl;
 
     fuelBundle temp_fuel = fuel_library_;
     fuel_library_.batch.clear();
