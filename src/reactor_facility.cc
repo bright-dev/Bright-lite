@@ -273,7 +273,9 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
     return ports;
   }
   // respond to all requests of my commodity
-  if (inventory.count() == 0){std::cout << "YAYa8?" << std::endl; return ports;}
+  if (inventory.count() == 0){
+    //std::cout << "YAYa8?" << std::endl; 
+    return ports;}
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
   BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
@@ -299,7 +301,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
     //std::cout << "begin accptmatltrades" << std::endl;
     std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
     cyclus::Composition::Ptr compost;
-    std::cout << "YAYa9?" << std::endl;
+    //std::cout << "YAYa9?" << std::endl;
     for (it = responses.begin(); it != responses.end(); ++it) {
 
         inventory.Push(it->second);
@@ -391,7 +393,7 @@ void ReactorFacility::start_up(){
 
 void ReactorFacility::batch_reorder(){
 //collapses each batch first, thgien orders them
-    //std::cout << "Begin batch_reorder" << std::endl;
+    std::cout << "Begin batch_reorder" << std::endl;
     double k0, k1;
     fuel_library_ = StructReader(fuel_library_);
     fuel_library_ = regionCollapse(fuel_library_);
