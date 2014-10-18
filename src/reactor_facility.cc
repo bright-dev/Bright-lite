@@ -181,7 +181,10 @@ void ReactorFacility::Tock() {
     batch_reorder();
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
-  //std::cout << "after burnupcalc" << std::endl;
+  
+  //add batch variable to cyclus database
+  context()->NewDatum("BrightLite_Reactor_Data")->AddVal("AgentID", id())->AddVal("Time", context()->time())->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence);
+  
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
     cyclus::CompMap out_comp;
@@ -329,7 +332,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
-    std::cout << "YAYa10?" << std::endl;
+    
     //std::cout << "begin getmatltrades" << std::endl;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
     cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
@@ -393,7 +396,7 @@ void ReactorFacility::start_up(){
 
 void ReactorFacility::batch_reorder(){
 //collapses each batch first, thgien orders them
-    std::cout << "Begin batch_reorder" << std::endl;
+    //std::cout << "Begin batch_reorder" << std::endl;
     double k0, k1;
     fuel_library_ = StructReader(fuel_library_);
     fuel_library_ = regionCollapse(fuel_library_);

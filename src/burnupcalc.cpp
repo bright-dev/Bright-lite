@@ -548,6 +548,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     }
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
+    core.batch[0].discharge_BU = burnup;
+    
     //cout << endl << "Discharge burnup: " << burnup << endl << endl;
 
     /************************output file*********************************/
