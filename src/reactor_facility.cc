@@ -183,7 +183,8 @@ void ReactorFacility::Tock() {
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
   
   //add batch variable to cyclus database
-  context()->NewDatum("BrightLite_Reactor_Data")->AddVal("AgentID", id())->AddVal("Time", context()->time())->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence);
+  ///time may need to be fixed by adding cycle length to it
+  context()->NewDatum("BrightLite_Reactor_Data")->AddVal("AgentID", id())->AddVal("Time", context()->time())->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)->Record();
   
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
