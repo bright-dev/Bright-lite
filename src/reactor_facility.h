@@ -74,7 +74,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   double burnup_test(cyclus::Material::Ptr new_batch);
 
-  void start_up();
+  void start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory);
 
   void batch_reorder();
   /// This facility has one output commodity and one input commodity

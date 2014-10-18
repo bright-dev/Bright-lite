@@ -274,7 +274,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   }
   // respond to all requests of my commodity
   if (inventory.count() == 0){
-    //std::cout << "YAYa8?" << std::endl; 
+    //std::cout << "YAYa8?" << std::endl;
     return ports;}
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
@@ -377,16 +377,12 @@ double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
 */
 }
 
-void ReactorFacility::start_up(){
-    std::vector<double> target_burnups;
-    for(int i = 0; i < batches; i++){
-        target_burnups.push_back(target_burnup*i/batches);
+void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory){
+    for(int i = 0; i < inventory.size(); i++){
+        std::vector<cyclus::Material::Ptr> manifest;
+        manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
     }
-    for(int i = 0; i < batches; i++){
-        std::pair<double, std::pair<double, std::map<int, double> > > test;
-        //test = blending_calc(fuel_library_, target_BUd, flux_mode, DA_mode, burnupcalc_timestep));
-        //std::cout << test.first << std::endl;
-    }
+
 
 }
 

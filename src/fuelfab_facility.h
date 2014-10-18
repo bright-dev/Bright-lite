@@ -83,7 +83,7 @@ class FuelfabFacility : public cyclus::Facility  {
     #pragma cyclus var {"tooltip": "input commodities", \
                         "doc": "A list of the commodities that this facility can recieve", \
                         "uitype": ["oneOrMore", "incommodity", " "]}
-    std::map<std::string, double> in_commods;
+    std::map<std::string, int> in_commods;
 
     #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies", \
