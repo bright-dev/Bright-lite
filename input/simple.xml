@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>1</duration>
+    <duration>100</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>

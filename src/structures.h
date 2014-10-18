@@ -65,6 +65,7 @@ struct batch_info {
     double Fg; //fluence guess, used during burnup/composition calc
     double rflux; //relative flux of batch
     double DA; //thermal disadvantage, phi_M/phi_F
+    double discharge_BU; //the discharge burnup of the batch
     std::map<int, double> comp; //current composition of batch at this batch_fluence
 };
 
