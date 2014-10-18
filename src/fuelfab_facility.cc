@@ -76,33 +76,27 @@ namespace fuelfab {
         }
         /** Quick Hack */
         CapacityConstraint<Material> cc(1);
-        if (inventory_test == 0){std::cout << "YAY5?" << std::endl; return ports;}
-        for (int i = 0; i < inventory.size(); i++){
-            std::vector<cyclus::Material::Ptr> manifest;
-            manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
-            CapacityConstraint<Material> cc(1);
-            BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
-            std::vector<Request<Material>*>& requests = commod_requests[out_commod];
-            std::vector<Request<Material>*>::iterator it;
-            for (it = requests.begin(); it != requests.end(); ++it) {
-                Request<Material>* req = *it;
-                ReactorFacility* reactor = dynamic_cast<ReactorFacility*>(req->requester());
-                if (!reactor){
-                   throw cyclus::CastError("Nope!");
-                } else {
-                    if (req->commodity() == out_commod) {
-                        Material::Ptr offer = Material::CreateUntracked(20, manifest[0]->comp());
-                        if (reactor->inventory.count() == 0){
-                            reactor->start_up();
-                        } else if(reactor->burnup_test(offer) == reactor->target_burnup){
-                            port->AddBid(req, offer, this);
-                            port->AddConstraint(cc);
-                            ports.insert(port);
-                        };
-                    }
+        if (inventory_test == 0){return ports;}
+        BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+        std::vector<Request<Material>*>& requests = commod_requests[out_commod];
+        std::vector<Request<Material>*>::iterator it;
+        for (it = requests.begin(); it != requests.end(); ++it) {
+            Request<Material>* req = *it;
+            ReactorFacility* reactor = dynamic_cast<ReactorFacility*>(req->requester());
+            if (!reactor){
+               throw cyclus::CastError("Nope!");
+            } else {
+                if (req->commodity() == out_commod) {
+                    Material::Ptr offer = Material::CreateUntracked(20, manifest[0]->comp());
+                    if (reactor->inventory.count() == 0){
+
+                    } else if(reactor->burnup_test(offer) == reactor->target_burnup){
+                        port->AddBid(req, offer, this);
+                        port->AddConstraint(cc);
+                        ports.insert(port);
+                    };
                 }
             }
-            inventory[i].PushAll(manifest);
         }
         return ports;
     }
