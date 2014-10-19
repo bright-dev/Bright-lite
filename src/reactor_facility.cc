@@ -269,8 +269,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 }
 
 // MatlBids //
-std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
-  ReactorFacility::GetMatlBids(
+std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
 
   using cyclus::BidPortfolio;
@@ -308,6 +307,24 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   return ports;
 }
 
+void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs) {
+
+    cyclus::PrefMap<cyclus::Material>::type::iterator pmit;
+    
+    for (pmit = prefs.begin(); pmit != prefs.end(); ++pmit) {
+    
+        std::map<cyclus::Bid<cyclus::Material>*, double>::iterator mit;
+        cyclus::Request<cyclus::Material>* req = pmit->first;
+        
+        std::cout << "Pref adjuster: " << req->commodity() << "  " ;
+        
+        for (mit = pmit->second.begin(); mit != pmit->second.end(); ++mit) {
+            cyclus::Bid<cyclus::Material>* bid = mit->first;
+            
+        }
+    }
+}
+
 void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
     //std::cout << "begin accptmatltrades" << std::endl;
     std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
@@ -342,12 +359,15 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     using cyclus::Trade;
 
     //std::cout << "begin getmatltrades" << std::endl;
+    
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
     cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
     fuel_library_.batch.erase(fuel_library_.batch.begin());
     for (it = trades.begin(); it != trades.end(); ++it) {
         responses.push_back(std::make_pair(*it, discharge));
     }
+    
+    
     //std::cout << "end getmatltrades" << std::endl;
 }
 
