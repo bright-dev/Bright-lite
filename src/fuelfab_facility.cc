@@ -45,7 +45,7 @@ namespace fuelfab {
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
         for(int i = 0; i < inventory.size(); i++){
             double qty = inventory[i].space();
-            for(std::map<std::string, double>::iterator it = in_commods.begin(); it!= in_commods.end(); it++){
+            for(std::map<std::string, int>::iterator it = in_commods.begin(); it!= in_commods.end(); it++){
                 port->AddRequest(target, this, it->first);
             }
             CapacityConstraint<Material> cc(qty);
@@ -80,7 +80,7 @@ namespace fuelfab {
         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
         std::vector<Request<Material>*>& requests = commod_requests[out_commod];
         std::vector<Request<Material>*>::iterator it;
-        for (it = requests.begin(); it != requests.end(); ++it) {
+        /*for (it = requests.begin(); it != requests.end(); ++it) {
             Request<Material>* req = *it;
             ReactorFacility* reactor = dynamic_cast<ReactorFacility*>(req->requester());
             if (!reactor){
@@ -97,7 +97,7 @@ namespace fuelfab {
                     };
                 }
             }
-        }
+        }*/
         return ports;
     }
 
@@ -106,7 +106,7 @@ namespace fuelfab {
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
             int j = 0;
-            for (std::map<std::string, double>::iterator c = in_commods.begin(); c!= in_commods.end(); c++){
+            for (std::map<std::string, int>::iterator c = in_commods.begin(); c!= in_commods.end(); c++){
                 if(it->first.request->commodity() == c->first){
                     inventory[j].Push(it->second);
                 }
