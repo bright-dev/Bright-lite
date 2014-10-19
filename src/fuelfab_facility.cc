@@ -64,7 +64,6 @@ namespace fuelfab {
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
         for(int i = 0; i < inventory.size(); i++){
             double qty = inventory[i].space();
-            for(std::map<std::string, int>::iterator it = in_commods.begin(); it!= in_commods.end(); it++){
             
             port->AddRequest(target, this, in_commods[i]);
             
