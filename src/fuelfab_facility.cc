@@ -128,7 +128,7 @@ namespace fuelfab {
     using cyclus::Request;
     using cyclus::Converter;
 
-    std::vector<cyclus::Material::Ptr> manifest;
+    
     std::set<BidPortfolio<Material>::Ptr> ports;
 	   
 	  
@@ -136,6 +136,8 @@ namespace fuelfab {
         
     for(int i = 0; i < inventory.size(); i++){   
         double amount = inventory[i].quantity();
+        
+        std::vector<cyclus::Material::Ptr> manifest;
         manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));               
                
         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
@@ -144,10 +146,11 @@ namespace fuelfab {
 
         std::vector<Request<Material>*>::iterator it;
         for (it = requests.begin(); it != requests.end(); ++it) {
-            std::cout << "for loop" << std::endl;
             Request<Material>* req = *it;
-            Material::Ptr offer = Material::CreateUntracked(amount, manifest[0]->comp());
-            port->AddBid(req, offer, this);
+            if(amount != 0){
+                Material::Ptr offer = Material::CreateUntracked(amount, manifest[0]->comp());
+                port->AddBid(req, offer, this);
+            }
         }
 
         ports.insert(port);
@@ -156,7 +159,7 @@ namespace fuelfab {
         
         inventory[i].PushAll(manifest);      
     }
-    std::cout << "end getmatlbids" << std::endl;
+    //std::cout << "end getmatlbids" << std::endl;
     return ports;
 }
 
