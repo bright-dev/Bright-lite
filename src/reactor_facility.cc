@@ -224,46 +224,48 @@ void ReactorFacility::Tock() {
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
-  //std::cout << "Getmatlrequests begin" << std::endl;
-  using cyclus::RequestPortfolio;
-  using cyclus::Material;
-  using cyclus::Composition;
-  using cyclus::CompMap;
-  using cyclus::CapacityConstraint;
-  std::set<RequestPortfolio<Material>::Ptr> ports;
-  cyclus::Context* ctx = context();
-  if (ctx->time() != cycle_end_ && inventory.count() != 0){
-    return ports;
-  }
+    //std::cout << "Getmatlrequests begin" << std::endl;
+    using cyclus::RequestPortfolio;
+    using cyclus::Material;
+    using cyclus::Composition;
+    using cyclus::CompMap;
+    using cyclus::CapacityConstraint;
+    std::set<RequestPortfolio<Material>::Ptr> ports;
+    cyclus::Context* ctx = context();
+    if (ctx->time() != cycle_end_ && inventory.count() != 0){
+        
+        //FuelfabFacility* fuelfab = dynamic_cast<FuelfabFacility*>(req->requester());
+        
+        return ports;
+    }
 
-  CompMap cm;
-  Material::Ptr target = Material::CreateUntracked(core_mass/batches,
-                          Composition::CreateFromAtom(cm));
+    CompMap cm;
+    Material::Ptr target = Material::CreateUntracked(core_mass/batches, Composition::CreateFromAtom(cm));
 
-  RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
-  double qty;
+    RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
+    double qty;
 
-  if(inventory.count() == 0){
-     for(int i = 0; i < batches; i++){
+    if(inventory.count() == 0){
+        for(int i = 0; i < batches; i++){
         //checks to see if there is a next in_commod to request, otherwise puts the first commod request
-        if(in_commods.size() > i+1){
-            port->AddRequest(target, this, in_commods[i+1]);
+            if(in_commods.size() > i+1){
+                port->AddRequest(target, this, in_commods[i+1]);
+            } else {
+                port->AddRequest(target, this, in_commods[0]);
+            }
+        }
+
+        qty = core_mass;
         } else {
             port->AddRequest(target, this, in_commods[0]);
+            qty = core_mass/batches;
         }
-     }
+    CapacityConstraint<Material> cc(qty);
 
-     qty = core_mass;
-  } else {
-     port->AddRequest(target, this, in_commods[0]);
-     qty = core_mass/batches;
-  }
-  CapacityConstraint<Material> cc(qty);
-
-  port->AddConstraint(cc);
-  ports.insert(port);
-  //std::cout << "end getmatlrequests" << std::endl;
-  return ports;
+    port->AddConstraint(cc);
+    ports.insert(port);
+    //std::cout << "end getmatlrequests" << std::endl;
+    return ports;
 }
 
 // MatlBids //
