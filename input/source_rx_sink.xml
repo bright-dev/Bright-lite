@@ -106,7 +106,7 @@
             <val>freshFuel5</val>
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>E7_100</val></libraries>
+        <libraries><val>extLWR</val></libraries>
         <target_burnup>60.0</target_burnup>
         <nonleakage>0.99</nonleakage>
         <core_mass>1250.0</core_mass>
