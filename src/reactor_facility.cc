@@ -181,11 +181,16 @@ void ReactorFacility::Tock() {
     batch_reorder();
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
-  
+
   //add batch variable to cyclus database
   ///time may need to be fixed by adding cycle length to it
-  context()->NewDatum("BrightLite_Reactor_Data")->AddVal("AgentID", id())->AddVal("Time", context()->time())->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)->Record();
-  
+  context()->NewDatum("BrightLite_Reactor_Data")
+           ->AddVal("AgentID", id())
+           ->AddVal("Time", context()->time())
+           ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
+           ->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
+           ->Record();
+
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
     cyclus::CompMap out_comp;
@@ -333,7 +338,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
-    
+
     //std::cout << "begin getmatltrades" << std::endl;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
     cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
@@ -382,10 +387,10 @@ double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
 }
 
 void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory){
-    for(int i = 0; i < inventory.size(); i++){
+    /*for(int i = 0; i < inventory.size(); i++){
         std::vector<cyclus::Material::Ptr> manifest;
         manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
-    }
+    }*/
 
 
 }
