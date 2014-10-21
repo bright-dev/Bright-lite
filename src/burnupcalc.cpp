@@ -59,18 +59,15 @@ fuelBundle regionCollapse(fuelBundle fuel){
         //}
         //builds total BU from BUd
         fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BUd[0]);
-std::cout << "Test3" << std::endl;
+
         for(int j = 1; j < fuel.batch[i].collapsed_iso.BUd.size(); j++){
         //cout << "    1.5tst" << i+1 << "  " << j << endl;
             fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BU[j-1]+fuel.batch[i].collapsed_iso.BUd[j]);
         }
-std::cout << "Test4" << std::endl;
         //test to see if the prod/dest vectors are the same length
         if(fuel.batch[i].collapsed_iso.neutron_prod.size() != fuel.batch[i].collapsed_iso.neutron_dest.size()){
             cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
         }
-
-std::cout << "Test5" << std::endl;
         if(fuel.batch[i].collapsed_iso.neutron_prod[0] == 0 || fuel.batch[i].collapsed_iso.neutron_dest[0] == 0){
             fuel.batch[i].collapsed_iso.neutron_prod.erase(fuel.batch[i].collapsed_iso.neutron_prod.begin());
             fuel.batch[i].collapsed_iso.neutron_dest.erase(fuel.batch[i].collapsed_iso.neutron_dest.begin());
@@ -367,8 +364,8 @@ double kcalc(fuelBundle core){
         //find dicrete point j to interpolate on
         for(j = 0; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){}
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (kcalc)" << endl;
-            cout << "  Values on max fluence will be used. Do not trust results." << endl;
+            //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (kcalc)" << endl;
+            //cout << "  Values on max fluence will be used. Do not trust results." << endl;
             j = core.batch[i].collapsed_iso.fluence.size() - 1;
         }
 
@@ -677,7 +674,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         if(ii == fuel.neutron_prod.size()-1){
             cout << endl << "SS_burnupcalc error! Fuel criticality doesn't drop below 1." << endl;
             ii -= 1;
-            break;
+            return fuel.BU[ii+1];
         }
     }
 
@@ -723,10 +720,10 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
         for(int i = 0; i < N; i++){
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
-            //cout << "  Fg: " << core.batch[i].Fg << endl;
+            cout << "  Fg: " << core.batch[i].Fg << endl;
         }
         kcore = kcalc(core);
-        //cout << "kcalc:" << kcore  << endl;
+        cout << "kcalc:" << kcore  << endl;
     }
 
     //update core fluences
