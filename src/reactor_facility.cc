@@ -385,6 +385,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     if(shutdown == true){
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
+        inventory.PopN(inventory.count());
         for (it = trades.begin(); it != trades.end(); ++it) {
             for(int i = 0; i < discharge.size(); i++){
                 responses.push_back(std::make_pair(*it, discharge[i]));
