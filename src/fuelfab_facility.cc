@@ -109,7 +109,15 @@ namespace fuelfab {
                 if (req->commodity() == out_commod) {
                     if (reactor->inventory.count() == 0){
                         reactor->start_up(inventory);
-                    } /*else if(reactor->burnup_test(offer) == reactor->target_burnup){
+                    } else{
+                        reactor->blend_next(inventory);
+                    
+                    }
+                    
+                    
+                    
+                    
+                     /*else if(reactor->burnup_test(offer) == reactor->target_burnup){
                         port->AddBid(req, offer, this);
                         port->AddConstraint(cc);
                         ports.insert(port);

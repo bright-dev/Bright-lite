@@ -81,7 +81,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
   
-  fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_)
+  fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
   
   double blend_next(std::vector<cyclus::toolkit::ResourceBuff> inventory);
 

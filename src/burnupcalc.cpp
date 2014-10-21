@@ -576,7 +576,107 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     return core;
 }
 
+double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
+    //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
+    //all factors that contribute to a change in neutron prod/dest rates have to be factored
+    //      before calling this function
+    //cout << endl << "Burnupcalc" << endl;
 
+    int N = core.batch.size(); //number of batches
+    double dt = delta*24*60*60; //days to [s]
+    double kcore, kcore_prev;
+    double y0, y1, x0, x1;
+    double burnup = 0;
+
+    //assign the batch_fluence to Fg
+    for(int i = 0; i < N; i++){
+        core.batch[i].Fg = core.batch[i].batch_fluence;
+    }
+
+    //turn zero fluences to one to avoid zero rates
+    for(int i = 0; i < N; i++){
+        if(core.batch[i].Fg == 0){core.batch[i].Fg = 1;}
+    }
+
+    for(int i = 0; i < core.batch[0].collapsed_iso.fluence.size(); i++){
+        //cout << core.batch[0].collapsed_iso.fluence[i] << "  " << core.batch[0].collapsed_iso.BU[i] << "  " << core.batch[0].collapsed_iso.neutron_prod[i]/core.batch[0].collapsed_iso.neutron_dest[i] << endl;
+    }
+    //cout << "Batches: " << core.batch.size() << endl <<endl;
+    for(int i = 0; i < core.batch.size(); i++){
+        //cout << "fluence: " << core.batch[i].batch_fluence << endl;
+    }
+
+    kcore = 3.141592;
+    kcore_prev = kcalc(core);
+
+
+    //<--------------------------------------------------
+    double cburnup[N];
+    for(int i = 0; i < N; i++){cburnup[i] = 0;}
+    //-------------------------------------------------->
+
+
+    //more forward in time until kcore drops under 1
+    while(kcore > 1){
+        kcore_prev = kcore;
+        //if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
+
+        //find the normalized relative flux of each batch
+        if(mode == 1){
+            //simplest case, all batches get the same flux
+            for(int i = 0; i < N; i++){
+                core.batch[i].rflux = 1;
+            }
+        }else if(mode == 2){
+            //inverse-production flux calculation
+            core = phicalc_simple(core);
+        }else if(mode == 3){
+            core = phicalc_cylindrical(core);
+        }else{
+            cout << endl << "Error in mode input for batch-level flux calculation." << endl;
+            return 0;
+        }
+
+        //disadvantage calculation
+        if(DA_mode == 1){
+            core = DA_calc(core);
+        }
+
+        //update fluences
+        for(int i = 0; i < N; i++){
+            //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
+            core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+        }
+
+        kcore = kcalc(core);
+    }
+
+    //update core fluences
+    for(int i = 0; i < N; i++){
+        //y0 is the fluence value before the last interation
+        y0 = core.batch[i].Fg - core.batch[i].rflux * core.base_flux * dt;
+        y1 = core.batch[i].Fg;
+        //cout << y0 << " and " << y1 << endl; //<-------
+        //cout << "  " << kcore_prev << " " << kcore << endl; //<-------
+        core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
+        //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
+
+    }
+
+    //the oldest batch is always index=0
+    int ii;
+    for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
+    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
+        cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc2)" << endl;
+        cout << "  Values on max fluence will be used. Do not trust results." << endl;
+        ii = core.batch[0].collapsed_iso.fluence.size() - 1;
+    }
+    burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
+
+    core.batch[0].discharge_BU = burnup;
+
+    return burnup;
+}
 
 fuelBundle DA_calc(fuelBundle fuel){
 // calculates the flux within each batch in fuelBundle
