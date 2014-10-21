@@ -485,7 +485,8 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
 }
 
 fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
-
+    //unlike the comp_function, this function assumes the first entry batch will be discharged
+    //it replaces the last batch with the fraction coming from mat1
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
     comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
@@ -497,10 +498,9 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fu
     
     info.batch_fluence = 0;
     info.Fg = 0;
+    info.fraction = 1;
 
     temp_bundle.batch.push_back(info);
-    temp_bundle.batch[0].batch_fluence = 0;
-    temp_bundle.batch[0].fraction.push_back(1);//fraction of the batch is set to one
 
     //each iso in comp
     for (it = comp.begin(); it != comp.end(); ++it){
@@ -509,12 +509,13 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fu
         //each iso in all_iso
         for(int j = 0; j < temp_bundle.all_iso.size(); j++){
             int fl_iso = temp_bundle.all_iso[j].name;
-            if(fl_iso == comp_iso && temp_bundle.batch[0].batch_fluence == 0){
+            if(fl_iso == comp_iso){
                 //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
                 isoInformation temp_iso;
                 temp_iso = temp_bundle.all_iso[j];
                 temp_iso.fraction = it->second;
-                temp_bundle.batch[0].iso.push_back(temp_iso);
+                
+                temp_bundle.batch[temp_bundle.batch.size()-1].iso.push_back(temp_iso);
             }
         }
     }
@@ -549,20 +550,20 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                 std::cout << "builing temp bundle" << std::endl;
                 fuelBundle temp_bundle = comp_trans(mat1, fuel_library_);
                 std::cout << "built temp bundle" << std::endl;
-                double burnup_1 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                double burnup_1 = burnupcalc(temp_bundle, 2, 1, 40);
                 std::cout << "first ss calc" << std::endl;
                 double fraction_2 = 1;
                 mat1 = cyclus::Material::CreateUntracked(1, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(0, materials[i][k]->comp());
                 mat1->Absorb(mat2);
                 temp_bundle = comp_trans(mat1, fuel_library_);
-                double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                double burnup_2 = burnupcalc(temp_bundle, 2, 1, 40);
                 double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
                 temp_bundle = comp_trans(mat1, fuel_library_);
-                double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                double burnup_3 = burnupcalc(temp_bundle, 2, 1, 40);
 
                 int inter = 0;
                 while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.001){
@@ -576,7 +577,7 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                     mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                     mat1->Absorb(mat2);
                     temp_bundle = comp_trans(mat1, fuel_library_);
-                    burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                    burnup_3 = burnupcalc(temp_bundle, 2, 1, 40);
                     std::cout << "BURNUP " << burnup_3 << std::endl;
                     if(inter == 50){
                         continue;
