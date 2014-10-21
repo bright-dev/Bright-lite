@@ -458,6 +458,15 @@ void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> invent
                 cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(0, materials[0][j]->comp());
                 cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(total_mass, materials[i][k]->comp());
                 mat1->Absorb(mat2);
+
+                SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux)
+
+                cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(total_mass, materials[0][j]->comp());
+                cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(0, materials[i][k]->comp());
+                mat1->Absorb(mat2);
+
+                SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux)
+
                 cyclus::CompMap comp;
                 cyclus::CompMap::iterator it;
                 comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
