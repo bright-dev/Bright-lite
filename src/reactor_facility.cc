@@ -480,12 +480,13 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
     for(int i = 0; i < temp_bundle.batch.size(); i++){
         temp_bundle.batch[i].Fg = 0;
     }
-    
+
     return temp_bundle;
 
 }
 
-void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory){
+double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory){
+    double return_amount;
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
     for(int i = 0; i < inventory.size(); i++){
         std::vector<cyclus::Material::Ptr> manifest;
@@ -494,8 +495,8 @@ void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> invent
     }
     double total_mass = core_mass / batches;
 
-    for(int i = 1; i < materials.size(); i++){
-        for(int j = 0; j < materials[0].size(); j++){
+    for(int j = 0; j < materials[0].size(); j++){
+        for(int i = 1; i < materials.size(); i++){
             for(int k = 0; k < materials[i].size(); k++){
                 double fraction_1 = 0;
                 cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(fraction_1, materials[0][j]->comp());
@@ -511,26 +512,36 @@ void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> invent
                 mat2 = cyclus::Material::CreateUntracked(0, materials[i][k]->comp());
                 mat1->Absorb(mat2);
                 temp_bundle = comp_function(mat1, fuel_library_);
-                //std::cout <<temp_bundle.batch[0].collapsed_iso.neutron_prod.size() << std::endl;
-                //std::cout << batches << "    " << burnupcalc_timestep << "   " << nonleakage << "    " << fuel_library_.base_flux << std::endl;
-                
-                for(int i = 0; i < temp_bundle.batch[0].collapsed_iso.neutron_prod.size(); i++){
-                    std::cout << temp_bundle.batch[0].collapsed_iso.neutron_prod[i]/temp_bundle.batch[0].collapsed_iso.neutron_dest[i]  << "  ";
-                }
-                 
-                
                 double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
-                std::cout << "BU2 " << burnup_2 << std::endl;
                 double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-                std::cout<< "fraction: " << fraction << std::endl;
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
                 temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
-                std::cout << "BURNUP " << burnup_3 << std::endl;
-                return;
-                //while()
+
+                int inter = 0;
+                while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.001){
+                    fraction_1 = fraction_2;
+                    fraction_2 = fraction;
+                    burnup_1 = burnup_2;
+                    burnup_2 = burnup_3;
+                    fraction = (fraction_2) + (target_burnup - burnup_2)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
+                    std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+                    mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
+                    mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
+                    mat1->Absorb(mat2);
+                    temp_bundle = comp_function(mat1, fuel_library_);
+                    burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                    std::cout << "BURNUP " << burnup_3 << std::endl;
+                    if(inter == 50){
+                        continue;
+                    }
+                    inter++;
+                }
+                return_amount = fraction * total_mass;
+                return return_amount;
+
             }
         }
     }
