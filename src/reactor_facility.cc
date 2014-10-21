@@ -18,7 +18,8 @@ void ReactorFacility::Tick() {
 
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
-        std::ifstream inf(libraries[0] +"/manifest.txt"); //opens manifest file
+        std::ifstream inf(cyclus::Env::GetInstallPath() + "/share/brightlite" + \
+                          libraries[0] + "/manifest.txt"); //opens manifest file
         std::string line;
         std::string iso_name;
         fuel_library_.name = libraries[0]; //for now only one entry in here
