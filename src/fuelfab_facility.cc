@@ -84,6 +84,7 @@ namespace fuelfab {
     using reactor::ReactorFacility;
     cyclus::Context* ctx = context();
     std::set<BidPortfolio<Material>::Ptr> ports;
+    double limit = 0;
 
     // respond to all requests of my commodity
     int inventory_test = 0;
@@ -104,25 +105,33 @@ namespace fuelfab {
             Request<Material>* req = *it;
             ReactorFacility* reactor = dynamic_cast<ReactorFacility*>(req->requester());
             if (!reactor){
-               throw cyclus::CastError("Nope!");
+               throw cyclus::CastError("No reactor for fuelfab facility.");
             } else {
                 if (req->commodity() == out_commod) {
                     if (reactor->inventory.count() == 0){
-                        reactor->start_up(inventory);
+                        limit = reactor->start_up(inventory);
                     } else{
-                        reactor->blend_next(inventory);
+                        limit = reactor->blend_next(inventory);
                     
-                    }
-                    
-                    
-                    
-                    
+                    }                        
                      /*else if(reactor->burnup_test(offer) == reactor->target_burnup){
-                        port->AddBid(req, offer, this);
-                        port->AddConstraint(cc);
-                        ports.insert(port);
+
                     };*/
                 }
+                std::cout << "limit from blend calculation: " << limit << std::endl;
+                
+                cyclus::Material::Ptr manifest;
+                manifest = cyclus::ResCast<Material>(inventory[0].Pop());
+                Material::Ptr offer = Material::CreateUntracked(limit, manifest->comp());
+                inventory[0].Push(manifest);
+                
+                manifest = cyclus::ResCast<Material>(inventory[1].Pop());
+                offer->Absorb(Material::CreateUntracked(reactor->core_mass/reactor->batches-limit, manifest->comp()));
+                inventory[1].Push(manifest);
+                
+                port->AddBid(req, offer, this);
+                port->AddConstraint(cc);
+                ports.insert(port);                
             }
         }
     }
@@ -146,13 +155,13 @@ namespace fuelfab {
                                         cyclus::Material::Ptr> >& responses) {
         using cyclus::Material;
         using cyclus::Trade;
-        std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;/*
+        std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
         for(int i = 0; i < inventory.size(); i++){
             cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory[i].Pop());
             for (it = trades.begin(); it != trades.end(); ++it) {
                 responses.push_back(std::make_pair(*it, discharge));
             }
-        }*/
+        }
     }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     extern "C" cyclus::Agent* ConstructFuelfabFacility(cyclus::Context* ctx) {
