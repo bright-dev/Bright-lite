@@ -19,7 +19,7 @@ namespace fuelfab {
                 inventory.push_back(resource);
             }
         }
-        
+
         //outputs whats inside the facility
         std::cout << "FuelFab Inventory:" << std::endl;
         for(int i = 0; i < inventory.size(); i++){
@@ -27,22 +27,22 @@ namespace fuelfab {
             if(inventory[i].count() == 0){
                 inventory[i].set_capacity(maximum_storage/inventory.size());
             }
-            
+
             std::cout << "  " << i+1 << ": " << inventory[i].quantity() << std::endl;
             if(inventory[i].count() != 0){
                 std::vector<cyclus::Material::Ptr> manifest;
-                manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));  
-                          
+                manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));
+
                 cyclus::CompMap comp;
                 cyclus::CompMap::iterator it;
-                
-                comp = manifest[0]->comp()->mass(); 
-                                                    
-                for(it = comp.begin(); it != comp.end(); ++it){                
-                    std::cout << "       " << it->first << " " << it->second << std::endl;                
+
+                comp = manifest[0]->comp()->mass();
+
+                for(it = comp.begin(); it != comp.end(); ++it){
+                    std::cout << "       " << it->first << " " << it->second << std::endl;
                 }
                 inventory[i].PushAll(manifest);
-            }          
+            }
         }
     }
 
@@ -64,10 +64,9 @@ namespace fuelfab {
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
         for(int i = 0; i < inventory.size(); i++){
             double qty = inventory[i].space();
-            for(std::map<std::string, int>::iterator it = in_commods.begin(); it!= in_commods.end(); it++){
-            
+
             port->AddRequest(target, this, in_commods[i]);
-            
+
             CapacityConstraint<Material> cc(qty);
             port->AddConstraint(cc);
             ports.insert(port);
@@ -121,7 +120,7 @@ namespace fuelfab {
         }
         inventory[i].PushAll(manifest);
     }*/
-    
+
     using cyclus::Bid;
     using cyclus::BidPortfolio;
     using cyclus::CapacityConstraint;
@@ -131,17 +130,17 @@ namespace fuelfab {
 
     std::vector<cyclus::Material::Ptr> manifest;
     std::set<BidPortfolio<Material>::Ptr> ports;
-	   
-	  
+
+
     if(inventory.size() == 0){return ports;}
-        
-    for(int i = 0; i < inventory.size(); i++){   
+
+    for(int i = 0; i < inventory.size(); i++){
         double amount = inventory[i].quantity();
-        manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));               
-               
+        manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
+
         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
 
-        std::vector<Request<Material>*>& requests = commod_requests[out_commod]; 
+        std::vector<Request<Material>*>& requests = commod_requests[out_commod];
 
         std::vector<Request<Material>*>::iterator it;
         for (it = requests.begin(); it != requests.end(); ++it) {
@@ -154,23 +153,23 @@ namespace fuelfab {
         ports.insert(port);
 
         //put stuff back in inventory
-        
-        inventory[i].PushAll(manifest);      
+
+        inventory[i].PushAll(manifest);
+        }
+        std::cout << "end getmatlbids" << std::endl;
+        return ports;
     }
-    std::cout << "end getmatlbids" << std::endl;
-    return ports;
-}
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
-        
+
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
-            
+
             for(int i = 0; i < in_commods.size(); i++){
                 if(it->first.request->commodity() == in_commods[i]){
                     inventory[i].Push(it->second);
                 }
-                
+
             }
         }
     }

@@ -47,7 +47,8 @@ class FuelfabFacility : public cyclus::Facility  {
   #pragma cyclus
 
   #pragma cyclus note {"doc": "A fuelfab facility is provided as a skeleton " \
-                              "for the design of new facility agents."}
+                              "for the design of new facility agents.",\
+		       "niche": "fuel fabrication"}
 
     /// A verbose printer for the FuelfabFacility
     virtual std::string str();

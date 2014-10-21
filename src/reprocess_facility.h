@@ -49,7 +49,8 @@ class ReprocessFacility : public cyclus::Facility  {
   #pragma cyclus
 
   #pragma cyclus note {"doc": "A reprocess facility is provided as a skeleton " \
-                              "for the design of new facility agents."}
+                              "for the design of new facility agents.", \
+                       "niche": "reprocessing"}
 
   /// A verbose printer for the ReprocessFacility
   virtual std::string str();
