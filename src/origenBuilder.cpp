@@ -233,6 +233,7 @@ double flux_finder(std::string type){
 
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
 //returns iso for this batch with the structural components factored in
+    type = cyclus::Env::GetInstallPath() + "/share/brightlite" + type;
     double flux_value = flux_finder(type);
     for (int i = 0; i < input_stream.size(); i++){
         if(true){
