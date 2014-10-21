@@ -54,25 +54,23 @@ fuelBundle regionCollapse(fuelBundle fuel){
 //struct effects accounted here
     //cout << "Begin regionCollapse" << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
-
         //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
         fuel.batch[i].collapsed_iso = FuelBuilder(fuel.batch[i].iso);
         //}
-
         //builds total BU from BUd
         fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BUd[0]);
-
+std::cout << "Test3" << std::endl;
         for(int j = 1; j < fuel.batch[i].collapsed_iso.BUd.size(); j++){
         //cout << "    1.5tst" << i+1 << "  " << j << endl;
             fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BU[j-1]+fuel.batch[i].collapsed_iso.BUd[j]);
         }
-
+std::cout << "Test4" << std::endl;
         //test to see if the prod/dest vectors are the same length
         if(fuel.batch[i].collapsed_iso.neutron_prod.size() != fuel.batch[i].collapsed_iso.neutron_dest.size()){
             cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
         }
 
-
+std::cout << "Test5" << std::endl;
         if(fuel.batch[i].collapsed_iso.neutron_prod[0] == 0 || fuel.batch[i].collapsed_iso.neutron_dest[0] == 0){
             fuel.batch[i].collapsed_iso.neutron_prod.erase(fuel.batch[i].collapsed_iso.neutron_prod.begin());
             fuel.batch[i].collapsed_iso.neutron_dest.erase(fuel.batch[i].collapsed_iso.neutron_dest.begin());
@@ -549,7 +547,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
     core.batch[0].discharge_BU = burnup;
-    
+
     //cout << endl << "Discharge burnup: " << burnup << endl << endl;
 
     /************************output file*********************************/
@@ -669,7 +667,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     fuelBundle core;
     core.pnl = PNL;
     core.base_flux = base_flux;
-    double BU, BU_est, F_est;    
+    double BU, BU_est, F_est;
     double y0, y1;
     double kcore_prev;
 
@@ -706,23 +704,23 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
         core.batch.push_back(temp_batch);
     }
-    
+
     //this function ignores structural material effects (for now)
     core.struct_prod = 0;
     core.struct_dest = 0;
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].DA = 0;
     }
-    
-    
+
+
     double kcore = 3.141592;
-    
+
     while(kcore > 1){
         kcore_prev = kcore;
-    
+
         //calculate necessary parameters
         core = phicalc_simple(core);
-        
+
         for(int i = 0; i < N; i++){
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
             //cout << "  Fg: " << core.batch[i].Fg << endl;
@@ -730,7 +728,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         kcore = kcalc(core);
         //cout << "kcalc:" << kcore  << endl;
     }
-    
+
     //update core fluences
     for(int i = 0; i < N; i++){
         //y0 is the fluence value before the last interation
@@ -741,15 +739,15 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
         //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
 
-    }    
-    
+    }
+
     for(ii = 0; core.batch[N-1].collapsed_iso.fluence[ii] < core.batch[N-1].batch_fluence; ii++){}
     if(core.batch[N-1].collapsed_iso.fluence.back() < core.batch[N-1].batch_fluence){
         cout << endl << "Maximum fluence error!(SS_burnupcalc) Batch fluence exceeded max library fluence. (burnupcalc2)" << endl;
         cout << "  Values on max fluence will be used. Do not trust results." << endl;
         ii = core.batch[N-1].collapsed_iso.fluence.size() - 1;
     }
-    burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);    
+    burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);
 
     return burnup;
 }

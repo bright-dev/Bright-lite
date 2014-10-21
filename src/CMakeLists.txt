@@ -16,5 +16,5 @@ use_cyclus("Brightlite" "reprocess_facility")
 install_cyclus_module("Brightlite" "")
 TARGET_LINK_LIBRARIES(Brightlite brightlite)
 TARGET_LINK_LIBRARIES(Brightlite_unit_tests brightlite)
-SET_TARGET_PROPERTIES(Brightlite brightlite PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+#SET_TARGET_PROPERTIES(Brightlite brightlite PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 
