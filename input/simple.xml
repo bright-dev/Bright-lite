@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>10</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -75,7 +75,7 @@
         </entry>       
         <entry>
           <prototype>Rx</prototype>
-          <number>100</number>
+          <number>1</number>
         </entry>
         <entry>
           <prototype>Sink</prototype>
