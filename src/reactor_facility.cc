@@ -232,7 +232,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
     using cyclus::CapacityConstraint;
     std::set<RequestPortfolio<Material>::Ptr> ports;
     cyclus::Context* ctx = context();
-    if (ctx->time() != cycle_end_ && inventory.count() != 0 | shutdown == true){
+    if (ctx->time() != cycle_end_ && inventory.count() != 0 || shutdown == true){
 
         //FuelfabFacility* fuelfab = dynamic_cast<FuelfabFacility*>(req->requester());
 
@@ -469,7 +469,7 @@ void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> invent
 
                 temp_bundle.batch.push_back(info);
                 temp_bundle.batch[0].batch_fluence = 0;
-                fuel_library_.batch[0].fraction.push_back(1);//fraction of the batch is set to one
+                temp_bundle.batch[0].fraction.push_back(1);//fraction of the batch is set to one
                 //each iso in comp
                 for (it = comp.begin(); it != comp.end(); ++it){
                     std::cout<< it->first << ": " << it->second << std::endl;
@@ -477,16 +477,16 @@ void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> invent
                     //each iso in all_iso
                     for(int j = 0; j < temp_bundle.all_iso.size(); j++){
                         int fl_iso = temp_bundle.all_iso[j].name;
-                        if(fl_iso == comp_iso){
+                        if(fl_iso == comp_iso && temp_bundle.batch[0].batch_fluence == 0){
                             //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
                             isoInformation temp_iso;
                             temp_iso = temp_bundle.all_iso[j];
                             temp_iso.fraction = it->second;
-                            temp_bundle.batch[i].iso.push_back(temp_iso);
+                            temp_bundle.batch[0].iso.push_back(temp_iso);
                         }
                     }
                 }
-                std::cout<< "BUD: "  << temp_bundle.batch[0].collapsed_iso.fluence[0] << std::endl;
+
                 temp_bundle = StructReader(temp_bundle);
                 std::cout << temp_bundle.batch.size() << std::endl;
                 temp_bundle = regionCollapse(temp_bundle);
