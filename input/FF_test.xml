@@ -58,9 +58,9 @@
             <val>fuel</val>
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>E5_60</val></libraries>
+        <libraries><val>extLWR</val></libraries>
         <target_burnup>60.0</target_burnup>
-        <nonleakage>0.94</nonleakage>
+        <nonleakage>0.97</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>4</batches>
       </ReactorFacility>
@@ -72,10 +72,8 @@
     <config>
       <FuelfabFacility>
         <in_commods>
-            <key>freshFuel</key>
-            <val>0.5</val>
-            <key>freshFuel1</key>
-            <val>1.0</val>
+            <val>freshFuel</val>
+	    <val>freshFuel1</val>
         </in_commods>
         <out_commod>fuel</out_commod>
       </FuelfabFacility>

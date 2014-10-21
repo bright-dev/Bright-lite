@@ -162,7 +162,6 @@ void ReactorFacility::Tock() {
                     fuel_library_.batch[i].iso.push_back(temp_iso);
                 }
             }
-
         }
     }
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
@@ -188,13 +187,13 @@ void ReactorFacility::Tock() {
 
   // cycle end update
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
-  
+
   if(ctx->time() > start_time_ + reactor_life){
-    //its time to shut down   
+    //its time to shut down
     cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
-    shutdown = true;  
+    shutdown = true;
   }
-    
+
 
     /************************output file*********************************/
     std::ofstream outfile;
@@ -234,9 +233,9 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
     std::set<RequestPortfolio<Material>::Ptr> ports;
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_ && inventory.count() != 0 | shutdown == true){
-        
+
         //FuelfabFacility* fuelfab = dynamic_cast<FuelfabFacility*>(req->requester());
-        
+
         return ports;
     }
 
@@ -285,12 +284,12 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   if (ctx->time() != cycle_end_){
     return ports;
   }
-  
+
   //if theres nothing to give dont offer anything..
     if (inventory.count() == 0){
     //std::cout << "YAYa8?" << std::endl;
     return ports;}
-  
+
 
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
@@ -303,23 +302,23 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
         if(shutdown == true){
             for(int i = 0; i < manifest.size(); i++){
                 Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[i]->comp());
-                port->AddBid(req, offer, this);                
-            }           
-            
-        } else{      
+                port->AddBid(req, offer, this);
+            }
+
+        } else{
             Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0]->comp());
             port->AddBid(req, offer, this);
-        }      
+        }
 
     }
   }
   inventory.PushAll(manifest);
-  
+
   if(shutdown != true){
     CapacityConstraint<Material> cc(core_mass/batches);
     port->AddConstraint(cc);
   }
-    
+
   ports.insert(port);
   //std::cout << "end getmatlbids" << std::endl;
   return ports;
@@ -328,17 +327,17 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
 void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs) {
 
     cyclus::PrefMap<cyclus::Material>::type::iterator pmit;
-    
+
     for (pmit = prefs.begin(); pmit != prefs.end(); ++pmit) {
-    
+
         std::map<cyclus::Bid<cyclus::Material>*, double>::iterator mit;
         cyclus::Request<cyclus::Material>* req = pmit->first;
-        
+
         //std::cout << "Pref adjuster: " << req->commodity() << "  " ;
-        
+
         for (mit = pmit->second.begin(); mit != pmit->second.end(); ++mit) {
             cyclus::Bid<cyclus::Material>* bid = mit->first;
-            
+
         }
     }
 }
@@ -379,9 +378,9 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     using cyclus::Trade;
 
     //std::cout << "begin getmatltrades" << std::endl;
-    
+
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-    
+
     if(shutdown == true){
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
@@ -389,21 +388,21 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
         for (it = trades.begin(); it != trades.end(); ++it) {
             for(int i = 0; i < discharge.size(); i++){
                 responses.push_back(std::make_pair(*it, discharge[i]));
-            }            
-        }          
-        
+            }
+        }
+
     }else{
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
         fuel_library_.batch.erase(fuel_library_.batch.begin());
         for (it = trades.begin(); it != trades.end(); ++it) {
             responses.push_back(std::make_pair(*it, discharge));
-        }    
-    
-    }
-    
+        }
 
-    
-    
+    }
+
+
+
+
     //std::cout << "end getmatltrades" << std::endl;
 }
 
@@ -445,13 +444,61 @@ double ReactorFacility::burnup_test(cyclus::Material::Ptr new_batch ){
 }
 
 void ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory){
-    /*for(int i = 0; i < inventory.size(); i++){
+    std::vector<std::vector<cyclus::Material::Ptr> > materials;
+    for(int i = 0; i < inventory.size(); i++){
         std::vector<cyclus::Material::Ptr> manifest;
-        manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
-    }*/
+        manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));
+        materials.push_back(manifest);
+    }
+    double total_mass = core_mass / batches;
 
+    for(int i = 1; i < materials.size(); i++){
+        for(int j = 0; j < materials[0].size(); j++){
+            for(int k = 0; k < materials[i].size(); k++){
+                cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(0, materials[0][j]->comp());
+                cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(total_mass, materials[i][k]->comp());
+                mat1->Absorb(mat2);
+                cyclus::CompMap comp;
+                cyclus::CompMap::iterator it;
+                comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
 
+                int comp_iso;
+                fuelBundle temp_bundle = fuel_library_;
+                batch_info info;
+                temp_bundle.batch.clear();
+
+                temp_bundle.batch.push_back(info);
+                temp_bundle.batch[0].batch_fluence = 0;
+                fuel_library_.batch[0].fraction.push_back(1);//fraction of the batch is set to one
+                //each iso in comp
+                for (it = comp.begin(); it != comp.end(); ++it){
+                    std::cout<< it->first << ": " << it->second << std::endl;
+                    comp_iso = pyne::nucname::zzaaam(it->first);
+                    //each iso in all_iso
+                    for(int j = 0; j < temp_bundle.all_iso.size(); j++){
+                        int fl_iso = temp_bundle.all_iso[j].name;
+                        if(fl_iso == comp_iso){
+                            //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
+                            isoInformation temp_iso;
+                            temp_iso = temp_bundle.all_iso[j];
+                            temp_iso.fraction = it->second;
+                            temp_bundle.batch[i].iso.push_back(temp_iso);
+                        }
+                    }
+                }
+                std::cout<< "BUD: "  << temp_bundle.batch[0].collapsed_iso.fluence[0] << std::endl;
+                temp_bundle = StructReader(temp_bundle);
+                std::cout << temp_bundle.batch.size() << std::endl;
+                temp_bundle = regionCollapse(temp_bundle);
+
+                std::cout <<"TEST2" << std::endl;
+
+                std::cout << "Burnup from FF :"<< SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux) << std::endl;
+            }
+        }
+    }
 }
+
 
 
 void ReactorFacility::batch_reorder(){

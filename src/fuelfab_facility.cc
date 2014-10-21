@@ -76,7 +76,7 @@ namespace fuelfab {
 
     // MatlBids //
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>FuelfabFacility::GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
-    /*using cyclus::BidPortfolio;
+    using cyclus::BidPortfolio;
     using cyclus::CapacityConstraint;
     using cyclus::Converter;
     using cyclus::Material;
@@ -93,8 +93,8 @@ namespace fuelfab {
         }
     }/*
     /** Quick Hack */
-    /*
-    CapacityConstraint<Material> cc(1);
+
+    CapacityConstraint<Material> cc(10000);
         if (inventory_test == 0){return ports;}
 
         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
@@ -107,60 +107,16 @@ namespace fuelfab {
                throw cyclus::CastError("Nope!");
             } else {
                 if (req->commodity() == out_commod) {
-                    Material::Ptr offer = Material::CreateUntracked(20, manifest[0]->comp());
                     if (reactor->inventory.count() == 0){
-                        reactor->start_up();
-                    } else if(reactor->burnup_test(offer) == reactor->target_burnup){
+                        reactor->start_up(inventory);
+                    } /*else if(reactor->burnup_test(offer) == reactor->target_burnup){
                         port->AddBid(req, offer, this);
                         port->AddConstraint(cc);
                         ports.insert(port);
-                    };
+                    };*/
                 }
             }
         }
-        inventory[i].PushAll(manifest);
-    }*/
-
-    using cyclus::Bid;
-    using cyclus::BidPortfolio;
-    using cyclus::CapacityConstraint;
-    using cyclus::Material;
-    using cyclus::Request;
-    using cyclus::Converter;
-
-    
-    std::set<BidPortfolio<Material>::Ptr> ports;
-
-
-    if(inventory.size() == 0){return ports;}
-
-    for(int i = 0; i < inventory.size(); i++){
-        double amount = inventory[i].quantity();
-        
-        std::vector<cyclus::Material::Ptr> manifest;
-        manifest = cyclus::ResCast<Material>(inventory[i].PopN(inventory[i].count()));
-
-        BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
-
-        std::vector<Request<Material>*>& requests = commod_requests[out_commod];
-
-        std::vector<Request<Material>*>::iterator it;
-        for (it = requests.begin(); it != requests.end(); ++it) {
-            Request<Material>* req = *it;
-            if(amount != 0){
-                Material::Ptr offer = Material::CreateUntracked(amount, manifest[0]->comp());
-                port->AddBid(req, offer, this);
-            }
-        }
-
-        ports.insert(port);
-
-        //put stuff back in inventory
-
-        inventory[i].PushAll(manifest);
-        }
-        std::cout << "end getmatlbids" << std::endl;
-        return ports;
     }
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {

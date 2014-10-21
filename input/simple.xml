@@ -21,7 +21,7 @@
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-	<capacity>2000.0</capacity>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -75,7 +75,7 @@
         </entry>       
         <entry>
           <prototype>Rx</prototype>
-          <number>1</number>
+          <number>100</number>
         </entry>
         <entry>
           <prototype>Sink</prototype>
