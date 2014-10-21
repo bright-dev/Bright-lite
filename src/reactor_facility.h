@@ -47,7 +47,8 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus
 
   #pragma cyclus note {"doc": "A reactor facility is provided as a skeleton " \
-                              "for the design of new facility agents."}
+                              "for the design of new facility agents.", \
+                        "niche": "reactor"}
 
   /// A verbose printer for the ReactorFacility
   virtual std::string str();
@@ -124,10 +125,10 @@ class ReactorFacility : public cyclus::Facility  {
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
-  #pragma cyclus var {"tooltip": "The parameter to be interpolated on and" + \
-                      "the interpolation value", \
-                      "userlevel": 2, \
-                      "default": {"BURNUP": 42.0}}
+  #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
+                      "Interpolation metric", "Interpolation values"], \
+                      "default": {"BURNUP": 42}, \
+                      "uitype": ["oneOrMore", "string", "double"]}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
