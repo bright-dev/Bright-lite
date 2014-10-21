@@ -69,15 +69,17 @@ class ReactorFacility : public cyclus::Facility  {
     const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                           cyclus::Material::Ptr> >& responses);
-                                
-  virtual void AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs); 
-  
+
+  virtual void AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs);
+
   /// @brief Place accepted trade Materials in inventory
   virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                 cyclus::Material::Ptr> >& responses);
-                               
+
 
   double burnup_test(cyclus::Material::Ptr new_batch);
+
+  fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
 
   void start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory);
 
