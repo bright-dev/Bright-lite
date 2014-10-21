@@ -680,7 +680,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
     //find the just critical fluence for single batch
     F_est = intpol(fuel.fluence[ii-1], fuel.fluence[ii], fuel.neutron_prod[ii-1]*PNL/fuel.neutron_dest[ii-1], fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii], 1);
-    
+
     if(F_est < 0){F_est = 0;}
 
     //find the corresponding BU
@@ -688,8 +688,8 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
     //estimate the N batch BU
     BU_est = 2. * N * BU_est / (N + 1.);
-    
-    cout << "balbalbla  " << BU_est << "  " << N << "  " << F_est << endl;
+
+    //cout << "balbalbla  " << BU_est << "  " << N << "  " << F_est << endl;
 
     //assign the linearly divided burnup and fluence to each batch
     for(int i = 0; i < N; i++){
@@ -702,8 +702,8 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         temp_batch.Fg = intpol(temp_batch.collapsed_iso.fluence[ii-1], temp_batch.collapsed_iso.fluence[ii], temp_batch.collapsed_iso.BU[ii-1], temp_batch.collapsed_iso.BU[ii], temp_batch.BUg);
 
         if(temp_batch.Fg < 0){temp_batch.Fg = 0;}
-        
-        cout << "temp fg: " << temp_batch.Fg << endl;
+
+        //cout << "temp fg: " << temp_batch.Fg << endl;
 
         core.batch.push_back(temp_batch);
     }
@@ -726,7 +726,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
         for(int i = 0; i < N; i++){
             double fluence = core.batch[i].rflux * core.base_flux * dt;
-            
+
             core.batch[i].Fg += core.base_flux * dt;
             //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << endl;
         }
