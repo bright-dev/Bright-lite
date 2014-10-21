@@ -85,31 +85,37 @@ class ReactorFacility : public cyclus::Facility  {
 
 
   #pragma cyclus var {"default": 0.001, \
+                      "userlevel": 3, \
                      "tooltip": "The convergence requirement for the code"}
   double tolerence;
 
   #pragma cyclus var {"default": 0.4095, \
                      "units": "cm", \
+                      "userlevel": 3, \
                      "tooltip": "Fuel pin radius used for thermal disadvantage calculation."}
   double disadv_a;
 
   #pragma cyclus var {"default": 0.70749, \
                      "units": "cm", \
+                      "userlevel": 3, \
                      "tooltip": "Moderator radius used for thermal disadvantage calculation."}
   double disadv_b;
 
   #pragma cyclus var {"default": 0.222, \
                      "units": "cm-1", \
+                      "userlevel": 3, \
                      "tooltip": "Moderator macroscopic abs cross-section for thermal disadvantage calculation."}
   double disadv_mod_siga;
 
   #pragma cyclus var {"default": 3.44, \
                      "units": "cm-1", \
+                      "userlevel": 3, \
                      "tooltip": "Moderator macroscopic scattering cross-section for thermal disadvantage calculation."}
   double disadv_mod_sigs;
 
   #pragma cyclus var {"default": 0.43, \
                      "units": "cm-1", \
+                      "userlevel": 3, \
                      "tooltip": "Fuel macroscopic scattering cross-section for thermal disadvantage calculation."}
   double disadv_fuel_sigs;
 
@@ -125,6 +131,7 @@ class ReactorFacility : public cyclus::Facility  {
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
+                      "userlevel": 1, \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
@@ -135,79 +142,96 @@ class ReactorFacility : public cyclus::Facility  {
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
+                      "userlevel": 1, \
                       "default": 3}
   int batches;
 
   #pragma cyclus var {"tooltip": "Non-leakage probability", \
                       "doc": "Varies from 0 - 1.", \
+                      "userlevel": 1, \
                       "default": 0.98}
   double nonleakage;
 
   #pragma cyclus var {"default": 1e299, \
+                      "userlevel": 2, \
                       "tooltip": "reactor maximum inventory size", \
                       "doc": "total maximum inventory size of the reactor"}
   double max_inv_size;
 
   #pragma cyclus var {"tooltip": "Target burnup", \
+                      "userlevel": 1, \
                       "units": "MWd/kgIHM"}
   double target_burnup;
 
   #pragma cyclus var {"default": 1000.0, \
                       "units": "MWe", \
+                      "userlevel": 2, \
                       "tooltip": "Electrical production."}
   double generated_power;
 
   #pragma cyclus var {"units": "kgIHM", \
+                      "userlevel": 2, \
                       "tooltip": "Total mass of the core."}
   double core_mass;
 
   #pragma cyclus var {"default": 0.33, \
+                      "userlevel": 2, \
                       "tooltip": "Thermal to electric conversion rate."}
   double efficiency;
 
   #pragma cyclus var {"default": 89197, \
                       "units": "cm2", \
+                      "userlevel": 3, \
                       "tooltip": "Total area of the fuel in core. Used for cylindrical flux calculation."}
   double fuel_area;
 
   #pragma cyclus var {"default": 5, \
+                      "userlevel": 3, \
                       "tooltip": "Delta to be used for cylindrical flux calculation."}
   double cylindrical_delta;
 
   #pragma cyclus var {"default": 0.0222, \
                       "units": "cm-1", \
+                      "userlevel": 3, \
                       "tooltip": "Macroscopic absorption cross section of the moderator."}
   double mod_Sig_a;
 
   #pragma cyclus var {"default": 3.46, \
                       "units": "cm-1", \
+                      "userlevel": 3, \
                       "tooltip": "Macroscopic transport cross section of the moderator."}
   double mod_Sig_tr;
 
   #pragma cyclus var {"default": 0.0, \
                       "units": "cm-1", \
+                      "userlevel": 3, \
                       "tooltip": "Macroscopic fission cross section of the moderator."}
   double mod_Sig_f;
 
   #pragma cyclus var {"default": 100, \
                       "units": "cm", \
+                      "userlevel": 3, \
                       "tooltip": "Radial thickness of the moderator used for cylindrical flux calculation."}
   double mod_thickness;
 
   #pragma cyclus var {"default": 3.94, \
                       "units": "cm-1", \
+                      "userlevel": 3, \
                       "tooltip": "Macroscopic transport cross section of the fuel."}
   double fuel_Sig_tr;
 
   #pragma cyclus var {"default": 10, \
+                      "userlevel": 2, \
                       "tooltip": "Timestep [days] for the burnup calculation."}
   double burnupcalc_timestep;
 
   #pragma cyclus var {"default": 2, \
+                      "userlevel": 2, \
                       "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
   int flux_mode;
 
   #pragma cyclus var {"default": 1, \
+                      "userlevel": 2, \
                       "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
   int DA_mode;
 
@@ -216,6 +240,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"default": 380, \
                       "units": "months", \
+                      "userlevel": 1, \
                       "tooltip": "Time before reactor is shutdown after startup."}
   int reactor_life;
 
