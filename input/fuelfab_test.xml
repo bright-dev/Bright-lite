@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>10</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -10,22 +10,34 @@
   <archetypes>
     <spec><lib>agents</lib><name>Source</name></spec>
     <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
   </archetypes>
 
   <facility>
-    <name>Source</name>
+    <name>NUSource</name>
     <config>
       <Source>
-        <commod>freshFuel</commod>
-        <recipe_name>commod_recipe</recipe_name>
+        <commod>NU</commod>
+        <recipe_name>NU_recipe</recipe_name>
 	<capacity>2000.0</capacity>
       </Source>
     </config>
   </facility>
-  
+
+  <facility>
+    <name>PUSource</name>
+    <config>
+      <Source>
+        <commod>PU</commod>
+        <recipe_name>PU_recipe</recipe_name>
+	    <capacity>2000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
   <facility>
     <name>Sink</name>
     <config>
@@ -33,17 +45,17 @@
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>100000000.0</capacity>
+        <capacity>1000.0</capacity>
       </Sink>
     </config>
   </facility>
-
+  
   <facility>
     <name>Rx</name>
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>freshFuel</val>       
+            <val>MOX</val>       
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
@@ -55,11 +67,23 @@
 	       <val>42.5</val>
         </interpol_pairs>
         <batches>3</batches>
-        <reactor_life>90</reactor_life>
         <flux_mode>2</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
       </ReactorFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>FF</name>
+    <config>
+      <FuelfabFacility>
+        <in_commods>
+            <val>NU</val>
+            <val>PU</val>
+        </in_commods>
+        <out_commod>MOX</out_commod>
+      </FuelfabFacility>
     </config>
   </facility>
 
@@ -70,11 +94,19 @@
       <name>SingleInstitution</name>
       <initialfacilitylist>
         <entry>
-          <prototype>Source</prototype>
+          <prototype>NUSource</prototype>
           <number>1</number>
-        </entry>       
+        </entry>
+        <entry>
+          <prototype>PUSource</prototype>
+          <number>1</number>
+        </entry>
         <entry>
           <prototype>Rx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>FF</prototype>
           <number>1</number>
         </entry>
         <entry>
@@ -87,15 +119,36 @@
   </region>
 
   <recipe>
-    <name>commod_recipe</name>
+    <name>NU_recipe</name>
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>4.3</comp>
+      <comp>4</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>95.7</comp>
+      <comp>96</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>PU_recipe</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>PU238</id>
+      <comp>0.031</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU239</id>
+      <comp>0.5949</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU240</id>
+      <comp>0.2297</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU241</id>
+      <comp>0.2005</comp>
     </nuclide>
   </recipe>
 

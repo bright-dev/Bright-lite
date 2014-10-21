@@ -6,6 +6,7 @@ ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
       cycle_end_ = ctx->time();
       start_time_ = cycle_end_;
+      shutdown = false;
 };
 
 std::string ReactorFacility::str() {
@@ -13,7 +14,7 @@ std::string ReactorFacility::str() {
 }
 
 void ReactorFacility::Tick() {
-    //std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
+    std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
 
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
@@ -114,19 +115,6 @@ void ReactorFacility::Tick() {
 /************************End of output file*********************************/
     }
 
-    //check if its time to decommission the facility
-    if(start_time_ + reactor_life <= cycle_end_){
-        //std::cout << "here: " << start_time_ + reactor_life << "  " << cycle_end_ << std::endl;
-
-        //take care of the fuel
-
-
-
-
-
-    }
-
-
 
     //std::cout << "end tick" << std::endl;
 }
@@ -182,14 +170,7 @@ void ReactorFacility::Tock() {
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
-  //add batch variable to cyclus database
-  ///time may need to be fixed by adding cycle length to it
-  context()->NewDatum("BrightLite_Reactor_Data")
-           ->AddVal("AgentID", id())
-           ->AddVal("Time", context()->time())
-           ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
-           ->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
-           ->Record();
+
 
   // convert fuel bundle into materials
   for(int i = 0; i < fuel_library_.batch.size(); i++){
@@ -207,8 +188,13 @@ void ReactorFacility::Tock() {
 
   // cycle end update
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
-  //std::cout << "Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
-  //std::cout << "Time :: " <<cycle_end_ << std::endl;
+  
+  if(ctx->time() > start_time_ + reactor_life){
+    //its time to shut down   
+    cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
+    shutdown = true;  
+  }
+    
 
     /************************output file*********************************/
     std::ofstream outfile;
@@ -221,6 +207,21 @@ void ReactorFacility::Tock() {
     outfile.close();
     /************************End of output file**************************/
 
+  //add batch variable to cyclus database
+  ///time may need to be fixed by adding cycle length to it
+  context()->NewDatum("BrightLite_Reactor_Data")
+           ->AddVal("AgentID", id())
+           ->AddVal("Time", cycle_end_)
+           ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
+           ->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
+           ->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
+           ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340]+fuel_library_.batch[0].comp[922350]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
+           ->AddVal("Discharge_U235", fuel_library_.batch[0].comp[922350])
+           ->AddVal("Discharge_U238", fuel_library_.batch[0].comp[922380])
+           ->AddVal("Discharge_PU", fuel_library_.batch[0].comp[942380]+fuel_library_.batch[0].comp[942390]+fuel_library_.batch[0].comp[942400]+fuel_library_.batch[0].comp[942410]+fuel_library_.batch[0].comp[942420])
+           ->AddVal("Discharge_PU239", fuel_library_.batch[0].comp[942390])
+           ->AddVal("Discharge_PU241", fuel_library_.batch[0].comp[942410])
+           ->Record();
 }
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
@@ -232,7 +233,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
     using cyclus::CapacityConstraint;
     std::set<RequestPortfolio<Material>::Ptr> ports;
     cyclus::Context* ctx = context();
-    if (ctx->time() != cycle_end_ && inventory.count() != 0){
+    if (ctx->time() != cycle_end_ && inventory.count() != 0 | shutdown == true){
         
         //FuelfabFacility* fuelfab = dynamic_cast<FuelfabFacility*>(req->requester());
         
@@ -269,8 +270,7 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
 }
 
 // MatlBids //
-std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
-  ReactorFacility::GetMatlBids(
+std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
 
   using cyclus::BidPortfolio;
@@ -280,13 +280,18 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   using cyclus::Request;
   cyclus::Context* ctx = context();
   std::set<BidPortfolio<Material>::Ptr> ports;
+
+  //if its not the end of a cycle dont get rid of your fuel
   if (ctx->time() != cycle_end_){
     return ports;
   }
-  // respond to all requests of my commodity
-  if (inventory.count() == 0){
+  
+  //if theres nothing to give dont offer anything..
+    if (inventory.count() == 0){
     //std::cout << "YAYa8?" << std::endl;
     return ports;}
+  
+
   std::vector<cyclus::Material::Ptr> manifest;
   manifest = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
   BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
@@ -295,43 +300,75 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>
   for (it = requests.begin(); it != requests.end(); ++it) {
     Request<Material>* req = *it;
     if (req->commodity() == out_commod) {
-      Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0]->comp());
-      port->AddBid(req, offer, this);
+        if(shutdown == true){
+            for(int i = 0; i < manifest.size(); i++){
+                Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[i]->comp());
+                port->AddBid(req, offer, this);                
+            }           
+            
+        } else{      
+            Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0]->comp());
+            port->AddBid(req, offer, this);
+        }      
+
     }
   }
   inventory.PushAll(manifest);
-  CapacityConstraint<Material> cc(core_mass/batches);
-
-  port->AddConstraint(cc);
+  
+  if(shutdown != true){
+    CapacityConstraint<Material> cc(core_mass/batches);
+    port->AddConstraint(cc);
+  }
+    
   ports.insert(port);
   //std::cout << "end getmatlbids" << std::endl;
   return ports;
 }
 
-void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
-    //std::cout << "begin accptmatltrades" << std::endl;
-    std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
-    cyclus::Composition::Ptr compost;
-    //std::cout << "YAYa9?" << std::endl;
-    for (it = responses.begin(); it != responses.end(); ++it) {
+void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs) {
 
-        inventory.Push(it->second);
-        compost = it->second->comp();
-        cyclus::CompMap cmap = compost->mass();
-        cyclus::CompMap::iterator cit;
-
-/************************output file*********************************/
-        std::ofstream outfile;
-        outfile.open("../output_cyclus_recent.txt", std::ios::app);
-        outfile << "Composition of fresh batch:\r\n";
-
-        for(cit = cmap.begin(); cit != cmap.end(); ++cit){
-            outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
+    cyclus::PrefMap<cyclus::Material>::type::iterator pmit;
+    
+    for (pmit = prefs.begin(); pmit != prefs.end(); ++pmit) {
+    
+        std::map<cyclus::Bid<cyclus::Material>*, double>::iterator mit;
+        cyclus::Request<cyclus::Material>* req = pmit->first;
+        
+        //std::cout << "Pref adjuster: " << req->commodity() << "  " ;
+        
+        for (mit = pmit->second.begin(); mit != pmit->second.end(); ++mit) {
+            cyclus::Bid<cyclus::Material>* bid = mit->first;
+            
         }
-        outfile << "\r\n\n";
+    }
+}
 
-        outfile.close();
-/************************End of output file**************************/
+void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
+    if(shutdown != true){
+        //std::cout << "begin accptmatltrades" << std::endl;
+        std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
+        cyclus::Composition::Ptr compost;
+        //std::cout << "YAYa9?" << std::endl;
+        for (it = responses.begin(); it != responses.end(); ++it) {
+
+            inventory.Push(it->second);
+            compost = it->second->comp();
+            cyclus::CompMap cmap = compost->mass();
+            cyclus::CompMap::iterator cit;
+
+    /************************output file*********************************/
+            std::ofstream outfile;
+            outfile.open("../output_cyclus_recent.txt", std::ios::app);
+            outfile << "Composition of fresh batch:\r\n";
+
+            for(cit = cmap.begin(); cit != cmap.end(); ++cit){
+                outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
+            }
+            outfile << "\r\n\n";
+
+            outfile.close();
+    /************************End of output file**************************/
+      }
   }
   //std::cout << "end acceptmatltrades" << std::endl;
 }
@@ -342,12 +379,31 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     using cyclus::Trade;
 
     //std::cout << "begin getmatltrades" << std::endl;
+    
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-    cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
-    fuel_library_.batch.erase(fuel_library_.batch.begin());
-    for (it = trades.begin(); it != trades.end(); ++it) {
-        responses.push_back(std::make_pair(*it, discharge));
+    
+    if(shutdown == true){
+        std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
+        fuel_library_.batch.clear();
+        inventory.PopN(inventory.count());
+        for (it = trades.begin(); it != trades.end(); ++it) {
+            for(int i = 0; i < discharge.size(); i++){
+                responses.push_back(std::make_pair(*it, discharge[i]));
+            }            
+        }          
+        
+    }else{
+        cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
+        fuel_library_.batch.erase(fuel_library_.batch.begin());
+        for (it = trades.begin(); it != trades.end(); ++it) {
+            responses.push_back(std::make_pair(*it, discharge));
+        }    
+    
     }
+    
+
+    
+    
     //std::cout << "end getmatltrades" << std::endl;
 }
 
