@@ -31,6 +31,7 @@ double siga_finder(batch_info batch);
 double Siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
+double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double tolerance);
 fuelBundle DA_calc(fuelBundle fuel);
 fuelBundle lib_interpol(fuelBundle input_fuel);
 void mass_check(fuelBundle fuel);
