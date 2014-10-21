@@ -78,6 +78,8 @@ class ReactorFacility : public cyclus::Facility  {
                                
 
   double burnup_test(cyclus::Material::Ptr new_batch);
+  
+  fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
 
   void start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory);
 
