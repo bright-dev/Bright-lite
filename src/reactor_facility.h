@@ -146,7 +146,8 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
                       "Interpolation metric", "Interpolation values"], \
                       "default": {"BURNUP": 42}, \
-                      "uitype": ["oneOrMore", "string", "double"]}
+                      "uitype": ["oneOrMore", "string", "double"], \
+                      "userlevel": 2}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
@@ -179,7 +180,7 @@ class ReactorFacility : public cyclus::Facility  {
   double generated_power;
 
   #pragma cyclus var {"units": "kgIHM", \
-                      "userlevel": 2, \
+                      "userlevel": 0, \
                       "tooltip": "Total mass of the core."}
   double core_mass;
 
