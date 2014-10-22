@@ -166,6 +166,7 @@ class ReactorFacility : public cyclus::Facility  {
   double max_inv_size;
 
   #pragma cyclus var {"tooltip": "Target burnup", \
+                      "default": 0, \
                       "userlevel": 1, \
                       "units": "MWd/kgIHM"}
   double target_burnup;
