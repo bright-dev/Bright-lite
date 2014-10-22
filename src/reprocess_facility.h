@@ -80,7 +80,7 @@ class ReprocessFacility : public cyclus::Facility  {
                       "doc": "commodity that the brightlite reprocess facility consumes", \
                       "schematype": "token", \
                       "uitype": "incommodity"}
-  std::string in_commod;
+  std::vector<std::string> in_commod;
 
   #pragma cyclus var {"tooltip": "output commodity", \
                       "uitype": "outcommodity"}
