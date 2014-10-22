@@ -80,12 +80,13 @@ class ReactorFacility : public cyclus::Facility  {
   double burnup_test(cyclus::Material::Ptr new_batch);
 
   fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
-  
+
   fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
-  
+
   double blend_next(std::vector<cyclus::toolkit::ResourceBuff> inventory);
 
   double start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory);
+  int refuels;
 
   void batch_reorder();
   /// This facility has one output commodity and one input commodity
