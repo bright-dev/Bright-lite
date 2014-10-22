@@ -47,7 +47,7 @@
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>60.0</target_burnup>
+        <target_burnup>40.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>750.0</core_mass>
     	<interpol_pairs>
@@ -75,7 +75,7 @@
         </entry>       
         <entry>
           <prototype>Rx</prototype>
-          <number>100</number>
+          <number>10</number>
         </entry>
         <entry>
           <prototype>Sink</prototype>
