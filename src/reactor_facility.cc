@@ -212,14 +212,14 @@ void ReactorFacility::Tock() {
            ->AddVal("AgentID", id())
            ->AddVal("Time", cycle_end_)
            ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
-           ->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
+           /*->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
            ->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
            ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340]+fuel_library_.batch[0].comp[922350]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
            ->AddVal("Discharge_U235", fuel_library_.batch[0].comp[922350])
            ->AddVal("Discharge_U238", fuel_library_.batch[0].comp[922380])
            ->AddVal("Discharge_PU", fuel_library_.batch[0].comp[942380]+fuel_library_.batch[0].comp[942390]+fuel_library_.batch[0].comp[942400]+fuel_library_.batch[0].comp[942410]+fuel_library_.batch[0].comp[942420])
            ->AddVal("Discharge_PU239", fuel_library_.batch[0].comp[942390])
-           ->AddVal("Discharge_PU241", fuel_library_.batch[0].comp[942410])
+           ->AddVal("Discharge_PU241", fuel_library_.batch[0].comp[942410])*/
            ->Record();
 }
 
@@ -351,8 +351,8 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         //std::cout << "begin accptmatltrades" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
-        
-        if(target_burnup == 0){        
+
+        if(target_burnup == 0){
             for (it = responses.begin(); it != responses.end(); ++it) {
                 //std::cout << "COUNTTHIS3" << std::endl << std::endl;
                 inventory.Push(it->second);
@@ -375,19 +375,22 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
       } else {
         if(inventory.count() == 0){
             for (it = responses.begin(); it != responses.end(); ++it) {
-            std::cout << "rabblerabblerabble " << it->second->quantity() <<std::endl << std::endl;
-                for(int i = 0; i < batches; i++){
-                //std::cout << "COUNTTHIS" << std::endl << std::endl;
+                std::cout << it->first.request->commodity() << std::endl;
+                if(it->first.request->commodity() == in_commods[0]){
+                    for(int i = 0; i < batches; i++){
+                    //std::cout << "COUNTTHIS" << std::endl << std::endl;
                     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(it->second->quantity()/batches, it->second->comp());
                     inventory.Push(mat1);
+                    }
                 }
             }
         } else {
             for (it = responses.begin(); it != responses.end(); ++it) {
-                inventory.Push(it->second);  
-                //std::cout << "COUNTTHIS2" << std::endl << std::endl;              
+                if(it->first.request->commodity() == in_commods[0]){
+                    inventory.Push(it->second);
+                }
+                //std::cout << "COUNTTHIS2" << std::endl << std::endl;
             }
-            
         }
       }
   }
@@ -509,7 +512,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
 fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
     //unlike the comp_function, this function assumes the first entry batch will be discharged
     //it replaces the last batch with the fraction coming from mat1
-    
+
     std::cout << "someone call my name? I. AM. COMP. _. TRANS. !!!!" << std::endl;
     std::cout << "             (hubris..)" << std::endl;
     cyclus::CompMap comp;
@@ -520,7 +523,7 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fu
     fuelBundle temp_bundle = fuel_library_;
     batch_info info;
     temp_bundle.batch.erase(temp_bundle.batch.begin());
-    
+
     info.batch_fluence = 0;
     info.Fg = 0;
     info.fraction.push_back(1);
@@ -539,7 +542,7 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fu
                 isoInformation temp_iso;
                 temp_iso = temp_bundle.all_iso[j];
                 temp_iso.fraction = it->second;
-                
+
                 temp_bundle.batch[temp_bundle.batch.size()-1].iso.push_back(temp_iso);
             }
         }
@@ -553,7 +556,7 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fu
 
 double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> inventory){
     double return_amount;//function return the amount of first stream in inventory to reach target burnup
-    
+
     //turn inventory to materials
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
     for(int i = 0; i < inventory.size(); i++){
@@ -561,7 +564,7 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
         manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));
         materials.push_back(manifest);
     }
-    
+
     //finds total mass of this new batch
     double total_mass = core_mass / batches;
 
