@@ -22,7 +22,7 @@
       <Source>
         <commod>fbl</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>1000.0</capacity>
+	<capacity>10000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -33,7 +33,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>1000.0</capacity>
+	    <capacity>10000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -73,7 +73,7 @@
       <FuelfabFacility>
         <in_commods>
             <val>fbl</val>
-	    <val>fbl1</val>
+	        <val>fbl1</val>
         </in_commods>
         <out_commod>fuel</out_commod>
       </FuelfabFacility>
