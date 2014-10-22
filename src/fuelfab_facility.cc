@@ -21,14 +21,14 @@ namespace fuelfab {
         }
 
         //outputs whats inside the facility
-        std::cout << "FuelFab Inventory:" << std::endl;
+        //std::cout << "FuelFab Inventory:" << std::endl;
         for(int i = 0; i < inventory.size(); i++){
             //sets max inventory at startup
             if(inventory[i].count() == 0){
                 inventory[i].set_capacity(maximum_storage/inventory.size());
             }
 
-            std::cout << "  " << i+1 << ": " << inventory[i].quantity() << std::endl;
+            //std::cout << "  " << i+1 << ": " << inventory[i].quantity() << std::endl;
             if(inventory[i].count() != 0){
                 std::vector<cyclus::Material::Ptr> manifest;
                 manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));
@@ -39,7 +39,7 @@ namespace fuelfab {
                 comp = manifest[0]->comp()->mass();
 
                 for(it = comp.begin(); it != comp.end(); ++it){
-                    std::cout << "       " << it->first << " " << it->second << std::endl;
+                    //std::cout << "       " << it->first << " " << it->second << std::endl;
                 }
                 inventory[i].PushAll(manifest);
             }
@@ -84,7 +84,7 @@ namespace fuelfab {
     using reactor::ReactorFacility;
     cyclus::Context* ctx = context();
     std::set<BidPortfolio<Material>::Ptr> ports;
-    double limit = 0;
+    double limit, nlimit;
 
     // respond to all requests of my commodity
     int inventory_test = 0;
@@ -95,7 +95,7 @@ namespace fuelfab {
     }/*
     /** Quick Hack */
 
-    CapacityConstraint<Material> cc(10000);
+    CapacityConstraint<Material> cc(1);
         if (inventory_test == 0){return ports;}
 
         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
@@ -110,9 +110,13 @@ namespace fuelfab {
                 if (req->commodity() == out_commod) {
                     if (reactor->inventory.count() == 0){
                         limit = reactor->start_up(inventory);
+                        limit *= reactor->batches;
+                        nlimit = reactor->core_mass-limit;
+                        CapacityConstraint<Material> cc(limit+nlimit);
                     } else{
                         limit = reactor->blend_next(inventory);
-                    
+                        nlimit = reactor->core_mass/reactor->batches-limit;
+                        CapacityConstraint<Material> cc(limit+nlimit);
                     }                        
                      /*else if(reactor->burnup_test(offer) == reactor->target_burnup){
 
@@ -123,12 +127,13 @@ namespace fuelfab {
                 cyclus::Material::Ptr manifest;
                 manifest = cyclus::ResCast<Material>(inventory[0].Pop());
                 Material::Ptr offer = Material::CreateUntracked(limit, manifest->comp());
+                //std::cout << offer->quantity() << std::endl;
                 inventory[0].Push(manifest);
                 
                 manifest = cyclus::ResCast<Material>(inventory[1].Pop());
-                offer->Absorb(Material::CreateUntracked(reactor->core_mass/reactor->batches-limit, manifest->comp()));
+                offer->Absorb(Material::CreateUntracked(nlimit, manifest->comp()));
                 inventory[1].Push(manifest);
-                
+                //std::cout << offer->quantity() << std::endl;
                 port->AddBid(req, offer, this);
                 port->AddConstraint(cc);
                 ports.insert(port);                

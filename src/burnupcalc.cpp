@@ -580,7 +580,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
-    //cout << endl << "Burnupcalc" << endl;
+    cout << endl << "Burnupcalc "    << endl;
 
     int N = core.batch.size(); //number of batches
     double dt = delta*24*60*60; //days to [s]
@@ -672,7 +672,8 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
     }
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
-
+    
+    cout<< "BURNUPUPUPUPU: " << burnup << endl;
     core.batch[0].discharge_BU = burnup;
 
     return burnup;

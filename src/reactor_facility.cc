@@ -14,7 +14,7 @@ std::string ReactorFacility::str() {
 }
 
 void ReactorFacility::Tick() {
-    std::cout << "tick begin, inventory size: " << inventory.count() << std::endl;
+    std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
 
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
@@ -246,20 +246,24 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
     double qty;
 
     if(inventory.count() == 0){
-        for(int i = 0; i < batches; i++){
-        //checks to see if there is a next in_commod to request, otherwise puts the first commod request
-            if(in_commods.size() > i+1){
-                port->AddRequest(target, this, in_commods[i+1]);
-            } else {
-                port->AddRequest(target, this, in_commods[0]);
+        if(target_burnup == 0){
+            for(int i = 0; i < batches; i++){
+            //checks to see if there is a next in_commod to request, otherwise puts the first commod request
+                if(in_commods.size() > i+1){
+                    port->AddRequest(target, this, in_commods[i+1]);
+                } else {
+                    port->AddRequest(target, this, in_commods[0]);
+                }
             }
+        } else {
+            port->AddRequest(target, this, in_commods[0]);
         }
 
         qty = core_mass;
-        } else {
-            port->AddRequest(target, this, in_commods[0]);
-            qty = core_mass/batches;
-        }
+    } else {
+        port->AddRequest(target, this, in_commods[0]);
+        qty = core_mass/batches;
+    }
     CapacityConstraint<Material> cc(qty);
 
     port->AddConstraint(cc);
@@ -324,7 +328,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   return ports;
 }
 
-void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs) {
+void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs) {/*
 
     cyclus::PrefMap<cyclus::Material>::type::iterator pmit;
 
@@ -339,7 +343,7 @@ void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& p
             cyclus::Bid<cyclus::Material>* bid = mit->first;
 
         }
-    }
+    }*/
 }
 
 void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
@@ -347,26 +351,44 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         //std::cout << "begin accptmatltrades" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
-        //std::cout << "YAYa9?" << std::endl;
-        for (it = responses.begin(); it != responses.end(); ++it) {
+        
+        if(target_burnup == 0){        
+            for (it = responses.begin(); it != responses.end(); ++it) {
+                //std::cout << "COUNTTHIS3" << std::endl << std::endl;
+                inventory.Push(it->second);
+                compost = it->second->comp();
+                cyclus::CompMap cmap = compost->mass();
+                cyclus::CompMap::iterator cit;
 
-            inventory.Push(it->second);
-            compost = it->second->comp();
-            cyclus::CompMap cmap = compost->mass();
-            cyclus::CompMap::iterator cit;
+        /************************output file*********************************/
+                std::ofstream outfile;
+                outfile.open("../output_cyclus_recent.txt", std::ios::app);
+                outfile << "Composition of fresh batch:\r\n";
 
-    /************************output file*********************************/
-            std::ofstream outfile;
-            outfile.open("../output_cyclus_recent.txt", std::ios::app);
-            outfile << "Composition of fresh batch:\r\n";
+                for(cit = cmap.begin(); cit != cmap.end(); ++cit){
+                    outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
+                }
+                outfile << "\r\n\n";
 
-            for(cit = cmap.begin(); cit != cmap.end(); ++cit){
-                outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
+        /************************End of output file**************************/
+          }
+      } else {
+        if(inventory.count() == 0){
+            for (it = responses.begin(); it != responses.end(); ++it) {
+            std::cout << "rabblerabblerabble " << it->second->quantity() <<std::endl << std::endl;
+                for(int i = 0; i < batches; i++){
+                //std::cout << "COUNTTHIS" << std::endl << std::endl;
+                    cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(it->second->quantity()/batches, it->second->comp());
+                    inventory.Push(mat1);
+                }
             }
-            outfile << "\r\n\n";
-
-            outfile.close();
-    /************************End of output file**************************/
+        } else {
+            for (it = responses.begin(); it != responses.end(); ++it) {
+                inventory.Push(it->second);  
+                //std::cout << "COUNTTHIS2" << std::endl << std::endl;              
+            }
+            
+        }
       }
   }
   //std::cout << "end acceptmatltrades" << std::endl;
