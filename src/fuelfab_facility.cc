@@ -161,7 +161,6 @@ namespace fuelfab {
                 manifest = cyclus::ResCast<Material>(inventory[0].Pop());
                  Material::Ptr offer = manifest->ExtractComp(0., manifest->comp());
                 if(limit > manifest->quantity()){
-                    std::cout << "TSET" << std::endl;
                     double bonus = manifest->quantity();
                     Material::Ptr offer = manifest->ExtractComp(manifest->quantity(), manifest->comp());
                     manifest = cyclus::ResCast<Material>(inventory[0].Pop());
