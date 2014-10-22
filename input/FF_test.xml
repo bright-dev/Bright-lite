@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>5</duration>
+    <duration>300</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -20,9 +20,9 @@
     <name>Source</name>
     <config>
       <Source>
-        <commod>freshFuel</commod>
+        <commod>fbl</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>2000.0</capacity>
+	<capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -31,9 +31,9 @@
     <name>Source1</name>
     <config>
       <Source>
-        <commod>freshFuel1</commod>
+        <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>2000.0</capacity>
+	    <capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -72,8 +72,8 @@
     <config>
       <FuelfabFacility>
         <in_commods>
-            <val>freshFuel</val>
-	    <val>freshFuel1</val>
+            <val>fbl</val>
+	    <val>fbl1</val>
         </in_commods>
         <out_commod>fuel</out_commod>
       </FuelfabFacility>
