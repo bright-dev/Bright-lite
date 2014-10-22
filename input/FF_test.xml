@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>200</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -33,6 +33,17 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
+	    <capacity>1000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source2</name>
+    <config>
+      <Source>
+        <commod>du</commod>
+        <recipe_name>du</recipe_name>
 	    <capacity>1000.0</capacity>
       </Source>
     </config>
@@ -129,4 +140,14 @@
     </nuclide>
   </recipe>
 
+  <recipe>
+    <name>du</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>922380000</id>
+      <comp>9975</comp>
+      <id>922350000</id>
+      <comp>25</comp>
+    </nuclide>
+  </recipe>
 </simulation>
