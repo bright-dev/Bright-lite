@@ -115,7 +115,8 @@ void ReactorFacility::Tick() {
         outfile.close();
 /************************End of output file*********************************/
     }
-
+    
+    
 
     //std::cout << "end tick" << std::endl;
 }
@@ -167,6 +168,12 @@ void ReactorFacility::Tock() {
     }
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
+    
+    for(int i = 0; i < fuel_library_.batch.size(); i++){
+        std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
+        
+    }
+    
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
