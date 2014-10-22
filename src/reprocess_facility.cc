@@ -123,13 +123,23 @@ namespace reprocess {
         cyclus::Context* ctx = context();
         CompMap cm;
         
-        Material::Ptr target = Material::CreateUntracked(input_capacity, context()->GetRecipe("spentFuel"));
+        Material::Ptr target = Material::CreateUntracked(input_capacity, Composition::CreateFromAtom(cm));
         
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
-        
+        /*
         port->AddRequest(target, this, "spentFuel");
         
-        ports.insert(port);        
+        ports.insert(port); */
+        
+     
+        double qty = input_inventory.space();
+
+        port->AddRequest(target, this, &in_commod[0]);
+
+        CapacityConstraint<Material> cc(qty);
+        port->AddConstraint(cc);
+        ports.insert(port);
+              
         
 
         std::cout << "-//GetReq//-" << std::endl;
