@@ -512,7 +512,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         //cout << y0 << " and " << y1 << endl; //<-------
         //cout << "  " << kcore_prev << " " << kcore << endl; //<-------
         core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
-        cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
+        //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
 
     }
 
@@ -546,7 +546,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     core.batch[0].discharge_BU = burnup;
 
-    //cout << endl << "Discharge burnup: " << burnup << endl << endl;
+    cout << endl << "Discharge burnup: " << burnup << endl << endl;
 
     /************************output file*********************************/
     std::ofstream outfile;
