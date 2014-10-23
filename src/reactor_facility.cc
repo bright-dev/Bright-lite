@@ -319,7 +319,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   std::set<BidPortfolio<Material>::Ptr> ports;
 
   //if its not the end of a cycle dont get rid of your fuel
-  if (ctx->time() != cycle_end_){
+  if (ctx->time() != cycle_end_ && shutdown != true){
     return ports;
   }
 
