@@ -256,6 +256,7 @@ class ReactorFacility : public cyclus::Facility  {
 
  private:
   bool shutdown;
+  bool record;
   int cycle_end_;
   int start_time_;
   fuelBundle fuel_library_;
