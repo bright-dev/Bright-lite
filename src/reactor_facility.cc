@@ -8,6 +8,7 @@ ReactorFacility::ReactorFacility(cyclus::Context* ctx)
       start_time_ = cycle_end_;
       shutdown = false;
       refuels = 0;
+      record = true;
 };
 
 std::string ReactorFacility::str() {
@@ -16,6 +17,7 @@ std::string ReactorFacility::str() {
 
 void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
+    if(shutdown == true){return;}
 
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
@@ -124,6 +126,8 @@ void ReactorFacility::Tick() {
 void ReactorFacility::Tock() {
     //std::cout << "Begin tock\n" << std::endl;
     if(inventory.count() == 0){return;}
+    if(shutdown == true){return;}
+    
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
         //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
@@ -170,7 +174,7 @@ void ReactorFacility::Tock() {
     batch_reorder();
     
     for(int i = 0; i < fuel_library_.batch.size(); i++){
-        std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
+        //std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
         
     }
     
@@ -196,10 +200,29 @@ void ReactorFacility::Tock() {
   // cycle end update
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
   refuels += 1;
-  if(ctx->time() > start_time_ + reactor_life){
+  
+  
+  if(ctx->time() > start_time_ + reactor_life && record == true){
     //its time to shut down
-    cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
+    
+    
     shutdown = true;
+        
+     for(int i = 0; i < fuel_library_.batch.size(); i++){
+        int ii;
+        double burnup;
+        for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
+        burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
+        std::cout << "burnup at shutdown " << burnup << std::endl;
+        context()->NewDatum("BrightLite_Reactor_Data")
+        ->AddVal("AgentID", id())
+        ->AddVal("Time", cycle_end_)
+        ->AddVal("Discharge_Fluence", burnup)
+        ->Record();
+     
+     }
+    record = false;
+    //cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
   }
 
 
@@ -213,22 +236,26 @@ void ReactorFacility::Tock() {
 
     outfile.close();
     /************************End of output file**************************/
-  //add batch variable to cyclus database
-  ///time may need to be fixed by adding cycle length to it
-  context()->NewDatum("BrightLite_Reactor_Data")
-           ->AddVal("AgentID", id())
-           ->AddVal("Time", cycle_end_)
-           ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
-           ->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
-           /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
-           ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
-           ->AddVal("Discharge_U235", fuel_library_.batch[0].comp[922350])
-           ->AddVal("Discharge_U238", fuel_library_.batch[0].comp[922380])
-           ->AddVal("Discharge_PU", fuel_library_.batch[0].comp[942380]+fuel_library_.batch[0].comp[942390]+fuel_library_.batch[0].comp[942400]+fuel_library_.batch[0].comp[942410]+fuel_library_.batch[0].comp[942420])
-           ->AddVal("Discharge_PU239", fuel_library_.batch[0].comp[942390])
-           ->AddVal("Discharge_PU241", fuel_library_.batch[0].comp[942410])*/
-           ->Record();
+  
+  if(shutdown != true && record == true){
+      //add batch variable to cyclus database
+      ///time may need to be fixed by adding cycle length to it
+      context()->NewDatum("BrightLite_Reactor_Data")
+               ->AddVal("AgentID", id())
+               ->AddVal("Time", cycle_end_)
+               ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
+               //->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
+               /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
+               ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
+               ->AddVal("Discharge_U235", fuel_library_.batch[0].comp[922350])
+               ->AddVal("Discharge_U238", fuel_library_.batch[0].comp[922380])
+               ->AddVal("Discharge_PU", fuel_library_.batch[0].comp[942380]+fuel_library_.batch[0].comp[942390]+fuel_library_.batch[0].comp[942400]+fuel_library_.batch[0].comp[942410]+fuel_library_.batch[0].comp[942420])
+               ->AddVal("Discharge_PU239", fuel_library_.batch[0].comp[942390])
+               ->AddVal("Discharge_PU241", fuel_library_.batch[0].comp[942410])*/
+               ->Record();
+   }
 }
+
 
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
     //std::cout << "Getmatlrequests begin" << std::endl;
@@ -325,10 +352,10 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   }
   inventory.PushAll(manifest);
 
-  if(shutdown != true){
+  /*if(shutdown != true){
     CapacityConstraint<Material> cc(core_mass/batches);
     port->AddConstraint(cc);
-  }
+  }*/
 
   ports.insert(port);
   //std::cout << "end getmatlbids" << std::endl;
@@ -412,12 +439,14 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
 
     if(shutdown == true){
+    std::cout << "if statement " << inventory.count() <<std::endl;
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
-        inventory.PopN(inventory.count());
+        //inventory.PopN(inventory.count());
         for (it = trades.begin(); it != trades.end(); ++it) {
             for(int i = 0; i < discharge.size(); i++){
                 responses.push_back(std::make_pair(*it, discharge[i]));
+                std::cout << "inventory size: " << inventory.count() <<std::endl;
             }
         }
 
@@ -429,8 +458,6 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
         }
 
     }
-
-
 
 
     //std::cout << "end getmatltrades" << std::endl;

@@ -134,7 +134,7 @@ namespace reprocess {
      
         double qty = input_inventory.space();
 
-        port->AddRequest(target, this, &in_commod[0]);
+        //port->AddRequest(target, this, &in_commod[0]);
 
         CapacityConstraint<Material> cc(qty);
         port->AddConstraint(cc);
