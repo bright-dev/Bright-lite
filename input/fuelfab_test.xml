@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>10</duration>
+    <duration>300</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -58,16 +58,12 @@
             <val>MOX</val>       
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>extLWR</val></libraries>
+        <libraries><val>PWRMOX</val></libraries>
         <target_burnup>60.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>750.0</core_mass>
-    	<interpol_pairs>
-           <key>BURNUP</key>
-	       <val>42.5</val>
-        </interpol_pairs>
-        <batches>3</batches>
-        <flux_mode>2</flux_mode>
+        <batches>5</batches>
+        <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
       </ReactorFacility>
@@ -79,8 +75,8 @@
     <config>
       <FuelfabFacility>
         <in_commods>
-            <val>NU</val>
             <val>PU</val>
+            <val>NU</val>
         </in_commods>
         <out_commod>MOX</out_commod>
       </FuelfabFacility>
@@ -123,11 +119,11 @@
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>4</comp>
+      <comp>0.7</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96</comp>
+      <comp>99.3</comp>
     </nuclide>
   </recipe>
 

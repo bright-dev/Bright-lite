@@ -648,7 +648,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
             //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
-        kcore = 1.001;
+        
         kcore = kcalc(core);
     }
 

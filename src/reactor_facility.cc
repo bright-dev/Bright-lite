@@ -18,7 +18,13 @@ std::string ReactorFacility::str() {
 void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
-
+    double core_mass_live = 0;
+    std::vector<cyclus::Material::Ptr> manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
+    for(int i = 0; i < manifest.size(); i++){
+        core_mass_live += manifest[i]->quantity();
+        inventory.Push(manifest[i]);
+    }
+    std::cout << core_mass_live << std::endl;
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
         std::ifstream inf(libraries[0] +"/manifest.txt"); //opens manifest file
@@ -319,7 +325,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   std::set<BidPortfolio<Material>::Ptr> ports;
 
   //if its not the end of a cycle dont get rid of your fuel
-  if (ctx->time() != cycle_end_ && shutdown != true){
+  if (ctx->time() != cycle_end_){
     return ports;
   }
 
@@ -439,17 +445,14 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
 
     if(shutdown == true){
-    //std::cout << "if statement " << inventory.count() <<std::endl;
+    std::cout << "if statement " << inventory.count() <<std::endl;
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
         //inventory.PopN(inventory.count());
-        int i =0;
+        int i = 0;
         for (it = trades.begin(); it != trades.end(); ++it) {
-            //for(int i = 0; i < discharge.size(); i++){
-                responses.push_back(std::make_pair(*it, discharge[i]));
-                i++;
-                //std::cout << "inventory size: " << inventory.count() <<std::endl;
-            //}
+            responses.push_back(std::make_pair(*it, discharge[i]));
+            i++;
         }
 
     }else{
