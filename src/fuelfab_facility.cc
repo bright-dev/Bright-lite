@@ -109,19 +109,20 @@ namespace fuelfab {
                 if (req->commodity() == out_commod) {
                     if (reactor->inventory.count() == 0){
                         limit = reactor->start_up(inventory);
+                        double temp_limit = limit;
                         for(int k = 1; k < reactor->batches; k++){
-                            limit += limit*k/reactor->batches;
+                            limit += temp_limit*k/reactor->batches;
                         }
                         nlimit = reactor->core_mass-limit;
-                        CapacityConstraint<Material> cc(limit+nlimit);
                     } else{
                         limit = reactor->blend_next(inventory);
                         nlimit = reactor->core_mass/reactor->batches-limit;
-                        CapacityConstraint<Material> cc(limit+nlimit);
                     }
                 }
                 std::cout << "limit from blend calculation: " << limit << std::endl;
 
+                double qty = limit + nlimit;
+                qty = qty <= 0 ? 1 : qty;
                 cyclus::Material::Ptr manifest;
                 manifest = cyclus::ResCast<Material>(inventory[0].Pop());
                 Material::Ptr offer = Material::CreateUntracked(limit, manifest->comp());
@@ -162,7 +163,7 @@ namespace fuelfab {
                  Material::Ptr offer = manifest->ExtractComp(0., manifest->comp());
                 if(limit > manifest->quantity()){
                     double bonus = manifest->quantity();
-                    Material::Ptr offer = manifest->ExtractComp(manifest->quantity(), manifest->comp());
+                    offer->Absorb(manifest->ExtractComp(manifest->quantity(), manifest->comp()));
                     manifest = cyclus::ResCast<Material>(inventory[0].Pop());
                     offer->Absorb(manifest->ExtractComp(limit-bonus, manifest->comp()));
                 } else {
@@ -173,16 +174,17 @@ namespace fuelfab {
                 offer = manifest->ExtractComp(limit, manifest->comp());
                 inventory[0].Push(manifest);
                 manifest = cyclus::ResCast<Material>(inventory[1].Pop());
+                std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
                 if(nlimit > manifest->quantity()){
                     std::cout << "TSET" << std::endl;
                     double bonus = manifest->quantity();
-                    Material::Ptr offer = manifest->ExtractComp(manifest->quantity(), manifest->comp());
+                    offer->Absorb(manifest->ExtractComp(manifest->quantity(), manifest->comp()));
+                    std::cout << manifest->quantity() << std::endl;
                     manifest = cyclus::ResCast<Material>(inventory[1].Pop());
                     offer->Absorb(manifest->ExtractComp(nlimit-bonus, manifest->comp()));
                 } else {
                     offer->Absorb(manifest->ExtractComp(nlimit, manifest->comp()));
                 }
-                std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
                 inventory[1].Push(manifest);
                 responses.push_back(std::make_pair(*it, offer));
         }
