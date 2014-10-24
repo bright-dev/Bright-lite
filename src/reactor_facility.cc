@@ -54,7 +54,7 @@ void ReactorFacility::Tick() {
                 fuel_library_.interpol_pairs.push_back(pair);
             }
             fuel_library_ = lib_interpol(fuel_library_);
-            //mass_check(fuel_library_);
+            
         }
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field

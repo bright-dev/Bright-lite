@@ -782,6 +782,14 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 }
 
 fuelBundle lib_interpol(fuelBundle input_fuel){
+//interpolates between input libraries, uses 'params.txt' in each library
+//all the interpolated libraries need to contain the same interpolation variables
+
+    //robert, i know youre reading this. go through and comment whats going on
+    //dont be lazy
+    //commmee on
+    //it wont take more than 5 minutes!
+    //you can only delete this when youre done
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < input_fuel.interpol_libs.size(); i++){
         fuelBundle lib_bundle;
@@ -973,83 +981,4 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
     return new_fuel;
 }
 
-void mass_check(fuelBundle fuel){
-    for(int i = 0; i < fuel.all_iso.size(); i++){
-        for(int k = 0; k < fuel.all_iso[i].fluence.size(); k++){
-            double mass = 0;
-            for(int j = 0; j < fuel.all_iso[i].iso_vector.size(); j++){
-                mass += fuel.all_iso[i].iso_vector[j].mass[k];
-            }
-            std::cout << mass << std::endl;
-        }
-    }
-}
-/*
-fuelBundle burnup_collapse(fuelBundle fuel){
-    for(int i = 0; i < fuel.iso.size(); i++){
-        fuel.iso[i].fraction[0] = fuel.iso[i].fraction[1];
-    }
-    return fuel;
-}
 
-void iso_output(pair<double, map <int, double> > iso_vector){
-    typedef std::map<int, double>::iterator test_map;
-    for (test_map iterator = iso_vector.second.begin(); iterator != iso_vector.second.end(); iterator++){
-        cout << iterator->first << "       " << iterator->second << endl;
-    }
-}
-*/
-/*
-int main(){
-
-    fuelBundle fuel;
-
-    vector<int> iso_index;
-    vector<fuelBundle> batches;
-
-
-    fuel = InputReader();
-
-    fuel = fluxcalc_reader(fuel, "fluxCalcinput");
-    DataReader2(fuel.name, fuel.iso);
-
-    vector<nonActinide> nona; //"NONA"ctinide ;)
-    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
-    fuel = NBuilder(fuel, nona);
-
-
-    //this should probably be its own function
-    //builds bundle-vector and assigns fluence
-    batches.push_back(fuel);
-    batches[0].batch_fluence = 0;
-    for(int i = 0; i < fuel.batch-1; i++){
-        batches.push_back(batches[0]);
-        batches[i+1].batch_fluence = batches[i].batch_fluence + 600.2; //123.2 is a random choice
-    }
-
-    burnupcalc(batches, fuel.pnl, 0.001, 1);
-
-    if (fuel.libcheck == true){
-        fuel = lib_interpol(fuel);
-    }
-
-    if (fuel.operation_type == "BURNUP"){
-        fuel = burnup_collapse(fuel);
-        pair< double, map < int, double> > test = burnupcalc(fuel, fuel.batch, fuel.pnl, 0.001);
-        cout <<"burnup: "<< test.first << endl;
-        iso_output(test);
-    } else {
-        pair< double, pair<double, map<int, double> > > enrichment = enrichcalc(fuel.target_BUd, fuel.batch, 0.001, fuel);
-        if (enrichment.first == 0){
-            cout << "Reactor could not reach desired burnup." << endl;
-        } else {
-            cout << "Enrichment:    " << enrichment.first << endl;
-        }
-        pair< double, map < int, double> > test = enrichment.second;
-        iso_output(test);
-    }
-
-    return 0;
-}
-
-*/
