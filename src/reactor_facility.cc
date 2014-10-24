@@ -4,7 +4,7 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-      cycle_end_ = ctx->time() +1 ;
+      cycle_end_ = ctx->time() ;
       start_time_ = cycle_end_;
       shutdown = false;
       refuels = 0;
@@ -213,7 +213,7 @@ void ReactorFacility::Tock() {
         double burnup;
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-        std::cout << "burnup at shutdown " << burnup << std::endl;
+        //std::cout << "burnup at shutdown " << burnup << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
@@ -439,15 +439,17 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
 
     if(shutdown == true){
-    std::cout << "if statement " << inventory.count() <<std::endl;
+    //std::cout << "if statement " << inventory.count() <<std::endl;
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
         //inventory.PopN(inventory.count());
+        int i =0;
         for (it = trades.begin(); it != trades.end(); ++it) {
-            for(int i = 0; i < discharge.size(); i++){
+            //for(int i = 0; i < discharge.size(); i++){
                 responses.push_back(std::make_pair(*it, discharge[i]));
-                std::cout << "inventory size: " << inventory.count() <<std::endl;
-            }
+                i++;
+                //std::cout << "inventory size: " << inventory.count() <<std::endl;
+            //}
         }
 
     }else{

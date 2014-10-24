@@ -546,7 +546,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     core.batch[0].discharge_BU = burnup;
 
-    cout << endl << "Discharge burnup: " << burnup << endl << endl;
+    //cout << endl << "Discharge burnup: " << burnup << endl << endl;
 
     /************************output file*********************************/
     std::ofstream outfile;
@@ -648,7 +648,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
             //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
-
+        kcore = 1.001;
         kcore = kcalc(core);
     }
 
@@ -668,13 +668,13 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     int ii;
     for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
     if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
-        cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc3)" << endl;
-        cout << "  Values on max fluence will be used. Do not trust results." << endl;
+        //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc3)" << endl;
+        //cout << "  Values on max fluence will be used. Do not trust results." << endl;
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
     }
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
-    cout<< "BURNUPUPUPUPU: " << burnup << endl;
+    //cout<< "BURNUPUPUPUPU: " << burnup << endl;
     core.batch[0].discharge_BU = burnup;
 
     return burnup;
