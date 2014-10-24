@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>200</duration>
+    <duration>300</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -11,6 +11,7 @@
     <spec><lib>agents</lib><name>Source</name></spec>
     <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
     <spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec>
+    <spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
@@ -22,7 +23,7 @@
       <Source>
         <commod>fbl</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>10000.0</capacity>
+	<capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -33,7 +34,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>10000.0</capacity>
+	    <capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -54,7 +55,7 @@
     <config>
       <Sink>
         <in_commods>
-          <val>uf</val>
+          <val>uf</val> 
         </in_commods>
         <capacity>1000.0</capacity>
       </Sink>
@@ -74,6 +75,7 @@
         <nonleakage>0.97</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>3</batches>
+	<reactor_life>480</reactor_life>
       </ReactorFacility>
     </config>
   </facility>
@@ -91,6 +93,54 @@
     </config>
   </facility>
 
+  <facility>
+    <name>Repro</name>
+    <config>
+      <ReprocessFacility>
+        <in_commod>
+            <val>uf</val>
+        </in_commod>
+        <commod_out>
+            <val>reproFuel0</val>
+            <val>reproFuel1</val>       
+        </commod_out>
+        <repro_input_path>../Bright-lite/input/reprocess_input.txt</repro_input_path>
+        <input_capacity>1000</input_capacity>
+        <output_capacity>1000</output_capacity>
+      </ReprocessFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>FF1</name>
+    <config>
+      <FuelfabFacility>
+        <in_commods>
+            <val>DU</val>
+	    <val>reproFuel0</val>
+        </in_commods>
+        <out_commod>fuel1</out_commod>
+      </FuelfabFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx2</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>fuel1</val>
+        </in_commods>
+        <out_commod>uf</out_commod>
+        <libraries><val>extLWR</val></libraries>
+        <target_burnup>60.0</target_burnup>
+        <nonleakage>0.97</nonleakage>
+        <core_mass>1000.0</core_mass>
+        <batches>5</batches>
+	<reactor_life>480</reactor_life>
+      </ReactorFacility>
+    </config>
+  </facility>
   <region>
     <name>SingleRegion</name>
     <config> <NullRegion/> </config>
@@ -109,8 +159,20 @@
           <prototype>Rx</prototype>
           <number>1</number>
         </entry>
+	<entry>
+          <prototype>Repro</prototype>
+          <number>1</number>
+        </entry>
         <entry>
           <prototype>FF</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Rx2</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>FF1</prototype>
           <number>1</number>
         </entry>
         <entry>
@@ -146,6 +208,8 @@
     <nuclide>
       <id>922380000</id>
       <comp>9975</comp>
+    </nuclide>
+    <nuclide>  
       <id>922350000</id>
       <comp>25</comp>
     </nuclide>
