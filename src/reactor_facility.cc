@@ -18,7 +18,13 @@ std::string ReactorFacility::str() {
 void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
-
+    double core_mass_live = 0;
+    std::vector<cyclus::Material::Ptr> manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
+    for(int i = 0; i < manifest.size(); i++){
+        core_mass_live += manifest[i]->quantity();
+        inventory.Push(manifest[i]);
+    }
+    std::cout << core_mass_live << std::endl;
     // if the reactor has just been deployed
     if(fuel_library_.name.size() == 0){
         std::ifstream inf(libraries[0] +"/manifest.txt"); //opens manifest file
@@ -117,8 +123,8 @@ void ReactorFacility::Tick() {
         outfile.close();
 /************************End of output file*********************************/
     }
-    
-    
+
+
 
     //std::cout << "end tick" << std::endl;
 }
@@ -127,7 +133,7 @@ void ReactorFacility::Tock() {
     //std::cout << "Begin tock\n" << std::endl;
     if(inventory.count() == 0){return;}
     if(shutdown == true){return;}
-    
+
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
         //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
@@ -172,12 +178,12 @@ void ReactorFacility::Tock() {
     }
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
-    
+
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         //std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
-        
+
     }
-    
+
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
@@ -200,14 +206,14 @@ void ReactorFacility::Tock() {
   // cycle end update
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
   refuels += 1;
-  
-  
+
+
   if(ctx->time() > start_time_ + reactor_life && record == true){
     //its time to shut down
-    
-    
+
+
     shutdown = true;
-        
+
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
@@ -219,7 +225,7 @@ void ReactorFacility::Tock() {
         ->AddVal("Time", cycle_end_)
         ->AddVal("Discharge_Fluence", burnup)
         ->Record();
-     
+
      }
     record = false;
     //cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
@@ -236,7 +242,7 @@ void ReactorFacility::Tock() {
 
     outfile.close();
     /************************End of output file**************************/
-  
+
   if(shutdown != true && record == true){
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
@@ -341,6 +347,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
             for(int i = 0; i < manifest.size(); i++){
                 Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[i]->comp());
                 port->AddBid(req, offer, this);
+                port->AddBid(req, offer, this);
             }
 
         } else{
@@ -443,11 +450,10 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
         //inventory.PopN(inventory.count());
+        int i = 0;
         for (it = trades.begin(); it != trades.end(); ++it) {
-            for(int i = 0; i < discharge.size(); i++){
-                responses.push_back(std::make_pair(*it, discharge[i]));
-                std::cout << "inventory size: " << inventory.count() <<std::endl;
-            }
+            responses.push_back(std::make_pair(*it, discharge[i]));
+            i++;
         }
 
     }else{
@@ -599,9 +605,6 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
     double burnup_target = target_burnup;
     //finds total mass of this new batch
     double total_mass = core_mass / batches;
-    if(refuels < batches){
-        burnup_target = target_burnup/batches*(refuels+1);
-    }
     for(int j = 0; j < materials[0].size(); j++){
         for(int i = 1; i < materials.size(); i++){
             for(int k = 0; k < materials[i].size(); k++){
@@ -621,6 +624,8 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                 temp_bundle = comp_trans(mat1, fuel_library_);
                 double burnup_2 = burnupcalc_BU(temp_bundle, 2, 1, 40);
                 double fraction = (fraction_1) + (burnup_target - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
+                std::cout << "burnup_target " << burnup_target << std::endl;
+                std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2  << " fraction_1 " << fraction_1 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
@@ -634,7 +639,7 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                     burnup_1 = burnup_2;
                     burnup_2 = burnup_3;
                     fraction = (fraction_2) + (burnup_target - burnup_2)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-                    //std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+                    std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
                     mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                     mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                     mat1->Absorb(mat2);
@@ -683,6 +688,8 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                 temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
                 double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
+
+                std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
@@ -696,7 +703,7 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                     burnup_1 = burnup_2;
                     burnup_2 = burnup_3;
                     fraction = (fraction_2) + (target_burnup - burnup_2)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-                    //std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+                    std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
                     mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                     mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                     mat1->Absorb(mat2);
