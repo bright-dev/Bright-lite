@@ -546,7 +546,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     core.batch[0].discharge_BU = burnup;
 
-    cout << endl << "Discharge burnup: " << burnup << endl << endl;
+    //cout << endl << "Discharge burnup: " << burnup << endl << endl;
 
     /************************output file*********************************/
     std::ofstream outfile;
@@ -581,7 +581,6 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
-    cout << endl << "Burnupcalc "    << endl;
 
     int N = core.batch.size(); //number of batches
     double dt = delta*24*60*60; //days to [s]
@@ -674,7 +673,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     }
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
-    cout<< "BURNUPUPUPUPU: " << burnup << endl;
+    //cout<< "BURNUPUPUPUPU: " << burnup << endl;
     core.batch[0].discharge_BU = burnup;
 
     return burnup;
@@ -855,7 +854,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         ii = core.batch[N-1].collapsed_iso.fluence.size() - 1;
     }
     burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);
-    cout << "burnup: " << burnup << endl;
+    //cout << "burnup: " << burnup << endl;
     return burnup;
 }
 
@@ -1141,13 +1140,11 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
             return fuel_pairs[i];
         }
         metric_distances.push_back(pow(distance_measure, alpha/2));
-        std::cout << distance_measure << std::endl;
     }
     double met_dist_sum;
     for (int i = 0; i < metric_distances.size(); i++){
         met_dist_sum += metric_distances[i];
     }
-    std::cout << "Sum : " << met_dist_sum << std::endl;
     // Fuel Bundle instead of iso //
     fuelBundle new_fuel;
     new_fuel.tres = input_fuel.tres;

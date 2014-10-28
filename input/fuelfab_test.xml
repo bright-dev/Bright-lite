@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>100</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -61,7 +61,7 @@
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>60.0</target_burnup>
         <nonleakage>0.966</nonleakage>
-        <core_mass>750.0</core_mass>
+        <core_mass>1500.0</core_mass>
         <batches>5</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
