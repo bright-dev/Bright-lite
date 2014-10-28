@@ -16,7 +16,7 @@
   </archetypes>
 
   <facility>
-    <name>Source</name>
+    <name>FrontEnd</name>
     <config>
       <Source>
         <commod>freshFuel</commod>
@@ -95,14 +95,14 @@
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>60.0</target_burnup>
+        <target_burnup>0.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1000.0</core_mass>
         <batches>4</batches>
         <flux_mode>2</flux_mode>
         <reactor_life>220</reactor_life>
         <cylindrical_delta>10</cylindrical_delta>
-        <burnupcalc_timestep>100</burnupcalc_timestep>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
       </ReactorFacility>
     </config>
   </facility>
@@ -190,11 +190,11 @@
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3.1</comp>
+      <comp>2.656</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96.9</comp>
+      <comp>97.344</comp>
     </nuclide>
   </recipe>
 
