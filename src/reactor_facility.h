@@ -135,11 +135,12 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies", \
-                      "uitype": "outcommodity"}
+                      "uitype": "outcommodity", \
+                      "uilabel": "Output"}
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "userlevel": 1, \
+                      "userlevel": 0, \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
@@ -169,7 +170,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "Target burnup", \
                       "default": 0, \
-                      "userlevel": 1, \
+                      "userlevel": 0, \
                       "units": "MWd/kgIHM"}
   double target_burnup;
 
@@ -248,7 +249,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
 
-  #pragma cyclus var {"default": 380, \
+  #pragma cyclus var {"default": 480, \
                       "units": "months", \
                       "userlevel": 1, \
                       "tooltip": "Time before reactor is shutdown after startup."}
