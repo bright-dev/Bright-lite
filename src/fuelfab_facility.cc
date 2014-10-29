@@ -18,9 +18,7 @@ namespace fuelfab {
             for(int i = 0; i < in_commods.size(); i++){
                 inventory.push_back(resource);
             }
-        }
-        std::cout << inventory.size() << std::endl;
-        //outputs whats inside the facility
+        }//outputs whats inside the facility
         //std::cout << "FuelFab Inventory:" << std::endl;
         for(int i = 0; i < inventory.size(); i++){
             //sets max inventory at startup

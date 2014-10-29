@@ -506,7 +506,6 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
-
     int N = core.batch.size(); //number of batches
     double dt = delta*24*60*60; //days to [s]
     double kcore, kcore_prev;
@@ -516,6 +515,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     //assign the batch_fluence to Fg
     for(int i = 0; i < N; i++){
         core.batch[i].Fg = core.batch[i].batch_fluence;
+        //cout<< "  fluences: " << core.batch[i].Fg << " prod:" << core.batch[i].collapsed_iso.neutron_prod[0] << endl;
     }
 
     //turn zero fluences to one to avoid zero rates
@@ -533,7 +533,8 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
 
     kcore = 3.141592;
     kcore_prev = kcalc(core);
-
+    int counter = 0;
+//cout << "counter: ";
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
@@ -560,26 +561,31 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
             core = DA_calc(core);
         }
 
+        y0 = core.batch[0].Fg;
         //update fluences
         for(int i = 0; i < N; i++){
             //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+
         }
-        
+        //cout << " " <<counter++;
         kcore = kcalc(core);
     }
+    y1 = core.batch[0].Fg;
+
+    core.batch[0].Fg = intpol(y0, y1, kcore_prev, kcore, 1);
 
     //the oldest batch is always index=0
     int ii;
-    for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
-    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
+    for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].Fg; ii++){}
+    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].Fg){
         //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc3)" << endl;
         //cout << "  Values on max fluence will be used. Do not trust results." << endl;
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
     }
-    burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
+    burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].Fg);
 
-    //cout<< "BURNUPUPUPUPU: " << burnup << endl;
+    //cout<< "BURNUPUPUPUPU: " << burnup<< endl;
     core.batch[0].discharge_BU = burnup;
 
     return burnup;
@@ -668,7 +674,7 @@ fuelBundle DA_calc(fuelBundle fuel){
 double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
-    
+
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
     fuelBundle core;
@@ -741,17 +747,17 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
         for(int i = 0; i < N; i++){
             double fluence = core.batch[i].rflux * core.base_flux * dt;
-            
+
             //save the fluence for next step
             y0[i] = core.batch[i].Fg;
-            
+
             //also ignoring the relative flux of batches
             core.batch[i].Fg += core.base_flux * dt;
             //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << endl;
         }
         kcore = kcalc(core);
         //cout << "kcalc:" << kcore  << endl;
-        
+
         iter++;
         if(iter > 100){
             cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
@@ -772,7 +778,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     if(core.batch[N-1].collapsed_iso.fluence.back() < core.batch[N-1].batch_fluence){
         //cout << endl << "Maximum fluence error!(SS_burnupcalc) Batch fluence exceeded max library fluence. (burnupcalc2)" << endl;
         //cout << "  Values on max fluence will be used. Do not trust results." << endl;
-        
+
         return fuel.BU[fuel.BU.size()-1];
     }
     burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);

@@ -90,7 +90,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   void batch_reorder();
   /// This facility has one output commodity and one input commodity
-
+  double SS_enrich;
 
   #pragma cyclus var {"default": 0.001, \
                       "userlevel": 3, \
