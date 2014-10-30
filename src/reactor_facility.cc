@@ -352,14 +352,11 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   return ports;
 }
 
-void ReactorFacility::AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs) {
-}
-
 void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
     if(shutdown != true){
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
-
+        //Initital core loading setup.
         if(target_burnup == 0){
             for (it = responses.begin(); it != responses.end(); ++it) {
                 inventory.Push(it->second);
@@ -380,6 +377,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         /************************End of output file**************************/
           }
       } else {
+        //Operational reloading
         for (it = responses.begin(); it != responses.end(); ++it) {
             if(it->first.request->commodity() == in_commods[0]){
                 inventory.Push(it->second);
@@ -394,12 +392,9 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     using cyclus::Material;
     using cyclus::Trade;
 
-    //std::cout << "begin getmatltrades" << std::endl;
-
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-
+    //Remove the core loading
     if(shutdown == true){
-    std::cout << "if statement " << inventory.count() <<std::endl;
         std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(inventory.PopN(inventory.count()));
         fuel_library_.batch.clear();
         int i = 0;
@@ -408,6 +403,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
             i++;
         }
     }else{
+        //Remove the last batch from the core.
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
         fuel_library_.batch.erase(fuel_library_.batch.begin());
         for (it = trades.begin(); it != trades.end(); ++it) {
@@ -415,7 +411,6 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
         }
     }
 }
-
 
 fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
 
@@ -509,22 +504,24 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
     double burnup_target = target_burnup;
     //finds total mass of this new batch
     double total_mass = core_mass / batches;
+    //redefines target burnup to match batch
     if(refuels < batches){
         burnup_target = target_burnup/(batches+1)*(refuels+1);
         std::cout << "Refuels: " << burnup_target << std::endl;
     }
+    //Finding a fuel blending to reach the target burnup.
     for(int j = 0; j < materials[0].size(); j++){
         for(int i = 1; i < materials.size(); i++){
             for(int k = 0; k < materials[i].size(); k++){
+                //First burnup iterator
                 double fraction_1 = 0;
                 cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(fraction_1, materials[0][j]->comp());
                 cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1-fraction_1, materials[i][k]->comp());
                 mat1->Absorb(mat2);
-                //std::cout << "builing temp bundle" << std::endl;
                 fuelBundle temp_bundle = comp_trans(mat1, fuel_library_);
-                //std::cout << "built temp bundle" << std::endl;
                 temp_bundle = burnupcalc(temp_bundle, 2, 1, 40);
                 double burnup_1 = temp_bundle.batch[0].discharge_BU;
+                //Second burnup iterator
                 double fraction_2 = 1;
                 mat1 = cyclus::Material::CreateUntracked(fraction_2, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction_2, materials[i][k]->comp());
@@ -532,17 +529,18 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                 temp_bundle = comp_trans(mat1, fuel_library_);
                 temp_bundle = burnupcalc(temp_bundle, 2, 1, 40);
                 double burnup_2 = temp_bundle.batch[0].discharge_BU;
+                //Finding the third burnup iterator
                 double fraction = (fraction_1) + (burnup_target - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
                 //std::cout << "target BU " << burnup_target << " fraction 1 " << fraction_1 << std::endl;
                 //std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
-                std::cout << "Fraction BU " << fraction << std::endl;
                 temp_bundle = comp_trans(mat1, fuel_library_);
                 temp_bundle = burnupcalc(temp_bundle, 2, 1, 40);
                 double burnup_3 = temp_bundle.batch[0].discharge_BU;
                 int inter = 0;
+                //Trying to converge on the target burnup using Newton's Method
                 while(std::abs((burnup_target - burnup_3)/burnup_target) > 0.001){
                     fraction_1 = fraction_2;
                     fraction_2 = fraction;
@@ -575,6 +573,7 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
 
 double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory){
     double return_amount;
+    //Read the fuelfab inventory
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
     for(int i = 0; i < inventory.size(); i++){
         std::vector<cyclus::Material::Ptr> manifest;
@@ -585,18 +584,21 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
     for(int j = 0; j < materials[0].size(); j++){
         for(int i = 1; i < materials.size(); i++){
             for(int k = 0; k < materials[i].size(); k++){
+                //Finding the first burnup iterator
                 double fraction_1 = 0;
                 cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(fraction_1, materials[0][j]->comp());
                 cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1, materials[i][k]->comp());
                 mat1->Absorb(mat2);
                 fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_1 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                //Finding the second burnup iterator
                 double fraction_2 = 1;
                 mat1 = cyclus::Material::CreateUntracked(1, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(0, materials[i][k]->comp());
                 mat1->Absorb(mat2);
                 temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+                //Finding the third burnup iterator
                 double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
@@ -604,8 +606,8 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                 std::cout << "Fraction SU " << fraction << std::endl;
                 temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
-
                 int inter = 0;
+                //Using the iterators to calculate a Newton Method solution
                 while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.001){
                     fraction_1 = fraction_2;
                     fraction_2 = fraction;

@@ -86,31 +86,33 @@ namespace fuelfab {
         if(inventory[i].count() > 0){
             inventory_test += 1;
         }
-    }/*
-    /** Quick Hack */
-
+    }
     CapacityConstraint<Material> cc(1);
     if (inventory_test == 0){return ports;}
     std::vector<Request<Material>*>& requests = commod_requests[out_commod];
     std::vector<Request<Material>*>::iterator it;
     std::map<cyclus::Trader*, int> facility_request;
     Request<Material>* req;
+    //Set up a map for facility requestor to number of requests
     for (it = requests.begin(); it != requests.end(); ++it) {
         Request<Material>* req = *it;
         facility_request[req->requester()] += 1;
     }
-
+    //Iterate through requesters
     std::map<cyclus::Trader*, int>::iterator id;
     for(id = facility_request.begin(); id != facility_request.end(); ++id){
         double limit, nlimit;
+        //Cast requester as a reactor if possible
         ReactorFacility* reactor = dynamic_cast<ReactorFacility*>(id->first);
         if (!reactor){
            throw cyclus::CastError("No reactor for fuelfab facility.");
         } else {
+            // Check for reactor start up
             if (reactor->inventory.count() == 0){
                 limit = reactor->start_up(inventory);
                 double temp_limit = limit;
                 int k = 1;
+                //For each request from reactor create a trade portfolio
                 for(it = requests.begin(); it!=requests.end(); ++it){
                     Request<Material>* req = *it;
                     if(req->requester() == id->first){
@@ -132,6 +134,7 @@ namespace fuelfab {
                         k++;
                     }
                 }
+                //Same for refueling
             } else{
                 for(it = requests.begin(); it!=requests.end(); ++it){
                     Request<Material>* req = *it;
@@ -179,18 +182,21 @@ namespace fuelfab {
         std::map<cyclus::Trader*, int> facility_request;
         std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
         cyclus::Material::Ptr manifest;
-
+        //Setting up comp map of requesters to number of requests
         for(it = trades.begin(); it != trades.end(); ++it){
             cyclus::Request<Material> req = *it->request;
             facility_request[req.requester()] += 1;
         }
         std::map<cyclus::Trader*, int>::iterator id;
+        //iterate through requests
         for(id = facility_request.begin(); id != facility_request.end(); ++id){
             double limit, nlimit;
+            //cast requester as reactor
             reactor::ReactorFacility* reactor = dynamic_cast<reactor::ReactorFacility*>(id->first);
             if (!reactor){
                throw cyclus::CastError("No reactor for fuelfab facility.");
             } else {
+                //start up
                 if (reactor->inventory.count() == 0){
                     limit = reactor->start_up(inventory);
                     double temp_limit = limit;
@@ -202,6 +208,7 @@ namespace fuelfab {
                             nlimit = reactor->core_mass/reactor->batches-limit;
                             manifest = cyclus::ResCast<Material>(inventory[0].Pop());
                             Material::Ptr offer = manifest->ExtractComp(0., manifest->comp());
+                            //catch if over extracting from current fuel fab material
                             if(limit > manifest->quantity()){
                                 double bonus = manifest->quantity();
                                 offer->Absorb(manifest->ExtractComp(manifest->quantity(), manifest->comp()));
@@ -213,6 +220,7 @@ namespace fuelfab {
                             std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
                             inventory[0].Push(manifest);
                             manifest = cyclus::ResCast<Material>(inventory[1].Pop());
+                            //catch for second resource buffer
                             if(nlimit > manifest->quantity()){
                                 double bonus = manifest->quantity();
                                 std::cout << "TEST" << std::endl;
@@ -230,6 +238,7 @@ namespace fuelfab {
                         }
                     }
                 } else{
+                    //non-start up refueling
                     for(it = trades.begin(); it!=trades.end(); ++it){
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
