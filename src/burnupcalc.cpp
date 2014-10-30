@@ -375,13 +375,13 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         if(core.batch[i].Fg == 0){core.batch[i].Fg = 1;}
     }
 
-    for(int i = 0; i < core.batch[0].collapsed_iso.fluence.size(); i++){
+    /*for(int i = 0; i < core.batch[0].collapsed_iso.fluence.size(); i++){
         //cout << core.batch[0].collapsed_iso.fluence[i] << "  " << core.batch[0].collapsed_iso.BU[i] << "  " << core.batch[0].collapsed_iso.neutron_prod[i]/core.batch[0].collapsed_iso.neutron_dest[i] << endl;
-    }
+    }*/
     //cout << "Batches: " << core.batch.size() << endl <<endl;
-    for(int i = 0; i < core.batch.size(); i++){
+    /*for(int i = 0; i < core.batch.size(); i++){
         //cout << "fluence: " << core.batch[i].batch_fluence << endl;
-    }
+    }*/
 
     kcore = 3.141592;
     kcore_prev = kcalc(core);

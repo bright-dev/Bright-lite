@@ -115,7 +115,7 @@ namespace fuelfab {
                     Request<Material>* req = *it;
                     if(req->requester() == id->first){
                         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
-                        limit = temp_limit*k/reactor->batches;
+                        limit = temp_limit*k/(reactor->batches);
                         double qty = limit + nlimit;
                         qty = qty <= 0 ? 1 : qty;
                         CapacityConstraint<Material> cc(qty);
@@ -198,7 +198,7 @@ namespace fuelfab {
                     for(it = trades.begin(); it!=trades.end(); ++it){
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
-                            limit = temp_limit*k/reactor->batches;
+                            limit = temp_limit*k/(reactor->batches);
                             nlimit = reactor->core_mass/reactor->batches-limit;
                             manifest = cyclus::ResCast<Material>(inventory[0].Pop());
                             Material::Ptr offer = manifest->ExtractComp(0., manifest->comp());
