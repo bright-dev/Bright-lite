@@ -224,6 +224,7 @@ void ReactorFacility::Tock() {
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
         ->AddVal("Discharge_Fluence", burnup)
+        ->AddVal("Batch_No", std::to_string(refuels+i+1))
         ->Record();
      
      }
@@ -250,6 +251,7 @@ void ReactorFacility::Tock() {
                ->AddVal("AgentID", id())
                ->AddVal("Time", cycle_end_)
                ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
+               ->AddVal("Batch_No", std::to_string(refuels))
                //->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
                /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
                ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
