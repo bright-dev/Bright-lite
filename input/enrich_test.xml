@@ -1,0 +1,135 @@
+<!-- 1 Source, 1 rx, 1 Sink -->
+
+<simulation>
+  <control>
+    <duration>400</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>U235Source</name>
+    <config>
+      <Source>
+        <commod>U235</commod>
+        <recipe_name>U235</recipe_name>
+	<capacity>2000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>U238Source</name>
+    <config>
+      <Source>
+        <commod>U238</commod>
+        <recipe_name>U238</recipe_name>
+	    <capacity>2000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>uf</val>
+        </in_commods>
+        <capacity>1000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>Rx</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>UOX</val>       
+        </in_commods>
+        <out_commod>uf</out_commod>
+        <libraries><val>extLWR</val></libraries>
+        <target_burnup>60.0</target_burnup>
+        <nonleakage>0.966</nonleakage>
+        <core_mass>1500.0</core_mass>
+        <batches>3</batches>
+        <flux_mode>1</flux_mode>
+        <cylindrical_delta>10</cylindrical_delta>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
+      </ReactorFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>FF</name>
+    <config>
+      <FuelfabFacility>
+        <in_commods>
+            <val>U235</val>
+            <val>U238</val>
+        </in_commods>
+        <out_commod>UOX</out_commod>
+      </FuelfabFacility>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>U235Source</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>U238Source</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Rx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>FF</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>U235</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>100</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>U238</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U238</id>
+      <comp>100</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>
