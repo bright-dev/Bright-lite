@@ -70,7 +70,6 @@ class ReactorFacility : public cyclus::Facility  {
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                           cyclus::Material::Ptr> >& responses);
 
-  virtual void AdjustMatlPrefs(cyclus::PrefMap<cyclus::Material>::type& prefs);
 
   /// @brief Place accepted trade Materials in inventory
   virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
@@ -90,7 +89,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   void batch_reorder();
   /// This facility has one output commodity and one input commodity
-
+  double SS_enrich;
 
   #pragma cyclus var {"default": 0.001, \
                       "userlevel": 3, \
@@ -135,11 +134,12 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies", \
-                      "uitype": "outcommodity"}
+                      "uitype": "outcommodity", \
+                      "uilabel": "Output"}
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "userlevel": 1, \
+                      "userlevel": 0, \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
@@ -169,7 +169,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"tooltip": "Target burnup", \
                       "default": 0, \
-                      "userlevel": 1, \
+                      "userlevel": 0, \
                       "units": "MWd/kgIHM"}
   double target_burnup;
 
@@ -248,7 +248,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
 
-  #pragma cyclus var {"default": 380, \
+  #pragma cyclus var {"default": 480, \
                       "units": "months", \
                       "userlevel": 1, \
                       "tooltip": "Time before reactor is shutdown after startup."}
