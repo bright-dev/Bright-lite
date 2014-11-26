@@ -806,6 +806,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
 
     double kcore = 1.141592;
+    int iter = 0;
 
     while(kcore > 1){
         kcore_prev = kcore;
@@ -1260,6 +1261,7 @@ void mass_check(fuelBundle fuel){
         }
     }
 }
+
 /*
 fuelBundle burnup_collapse(fuelBundle fuel){
     for(int i = 0; i < fuel.iso.size(); i++){
