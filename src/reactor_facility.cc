@@ -4,11 +4,7 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-<<<<<<< HEAD
-      cycle_end_ = ctx->time() ;
-=======
       cycle_end_ = ctx->time() +1;
->>>>>>> 2bf2fb7c3db7b4bc4246228c1709ca132ff568f2
       start_time_ = cycle_end_;
       shutdown = false;
       refuels = 0;
@@ -50,11 +46,6 @@ void ReactorFacility::Tick() {
                 fuel_library_.interpol_pairs.push_back(pair);
             }
             fuel_library_ = lib_interpol(fuel_library_);
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> 2bf2fb7c3db7b4bc4246228c1709ca132ff568f2
         }
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
@@ -121,8 +112,8 @@ void ReactorFacility::Tick() {
         outfile.close();
 /************************End of output file*********************************/
     }
-    
-    
+
+
 
     //std::cout << "end tick" << std::endl;
 }
@@ -130,7 +121,7 @@ void ReactorFacility::Tick() {
 void ReactorFacility::Tock() {
     if(inventory.count() == 0){return;}
     if(shutdown == true){return;}
-    
+
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
         //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
@@ -175,15 +166,20 @@ void ReactorFacility::Tock() {
     }
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
-    
+
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         //std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
-        
+
     }
-    
+
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
+    //temp ss burnupcalc test
+    std::cout << "SS burnup: " << SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 3, 20, 0.99, 3E14) << std::endl;
+
+
+    //end temp test
 
 
   // convert fuel bundle into materials
@@ -203,14 +199,14 @@ void ReactorFacility::Tock() {
   // cycle end update
   cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
   refuels += 1;
-  
-  
+
+
   if(ctx->time() > start_time_ + reactor_life && record == true){
     //its time to shut down
-    
-    
+
+
     shutdown = true;
-        
+
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
@@ -223,7 +219,7 @@ void ReactorFacility::Tock() {
         ->AddVal("Discharge_Fluence", burnup)
         ->AddVal("Batch_No", std::to_string(refuels+i+1))
         ->Record();
-     
+
      }
     record = false;
     //cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
@@ -240,7 +236,7 @@ void ReactorFacility::Tock() {
 
     outfile.close();
     /************************End of output file**************************/
-  
+
   if(shutdown != true && record == true){
       std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
       //add batch variable to cyclus database
@@ -514,18 +510,12 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
     double burnup_target = target_burnup;
     //finds total mass of this new batch
     double total_mass = core_mass / batches;
-<<<<<<< HEAD
-    if(refuels < batches){
-        burnup_target = target_burnup/batches*(refuels+1);
-    }
-=======
     //redefines target burnup to match batch
     if(refuels < batches){
         burnup_target = target_burnup/(batches+1)*(refuels+1);
         std::cout << "Refuels: " << burnup_target << std::endl;
     }
     //Finding a fuel blending to reach the target burnup.
->>>>>>> 2bf2fb7c3db7b4bc4246228c1709ca132ff568f2
     for(int j = 0; j < materials[0].size(); j++){
         for(int i = 1; i < materials.size(); i++){
             for(int k = 0; k < materials[i].size(); k++){
@@ -547,11 +537,8 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                 double burnup_2 = temp_bundle.batch[0].discharge_BU;
                 //Finding the third burnup iterator
                 double fraction = (fraction_1) + (burnup_target - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-<<<<<<< HEAD
-=======
                 //std::cout << "target BU " << burnup_target << " fraction 1 " << fraction_1 << std::endl;
                 //std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
->>>>>>> 2bf2fb7c3db7b4bc4246228c1709ca132ff568f2
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
@@ -566,12 +553,8 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
                     burnup_1 = burnup_2;
                     burnup_2 = burnup_3;
                     fraction = (fraction_2) + (burnup_target - burnup_2)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-<<<<<<< HEAD
-                    //std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1" << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-=======
                     //std::cout << "target BU " << burnup_target << " fraction 1 " << fraction_1 << std::endl;
                     //std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
->>>>>>> 2bf2fb7c3db7b4bc4246228c1709ca132ff568f2
                     mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                     mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                     mat1->Absorb(mat2);
