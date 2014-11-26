@@ -789,7 +789,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
             kcore = kcalc(core);
-            cout << kcore  << " ";
+            //cout << kcore  << " ";
 
             iter++;
             if(iter > 100){
@@ -812,12 +812,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
         for(ii = 0; core.batch[N-1].collapsed_iso.fluence[ii] < core.batch[N-1].collapsed_iso.batch_fluence; ii++){}
         burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);
-        cout << ii << " intermed burnup: " << burnup << endl;
-
-        cout << endl << "  -- Before  --" << endl;
-        for(int i = 0; i < N; i++){
-            cout << " " << core.batch[i].collapsed_iso.batch_fluence << endl;
-        }
+        //cout << ii << " intermed burnup: " << burnup << endl;
 
         //move each batch one right, now the first and second are the same
         for(int i = N-1; i > 0; i--){
@@ -827,11 +822,6 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         //fix first one
         core.batch[0].collapsed_iso.batch_fluence = 0;
         core.batch[0].Fg = 0;
-
-        cout << endl << "  -- After  --" << endl;
-        for(int i = 0; i < N; i++){
-            cout << " " << core.batch[i].collapsed_iso.batch_fluence << endl;
-        }
 
         if(abs(burnup - BU_prev) < 0.01){
             notsteady = false;

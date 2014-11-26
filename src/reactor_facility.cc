@@ -176,7 +176,7 @@ void ReactorFacility::Tock() {
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
     //temp ss burnupcalc test
-    std::cout << "SS burnup: " << SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 3, 20, 0.99, 3E14) << std::endl;
+    std::cout << "SS burnup: " << SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 1, 20, 0.99, 3E14) << std::endl;
 
 
     //end temp test
