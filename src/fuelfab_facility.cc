@@ -217,21 +217,19 @@ namespace fuelfab {
                             } else {
                                 offer = manifest->ExtractComp(limit, manifest->comp());
                             }
-                            std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
+                            //std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
                             inventory[0].Push(manifest);
                             manifest = cyclus::ResCast<Material>(inventory[1].Pop());
                             //catch for second resource buffer
                             if(nlimit > manifest->quantity()){
                                 double bonus = manifest->quantity();
-                                std::cout << "TEST" << std::endl;
                                 offer->Absorb(manifest->ExtractComp(bonus, manifest->comp()));
                                 manifest = cyclus::ResCast<Material>(inventory[1].Pop());
                                 offer->Absorb(manifest->ExtractComp(nlimit-bonus, manifest->comp()));
                             } else {
-                                std::cout << "ELSE TEST" << std::endl;
                                 offer->Absorb(manifest->ExtractComp(nlimit, manifest->comp()));
                             }
-                            std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
+                            //std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
                             inventory[1].Push(manifest);
                             responses.push_back(std::make_pair(*it, offer));
                             k++;
@@ -259,12 +257,10 @@ namespace fuelfab {
                             manifest = cyclus::ResCast<Material>(inventory[1].Pop());
                             if(nlimit > manifest->quantity()){
                                 double bonus = manifest->quantity();
-                                std::cout << "TEST_Base" << std::endl;
                                 offer->Absorb(manifest->ExtractComp(bonus, manifest->comp()));
                                 manifest = cyclus::ResCast<Material>(inventory[1].Pop());
                                 offer->Absorb(manifest->ExtractComp(nlimit-bonus, manifest->comp()));
                             } else {
-                                std::cout << "ELSE TEST_base" << std::endl;
                                 offer->Absorb(manifest->ExtractComp(nlimit, manifest->comp()));
                             }
                             std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;

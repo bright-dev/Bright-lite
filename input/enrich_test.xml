@@ -62,7 +62,7 @@
         <target_burnup>60.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1500.0</core_mass>
-        <batches>3</batches>
+        <batches>5</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
