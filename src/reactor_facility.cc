@@ -50,7 +50,6 @@ void ReactorFacility::Tick() {
                 fuel_library_.interpol_pairs.push_back(pair);
             }
             fuel_library_ = lib_interpol(fuel_library_);
-
         }
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
@@ -180,6 +179,11 @@ void ReactorFacility::Tock() {
   // pass fuel bundles to burn-up calc
   fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
+    //temp ss burnupcalc test
+    std::cout << "SS burnup: " << SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 1, 20, 0.99, 3E14) << std::endl;
+
+
+    //end temp test
 
 
   // convert fuel bundle into materials
@@ -217,6 +221,7 @@ void ReactorFacility::Tock() {
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
         ->AddVal("Discharge_Fluence", burnup)
+        ->AddVal("Batch_No", std::to_string(refuels+i+1))
         ->Record();
 
      }
@@ -244,6 +249,7 @@ void ReactorFacility::Tock() {
                ->AddVal("AgentID", id())
                ->AddVal("Time", cycle_end_)
                ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
+               ->AddVal("Batch_No", std::to_string(refuels))
                //->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
                /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
                ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
