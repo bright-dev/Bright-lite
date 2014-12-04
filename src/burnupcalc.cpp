@@ -542,6 +542,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         cout << "  Values on max fluence will be used. Do not trust results." << endl;
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
     }
+    cout << "batch 0 flu " << core.batch[0].batch_fluence << endl;
+
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
     core.batch[0].discharge_BU = burnup;
@@ -656,7 +658,6 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
         //cout << "  Values on max fluence will be used. Do not trust results." << endl;
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
     }
-    cout << "batch 0 flu " << core.batch[0].collapsed_iso.batch_fluence << endl;
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
     //cout<< "BURNUPUPUPUPU: " << burnup<< endl;
