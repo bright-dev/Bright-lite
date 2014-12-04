@@ -767,7 +767,12 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     temp_batch.collapsed_iso.batch_fluence = 0;
     for(int i = 0; i < N; i++){
         core.batch.push_back(temp_batch);
+
     }
+
+    /*for(int jj = 0; jj <core.batch[0].collapsed_iso.BU.size(); jj++){
+        cout <<  core.batch[0].collapsed_iso.fluence[jj] << ": "<< core.batch[0].collapsed_iso.BU[jj] << endl;
+    }*/
 
     while(notsteady){
         double kcore = 1.141592;
@@ -799,19 +804,13 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
         //update core fluences
         for(int i = 0; i < N; i++){
-            //y0 is the fluence value before the last interation
             y0 = core.batch[i].Fg - core.batch[i].rflux * core.base_flux * dt;
             y1 = core.batch[i].Fg;
-            //cout << y0 << " and " << y1 << endl; //<-------
-            //cout << "  " << kcore_prev << " " << kcore << endl; //<-------
             core.batch[i].collapsed_iso.batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
-            //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
-
         }
 
-
         for(ii = 0; core.batch[N-1].collapsed_iso.fluence[ii] < core.batch[N-1].collapsed_iso.batch_fluence; ii++){}
-        burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);
+        burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].collapsed_iso.batch_fluence);
         //cout << ii << " intermed burnup: " << burnup << endl;
 
         //move each batch one right, now the first and second are the same
@@ -823,7 +822,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         core.batch[0].collapsed_iso.batch_fluence = 0;
         core.batch[0].Fg = 0;
 
-        if(abs(burnup - BU_prev) < 0.01){
+        if(abs(burnup - BU_prev)/burnup < 0.01){
             notsteady = false;
         }
 

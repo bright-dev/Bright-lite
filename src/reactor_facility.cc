@@ -148,18 +148,18 @@ void ReactorFacility::Tock() {
     //each batch
     for(int i = 0; i < manifest.size(); i++){
     //build correct isoinfo and fraction for each batch
-    ///put the stuff in comp fraction to fuel_library_.batch.iso fraction using values in fuel_library_.all_iso
-
+    ///put the stuff in comp fraction to fuel_library_. .iso fraction using values in fuel_library_.all_iso
         comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
         int comp_iso;
         //each iso in comp
         for (it = comp.begin(); it != comp.end(); ++it){
             comp_iso = pyne::nucname::zzaaam(it->first);
+            //std::cout << "Isotope " << it->first << " amount " << it->second << std::endl;
             //each iso in all_iso
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
                 int fl_iso = fuel_library_.all_iso[j].name;
                 if(fl_iso == comp_iso && fuel_library_.batch[i].batch_fluence == 0){
-                    //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
+                    //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
                     isoInformation temp_iso;
                     temp_iso = fuel_library_.all_iso[j];
                     temp_iso.fraction = it->second;
@@ -171,30 +171,29 @@ void ReactorFacility::Tock() {
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
 
-    for(int i = 0; i < fuel_library_.batch.size(); i++){
-        //std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
+    /*for(int i = 0; i < fuel_library_.batch.size(); i++){
+        std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
+    }*/
 
-    }
+      // pass fuel bundles to burn-up calc
+    fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
 
-  // pass fuel bundles to burn-up calc
-  fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
-
-    //temp ss burnupcalc test
-    std::cout << "SS burnup: " << SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 1, 20, 0.99, 3E14) << std::endl;
+        //temp ss burnupcalc test
+        //std::cout << "SS burnup: " << SS_burnupcalc(fuel_library_.batch[0].collapsed_iso, 1, 20, 0.99, 3E14) << std::endl;
 
 
     //end temp test
 
 
   // convert fuel bundle into materials
-  for(int i = 0; i < fuel_library_.batch.size(); i++){
-    cyclus::CompMap out_comp;
-    for(std::map<int, double>::iterator c = fuel_library_.batch[i].comp.begin(); c != fuel_library_.batch[i].comp.end(); ++c){
-      if(c->second < 0){
-        out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
-      } else {
-        out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
-      }
+    for(int i = 0; i < fuel_library_.batch.size(); i++){
+        cyclus::CompMap out_comp;
+        for(std::map<int, double>::iterator c = fuel_library_.batch[i].comp.begin(); c != fuel_library_.batch[i].comp.end(); ++c){
+            if(c->second < 0){
+            out_comp[pyne::nucname::zzaaam_to_id(c->first)] = 0;
+        } else {
+            out_comp[pyne::nucname::zzaaam_to_id(c->first)] = c->second;
+        }
     }
     manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
     inventory.Push(manifest[i]);
@@ -445,7 +444,6 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
         for(int j = 0; j < temp_bundle.all_iso.size(); j++){
             int fl_iso = temp_bundle.all_iso[j].name;
             if(fl_iso == comp_iso && temp_bundle.batch[0].batch_fluence == 0){
-                //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << std::endl;
                 isoInformation temp_iso;
                 temp_iso = temp_bundle.all_iso[j];
                 temp_iso.fraction = it->second;
@@ -606,6 +604,7 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                 temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
                 //Finding the third burnup iterator
+                /// TODO Reactor catch for extrapolation
                 double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
@@ -620,8 +619,9 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                     fraction_2 = fraction;
                     burnup_1 = burnup_2;
                     burnup_2 = burnup_3;
-                    fraction = (fraction_2) + (target_burnup - burnup_2)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-                    std::cout <<  "fraction "<<fraction << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+                    fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
+                    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+                    std::cout << "fraction " << fraction << std::endl;
                     mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                     mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                     mat1->Absorb(mat2);
@@ -678,6 +678,17 @@ void ReactorFacility::batch_reorder(){
     //std::cout << " End batch_reorder" << std::endl;
 }
 
+///TODO Make this better.
+void CompOut(cyclus::Material::Ptr mat1){
+    cyclus::CompMap comp;
+    comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
+    int comp_iso;
+    cyclus::CompMap::iterator it;
+    //each iso in comp
+    for (it = comp.begin(); it != comp.end(); ++it){
+        std::cout<<it->first<< " " << it->second << std::endl;
+    }
+}
 
 extern "C" cyclus::Agent* ConstructReactorFacility(cyclus::Context* ctx) {
   return new ReactorFacility(ctx);
