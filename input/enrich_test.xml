@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>400</duration>
+    <duration>100</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -59,10 +59,10 @@
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>60.0</target_burnup>
+        <target_burnup>100.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1500.0</core_mass>
-        <batches>5</batches>
+        <batches>3</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
