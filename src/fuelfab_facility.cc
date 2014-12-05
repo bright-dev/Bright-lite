@@ -252,7 +252,7 @@ namespace fuelfab {
                             } else {
                                 offer = manifest->ExtractComp(limit, manifest->comp());
                             }
-                            std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
+                            //std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
                             inventory[0].Push(manifest);
                             manifest = cyclus::ResCast<Material>(inventory[1].Pop());
                             if(nlimit > manifest->quantity()){
@@ -263,7 +263,7 @@ namespace fuelfab {
                             } else {
                                 offer->Absorb(manifest->ExtractComp(nlimit, manifest->comp()));
                             }
-                            std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
+                            //std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
                             inventory[1].Push(manifest);
                             responses.push_back(std::make_pair(*it, offer));
                         }
