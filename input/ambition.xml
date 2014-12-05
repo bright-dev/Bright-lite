@@ -23,7 +23,7 @@
       <Source>
         <commod>fbl</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>10000.0</capacity>
+	<capacity>1000000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -34,7 +34,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>10000.0</capacity>
+	    <capacity>1000000.0</capacity>
       </Source>
     </config>
   </facility>  
@@ -45,22 +45,10 @@
       <Source>
         <commod>NU</commod>
         <recipe_name>NU_recipe</recipe_name>
-	    <capacity>10000.0</capacity>
+	    <capacity>1000000.0</capacity>
       </Source>
     </config>
   </facility>  
-
-  <facility>
-    <name>Sink</name>
-    <config>
-      <Sink>
-        <in_commods>
-          <val>uf</val>
-        </in_commods>
-        <capacity>1000.0</capacity>
-      </Sink>
-    </config>
-  </facility>
   
   <facility>
     <name>Sink2</name>
@@ -69,7 +57,7 @@
         <in_commods>
           <val>reproFuel1</val>
         </in_commods>
-        <capacity>1000.0</capacity>
+        <capacity>1000000.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -81,7 +69,7 @@
         <in_commods>
           <val>spentMOX</val>
         </in_commods>
-        <capacity>1000.0</capacity>
+        <capacity>1000000.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -95,10 +83,13 @@
         </in_commods>
         <out_commod>spentFuel</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>50.0</target_burnup>
-        <nonleakage>0.97</nonleakage>
-        <core_mass>1000.0</core_mass>
+        <target_burnup>40.0</target_burnup>
+        <nonleakage>0.966</nonleakage>
+        <core_mass>1500.0</core_mass>
         <batches>3</batches>
+        <flux_mode>1</flux_mode>
+        <cylindrical_delta>10</cylindrical_delta>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
       </ReactorFacility>
     </config>
   </facility>
@@ -128,8 +119,8 @@
             <val>reproFuel1</val>       
         </commod_out>
         <repro_input_path>../Bright-lite/input/reprocess_input.txt</repro_input_path>
-        <input_capacity>10000</input_capacity>
-        <output_capacity>10000</output_capacity>
+        <input_capacity>1000000</input_capacity>
+        <output_capacity>1000000</output_capacity>
       </ReprocessFacility>
     </config>
   </facility> 
@@ -158,8 +149,11 @@
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>50.0</target_burnup>
         <nonleakage>0.97</nonleakage>
-        <core_mass>1000.0</core_mass>
+        <core_mass>1500.0</core_mass>
         <batches>3</batches>
+        <flux_mode>1</flux_mode>
+        <cylindrical_delta>10</cylindrical_delta>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
       </ReactorFacility>
     </config>
   </facility>  
@@ -188,10 +182,6 @@
         </entry>
         <entry>
           <prototype>FFUOX</prototype>
-          <number>1</number>
-        </entry>
-        <entry>
-          <prototype>Sink</prototype>
           <number>1</number>
         </entry>
         <entry>
