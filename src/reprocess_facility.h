@@ -70,7 +70,10 @@ class ReprocessFacility : public cyclus::Facility  {
 
   virtual std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests);
 
-  void GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades, std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses);
+  void GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+                     std::vector<std::pair<cyclus::Trade<cyclus::Material>,
+                     cyclus::Material::Ptr> >& responses);
+
   /// @brief Place accepted trade Materials in inventory
   virtual void AcceptMatlTrades(const std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                 cyclus::Material::Ptr> >& responses);

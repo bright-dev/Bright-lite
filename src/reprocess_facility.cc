@@ -22,19 +22,19 @@ namespace reprocess {
     	for(int i = 0; i < out_inventory.size(); i++){
     	  std::cout << "Out inventory " << i << ": " << out_inventory[i].quantity() << std::endl;
     	}
-    	
+
     	//check to see beginning of simulation
     	if(pi != 3.141592){
     	  pi = 3.141592;
-    	  int nucid = 0; //for erroneous inputs this could be a long int 
+    	  int nucid = 0; //for erroneous inputs this could be a long int
     	  double eff;
     	  std::string line;
     	  //populate out_commods, out_eff from input, initiate each associated output_inventory
     	  std::ifstream fin(repro_input_path);
            if(!fin.good()){
              std::cout << "Error! Failed reading reprocessing plant input file." << '\n';
-             std::cout << "  Given path: " << repro_input_path << '\n';     
-             std::cout << "  Please correct the path in cyclus input file for repro_input_path variable." << '\n';        
+             std::cout << "  Given path: " << repro_input_path << '\n';
+             std::cout << "  Please correct the path in cyclus input file for repro_input_path variable." << '\n';
            }
            //reads the input file and populates out_eff with the read values
 	  while(getline(fin, line)){
@@ -53,18 +53,18 @@ namespace reprocess {
 	        if(eff < 0 || eff > 1){
 	          std::cout << "Error in isotope removal efficiency in reprocess facility." << '\n';
 	          std::cout << "  Efficiency is set to " << eff << " for " << nucid << "." << '\n';
-	        }	        
+	        }
 	        tempmap[nucid] = eff;
 	      }
 	    out_eff.push_back(tempmap);
 	    }
-           	    
+
 	  }
          if(out_eff.size() == 0){
            std::cout << "Error populating removal efficiencies in reprocess facility. Efficiencies not read in cyclus." << '\n';
          }
     	}
-    	
+
     	std::cout << "-//tick//-" << std::endl;
     }
 
@@ -72,17 +72,16 @@ namespace reprocess {
     void ReprocessFacility::Tock() {
     //the reprocessing is done in this phase
     	std::cout << "~~tock~~" << std::endl;
-  
-    	
+
+
     	//Creates a vector Material (manifest) that has been popped out.
     	std::vector<cyclus::Material::Ptr> manifest;
-         manifest = cyclus::ResCast<cyclus::Material>(input_inventory.PopQty(output_capacity));
-         double mani_mass = output_capacity; //remaining mass during reprocessing
+    	 double extract = output_capacity >= input_inventory.quantity() ? input_inventory.quantity() : output_capacity;
+         manifest = cyclus::ResCast<cyclus::Material>(input_inventory.PopQty(extract));
          double tot_mass = 0; //total mass of the reprocessed batch (all isotopes)
          std::cout << "Amount of inventory batches being reprocessed: " << manifest.size() << '\n';
-         
+
          for(int o = 0; o < out_eff.size(); o++){
-           
              for(int m = 0; m < manifest.size(); m++){
                cyclus::CompMap temp_comp; //stores the masses of extracted isotopes
                //cyclus::CompMap out_comp = out_eff[o].mass();
@@ -90,30 +89,39 @@ namespace reprocess {
                std::map<int, double>::iterator out_it;
                cyclus::CompMap::iterator mani_it;
                for(out_it = out_eff[o].begin(); out_it != out_eff[o].end(); ++out_it){
-                 
                  for(mani_it = mani_comp.begin(); mani_it != mani_comp.end(); ++mani_it){
-
                    if(out_it->first == mani_it->first){
-                     temp_comp[mani_it->first] += mani_mass * mani_it->second * out_it->second;
-                     tot_mass += mani_mass * mani_it->second * out_it->second;
+                     //std::cout << mani_it->first << "   " << mani_it->second << "   " << out_it->second << std::endl;
+                     temp_comp[mani_it->first] = mani_it->second * out_it->second;
+                     tot_mass += manifest[m]->quantity() * mani_it->second * out_it->second;
                    }
                  }
                }
+               /*for(mani_it = temp_comp.begin(); mani_it != temp_comp.end(); ++mani_it){
+                    std::cout << mani_it->first << " amount " << mani_it->second << std::endl;
+               }
+
+               for(mani_it = mani_comp.begin(); mani_it != mani_comp.end(); ++mani_it){
+                    std::cout << mani_it->first << " amount " << mani_it->second << std::endl;
+               }*/
                //Puts the extracted material in the corresponding out_inventory
-               out_inventory[o].Push(cyclus::ResCast<cyclus::Resource>(manifest[m]->ExtractComp(tot_mass, cyclus::Composition::CreateFromMass(temp_comp))));
-               
-               mani_mass -= tot_mass; //remaining mass of the reprocessed material
-               tot_mass = 0;               
+               //std::cout << tot_mass << std::endl;
+               //std::cout << manifest[m]->quantity() << std::endl;
+               cyclus::Resource::Ptr resource = cyclus::ResCast<cyclus::Resource>(manifest[m]->ExtractComp(tot_mass, cyclus::Composition::CreateFromMass(temp_comp)));
+               //std::cout << extract << std::endl;
+               out_inventory[o].Push(resource);
+               //std::cout << tot_mass << std::endl;
+               tot_mass = 0;
              }
          }
          //adds the remaining materials (the waste) in the waste_inventory
-         waste_inventory.PushAll(manifest);  	
-    	
+         waste_inventory.PushAll(manifest);
+
     	std::cout << "-//tock//-" << std::endl;
     }
 
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReprocessFacility::GetMatlRequests() {
-        std::cout << "~~GetReq~~" << std::endl;
+        //std::cout << "~~GetReq~~" << std::endl;
         using cyclus::RequestPortfolio;
         using cyclus::Material;
         using cyclus::Composition;
@@ -122,25 +130,20 @@ namespace reprocess {
         std::set<RequestPortfolio<Material>::Ptr> ports;
         cyclus::Context* ctx = context();
         CompMap cm;
-        
-        Material::Ptr target = Material::CreateUntracked(input_capacity, Composition::CreateFromAtom(cm));
-        
-        RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
-        /*
-        port->AddRequest(target, this, "spentFuel");
-        
-        ports.insert(port); */
-        
-     
-        double qty = input_inventory.space();
 
-        //port->AddRequest(target, this, &in_commod[0]);
+        Material::Ptr target = Material::CreateUntracked(input_capacity, Composition::CreateFromAtom(cm));
+
+        RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
+
+        double qty = input_inventory.space();
+        std::cout << "REPO " << qty << std::endl;
+        port->AddRequest(target, this, in_commod[0]);
 
         CapacityConstraint<Material> cc(qty);
         port->AddConstraint(cc);
         ports.insert(port);
-              
-        
+
+
 
         std::cout << "-//GetReq//-" << std::endl;
         return ports;
@@ -149,91 +152,95 @@ namespace reprocess {
     // MatlBids //
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>ReprocessFacility::GetMatlBids(
             cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
-        std::cout << "~~GetBid~~" << std::endl;
+        //std::cout << "~~GetBid~~" << std::endl;
 
-	  using cyclus::Bid;
-	  using cyclus::BidPortfolio;
-	  using cyclus::CapacityConstraint;
-	  using cyclus::Material;
-	  using cyclus::Request;
-	  using cyclus::Converter;
-	 
-	  std::vector<cyclus::Material::Ptr> manifest;
-	  std::set<BidPortfolio<Material>::Ptr> ports;
-	   
-	  
-           if(input_inventory.quantity() == 0){return ports;}
-	  manifest = cyclus::ResCast<Material>(input_inventory.PopN(input_inventory.count()));
-           
-           /*
-           for(int i = 0; i < manifest.size(); i++){
-             cyclus::Composition::Ptr comp;
-             comp = manifest[i]->comp(); 
-             cyclus::CompMap v = comp->mass();
-             for (std::map<cyclus::Nuc, double>::const_iterator iter = v.begin(); iter != v.end(); iter++){
-               std::cout << "Key: " << iter->first << " Value: " << iter->second << std::endl;
-   		  
-                  
-             }
-             std::cout << '\n';
-           }
-           */
-           
-	  BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+        using cyclus::Bid;
+        using cyclus::BidPortfolio;
+        using cyclus::CapacityConstraint;
+        using cyclus::Material;
+        using cyclus::Request;
+        using cyclus::Converter;
 
-	  std::vector<Request<Material>*>& requests = commod_requests[commod_out[0]]; 
+        std::set<BidPortfolio<Material>::Ptr> ports;
 
-	  std::vector<Request<Material>*>::iterator it;
-	  for (it = requests.begin(); it != requests.end(); ++it) {
-	    std::cout << "for loop" << std::endl;
-	    Request<Material>* req = *it;
-	    Material::Ptr offer = Material::CreateUntracked(output_capacity, manifest[0]->comp());
-	    port->AddBid(req, offer, this);
-	  }
+        if(waste_inventory.quantity() != 0){
+            std::vector<cyclus::Material::Ptr> manifest = cyclus::ResCast<Material>(waste_inventory.PopN(waste_inventory.count()));
+            std::vector<Request<Material>*>& requests = commod_requests[commod_out[commod_out.size()-1]];
+            std::vector<Request<Material>*>::iterator it;
 
-	  ports.insert(port);
-	  
-	  //put stuff back in inventory
-	  for(int i = 0; i < manifest.size(); i++){
-	    input_inventory.Push(manifest[i]);
-	  }
-
-        std::cout << "-//GetReq//-" << std::endl;
-        return ports;
-    }
-
-    void ReprocessFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
-        std::cout << "~~AcptTrades~~" << std::endl;
-      
-        
-        std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
-        for (it = responses.begin(); it != responses.end(); ++it) {
-             input_inventory.Push(it->second);
+            for (it = requests.begin(); it != requests.end(); ++it) {
+                BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+                Request<Material>* req = *it;
+                Material::Ptr offer = Material::CreateUntracked(output_capacity, manifest[0]->comp());
+                port->AddBid(req, offer, this);
+                ports.insert(port);
+            }
+            waste_inventory.PushAll(manifest);
         }
-   
-        std::cout << "-//AcptTrades//-" << std::endl;
+        for(int i = 0; i < out_inventory.size(); i++){
+            if(out_inventory[i].count() != 0){
+                std::vector<cyclus::Material::Ptr> manifest = cyclus::ResCast<Material>(out_inventory[i].PopN(out_inventory[i].count()));
+                std::vector<Request<Material>*>& requests = commod_requests[commod_out[i]];
+                std::vector<Request<Material>*>::iterator it;
+
+                for (it = requests.begin(); it != requests.end(); ++it) {
+                    BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
+                    Request<Material>* req = *it;
+                    Material::Ptr offer = Material::CreateUntracked(output_capacity, manifest[0]->comp());
+                    port->AddBid(req, offer, this);
+                    ports.insert(port);
+                }
+                out_inventory[i].PushAll(manifest);
+            }
+        }
+        return ports;
+
     }
 
-    void ReprocessFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
-                                        std::vector<std::pair<cyclus::Trade<cyclus::Material>,
-                                        cyclus::Material::Ptr> >& responses) {
-        std::cout << "~~GetTrades~~" << std::endl;
-	  using cyclus::Material;
-	  using cyclus::Trade;
-/*
-	  std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-	  cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(fuel_inventory.Pop());
-	  for (it = trades.begin(); it != trades.end(); ++it) {
-	    it->request->commodity() = 
-	    responses.push_back(std::make_pair(*it, discharge));
-	  }
-	  */
-        std::cout << "-//AcptTrades//-" << std::endl;
+void ReprocessFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
+    //std::cout << "~~AcptTrades~~" << std::endl;
+
+    std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
+    for (it = responses.begin(); it != responses.end(); ++it) {
+         input_inventory.Push(it->second);
     }
 
+    //std::cout << "-//AcptTrades//-" << std::endl;
+}
+
+void ReprocessFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
+    std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
+    using cyclus::Material;
+    using cyclus::Trade;
+    std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
+
+    std::vector<cyclus::Material::Ptr> waste = cyclus::ResCast<Material>(waste_inventory.PopN(waste_inventory.count()));
+    for(int i = 1; i < waste.size(); i++){
+        waste[0]->Absorb(waste[i]);
+    }
+    for (it = trades.begin(); it != trades.end(); ++it) {
+        std::cout << "Trade Commodity: "<<it->request->commodity() << std::endl;
+        if(it->request->commodity() == commod_out[commod_out.size()-1]){
+            responses.push_back(std::make_pair(*it, waste[0]));
+        }
+    }
+    for(int i = 0; i < out_inventory.size(); i++){
+        std::vector<cyclus::Material::Ptr> discharge = cyclus::ResCast<Material>(out_inventory[i].PopN(out_inventory[i].count()));
+        for(int j = 1; j < discharge.size(); j++){
+            discharge[0]->Absorb(discharge[j]);
+        }
+        for (it = trades.begin(); it != trades.end(); ++it){
+            if(it->request->commodity() == commod_out[i]){
+                responses.push_back(std::make_pair(*it, discharge[0]));
+            }
+        }
+    }
+
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     extern "C" cyclus::Agent* ConstructReprocessFacility(cyclus::Context* ctx) {
         return new ReprocessFacility(ctx);
     }
+
 
 }

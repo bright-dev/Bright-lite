@@ -47,6 +47,8 @@ namespace fuelfab {
     }
 
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelfabFacility::GetMatlRequests() {
+
+         //std::cout << "ff GetMatreq" << std::endl;
         using cyclus::RequestPortfolio;
         using cyclus::Material;
         using cyclus::Composition;
@@ -59,13 +61,16 @@ namespace fuelfab {
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
         for(int i = 0; i < inventory.size(); i++){
             double qty = inventory[i].space();
-
+            //std::cout << "FF _ QTY " << qty << std::endl;
             port->AddRequest(target, this, in_commods[i]);
 
             CapacityConstraint<Material> cc(qty);
             port->AddConstraint(cc);
             ports.insert(port);
         }
+
+
+        //std::cout << "ff GetMatreq end" << std::endl;
         return ports;
     }
 
@@ -79,7 +84,7 @@ namespace fuelfab {
     using reactor::ReactorFacility;
     cyclus::Context* ctx = context();
     std::set<BidPortfolio<Material>::Ptr> ports;
-
+    //std::cout << "FF matbid" << std::endl;
     // respond to all requests of my commodity
     int inventory_test = 0;
     for(int i = 0; i < inventory.size(); i++){
@@ -119,7 +124,9 @@ namespace fuelfab {
                         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
                         limit = temp_limit*k/(reactor->batches);
                         double qty = limit + nlimit;
+                        //std::cout << qty << std::endl;
                         qty = qty <= 0 ? 1 : qty;
+                        //std::cout << qty << std::endl;
                         CapacityConstraint<Material> cc(qty);
                         cyclus::Material::Ptr manifest;
                         manifest = cyclus::ResCast<Material>(inventory[0].Pop());
@@ -143,7 +150,9 @@ namespace fuelfab {
                         limit = reactor->blend_next(inventory);
                         nlimit = reactor->core_mass/reactor->batches-limit;
                         double qty = limit + nlimit;
+                        //std::cout << qty << std::endl;
                         qty = qty <= 0 ? 1 : qty;
+                        //std::cout << qty << std::endl;
                         CapacityConstraint<Material> cc(qty);
                         cyclus::Material::Ptr manifest;
                         manifest = cyclus::ResCast<Material>(inventory[0].Pop());
@@ -160,10 +169,12 @@ namespace fuelfab {
                 }
             }
         }
+        return ports;
+        //std::cout << "FF matbid end" << std::endl;
     }
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
-
+        //std::cout << "ff TRADE start" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         for (it = responses.begin(); it != responses.end(); ++it) {
             for(int i = 0; i < in_commods.size(); i++){
@@ -172,6 +183,7 @@ namespace fuelfab {
                 }
             }
         }
+        //std::cout << "ff TRADE end" << std::endl;
     }
 
     void FuelfabFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
@@ -182,6 +194,7 @@ namespace fuelfab {
         std::map<cyclus::Trader*, int> facility_request;
         std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
         cyclus::Material::Ptr manifest;
+        //std::cout << "ffgetTRADE start" << std::endl;
         //Setting up comp map of requesters to number of requests
         for(it = trades.begin(); it != trades.end(); ++it){
             cyclus::Request<Material> req = *it->request;
@@ -271,6 +284,7 @@ namespace fuelfab {
                 }
             }
         }
+        //std::cout << "ff getTRADE end" << std::endl;
     }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     extern "C" cyclus::Agent* ConstructFuelfabFacility(cyclus::Context* ctx) {
