@@ -715,7 +715,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
-    cout << endl;
+    //cout << endl;
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
     fuelBundle core;
@@ -899,7 +899,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);
     cout << "burnup: " << burnup << endl;
 */
-    cout << "SS: " << burnup << endl;
+    //cout << "SS: " << burnup << endl;
     return burnup;
 }
 

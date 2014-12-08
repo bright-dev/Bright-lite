@@ -21,7 +21,7 @@ void ReactorFacility::Tick() {
     if(fuel_library_.name.size() == 0){
         std::string manifest_file = cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt";
-        std::cout << manifest_file << std::endl;
+        //std::cout << manifest_file << std::endl;
         std::ifstream inf(cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt"); //opens manifest file
         std::string line;
@@ -300,18 +300,19 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
         port->AddRequest(target, this, in_commods[0]);
         qty = core_mass/batches;
     }
+    //std::cout << "RX Request " << qty << std::endl;
     CapacityConstraint<Material> cc(qty);
 
     port->AddConstraint(cc);
     ports.insert(port);
-    //std::cout << "end getmatlrequests" << std::endl;
+   //std::cout << "end getmatlrequests" << std::endl;
     return ports;
 }
 
 // MatlBids //
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
-
+  //std::cout << "RX GetMatBid" << std::endl;
   using cyclus::BidPortfolio;
   using cyclus::CapacityConstraint;
   using cyclus::Converter;
@@ -362,6 +363,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
 }
 
 void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
+    //std::cout << "RX TRADE START" << std::endl;
     if(shutdown != true){
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
@@ -394,13 +396,14 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         }
       }
   }
+  //std::cout << "RX TRADE END" << std::endl;
 }
 
 void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
     using cyclus::Trade;
-
+    //std::cout << "RX getTRADE START" << std::endl;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
     //Remove the core loading
     if(shutdown == true){
@@ -419,6 +422,8 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
             responses.push_back(std::make_pair(*it, discharge));
         }
     }
+    //std::cout << "RX getTRADE end" << std::endl;
+
 }
 
 fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
@@ -609,7 +614,7 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                 mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                 cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                 mat1->Absorb(mat2);
-                std::cout << "Fraction SU " << fraction << std::endl;
+                //std::cout << "Fraction SU " << fraction << std::endl;
                 temp_bundle = comp_function(mat1, fuel_library_);
                 double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
                 int inter = 0;
@@ -620,8 +625,8 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
                     burnup_1 = burnup_2;
                     burnup_2 = burnup_3;
                     fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-                    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-                    std::cout << "fraction " << fraction << std::endl;
+                    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+                    //std::cout << "fraction " << fraction << std::endl;
                     mat1 = cyclus::Material::CreateUntracked(fraction, materials[0][j]->comp());
                     mat2 = cyclus::Material::CreateUntracked(1-fraction, materials[i][k]->comp());
                     mat1->Absorb(mat2);
@@ -640,8 +645,6 @@ double ReactorFacility::start_up(std::vector<cyclus::toolkit::ResourceBuff> inve
         }
     }
 }
-
-
 
 void ReactorFacility::batch_reorder(){
 //collapses each batch first, thgien orders them

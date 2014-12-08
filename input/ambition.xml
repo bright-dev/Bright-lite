@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>800</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -14,7 +14,7 @@
     <spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
-    <spec><lib>agents</lib><name>NullInst</name></spec>
+    <spec><lib>cycamore</lib><name>DeployInst</name></spec>
   </archetypes>
 
   <facility>
@@ -23,7 +23,7 @@
       <Source>
         <commod>fbl</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>1000000.0</capacity>
+	<capacity>10000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -34,7 +34,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>1000000.0</capacity>
+	    <capacity>100000.0</capacity>
       </Source>
     </config>
   </facility>  
@@ -45,7 +45,7 @@
       <Source>
         <commod>NU</commod>
         <recipe_name>NU_recipe</recipe_name>
-	    <capacity>1000000.0</capacity>
+	    <capacity>100.0</capacity>
       </Source>
     </config>
   </facility>  
@@ -100,7 +100,7 @@
       <FuelfabFacility>
         <in_commods>
             <val>fbl</val>
-	        <val>fbl1</val>
+	    <val>fbl1</val>
         </in_commods>
         <out_commod>fuel</out_commod>
       </FuelfabFacility>
@@ -131,7 +131,7 @@
       <FuelfabFacility>
         <in_commods>
             <val>reproFuel0</val>
-	        <val>NU</val>
+	    <val>NU</val>
         </in_commods>
         <out_commod>MOXfuel</out_commod>
       </FuelfabFacility>
@@ -149,7 +149,7 @@
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>50.0</target_burnup>
         <nonleakage>0.97</nonleakage>
-        <core_mass>1500.0</core_mass>
+        <core_mass>500.0</core_mass>
         <batches>3</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
@@ -178,7 +178,7 @@
         </entry>
         <entry>
           <prototype>Rx</prototype>
-          <number>10</number>
+          <number>4</number>
         </entry>
         <entry>
           <prototype>FFUOX</prototype>
@@ -196,16 +196,31 @@
           <prototype>Repro</prototype>
           <number>1</number>
         </entry>
-        <entry>
-          <prototype>FFMOX</prototype>
-          <number>1</number>
-        </entry>
-        <entry>
-          <prototype>RxMOX</prototype>
-          <number>1</number>
-        </entry>
       </initialfacilitylist>
-      <config> <NullInst/> </config>
+      <config> 
+	<DeployInst>
+	   <buildorder>
+	     <prototype>RxMOX</prototype>
+             <number>1</number>
+             <date>200</date>
+           </buildorder>
+	   <buildorder>
+	     <prototype>Rx</prototype>
+             <number>3</number>
+             <date>100</date>
+           </buildorder>
+	   <buildorder>
+	     <prototype>Rx</prototype>
+             <number>3</number>
+             <date>20</date>
+           </buildorder>
+	   <buildorder>
+	     <prototype>FFMOX</prototype>
+             <number>1</number>
+             <date>90</date>
+           </buildorder>
+        </DeployInst>
+      </config>
     </institution>
   </region>
 

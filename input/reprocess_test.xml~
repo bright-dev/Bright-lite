@@ -34,18 +34,15 @@
             <val>spentFuel</val>
         </in_commod>
         <commod_out>
-            <key>reproFuel0</key>
-            <val>recipe0</val>
-            <key>reproFuel1</key>
-            <val>recipe1</val>
-            <key>reproFuel2</key>
-            <val>recipe2</val>            
-            <key>reproFuel3</key>
-            <val>recipe3</val>
+            <val>reproFuel0</val>
+            <val>reproFuel1</val>       
         </commod_out>
+        <repro_input_path>../Bright-lite/input/reprocess_input.txt</repro_input_path>
+        <input_capacity>1000000</input_capacity>
+        <output_capacity>1000000</output_capacity>
       </ReprocessFacility>
     </config>
-  </facility>
+  </facility> 
 
   <facility>
     <name>Sink1</name>
@@ -115,59 +112,4 @@
     </nuclide>
   </recipe>
   
-  <recipe>
-    <name>recipe0</name>
-    <nuclide>
-      <id>922350000</id>
-      <comp>10.9214</comp>
-    </nuclide>
-    <nuclide>
-      <id>922380000</id>
-      <comp>10.9345</comp>
-    </nuclide>
-    <nuclide>
-      <id>922360000</id>
-      <comp>10.089345</comp>
-    </nuclide>
-  </recipe>
-  
-  <recipe>
-    <name>recipe1</name>
-    <basis>mass</basis>
-    <nuclide>
-      <id>U235</id>
-      <comp>0.01</comp>
-    </nuclide>
-    <nuclide>
-      <id>U238</id>
-      <comp>0.01</comp>
-    </nuclide>
-  </recipe>
-  
-  <recipe>
-    <name>recipe2</name>
-    <basis>mass</basis>
-    <nuclide>
-      <id>U235</id>
-      <comp>0.02</comp>
-    </nuclide>
-    <nuclide>
-      <id>U238</id>
-      <comp>0.01</comp>
-    </nuclide>
-  </recipe>
-  
-  <recipe>
-    <name>recipe3</name>
-    <basis>mass</basis>
-    <nuclide>
-      <id>U235</id>
-      <comp>0.01</comp>
-    </nuclide>
-    <nuclide>
-      <id>U238</id>
-      <comp>0.03</comp>
-    </nuclide>
-  </recipe>
-
 </simulation>
