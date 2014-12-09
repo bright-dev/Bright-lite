@@ -19,6 +19,7 @@ void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
     if(fuel_library_.name.size() == 0){
+        std::cout << "New " << libraries[0] << " reactor starting up - target burnup = " << target_burnup << std::endl;
         std::string manifest_file = cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt";
         //std::cout << manifest_file << std::endl;
@@ -241,7 +242,7 @@ void ReactorFacility::Tock() {
     /************************End of output file**************************/
 
   if(shutdown != true && record == true){
-      std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
+      //std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
@@ -521,7 +522,7 @@ double ReactorFacility::blend_next(std::vector<cyclus::toolkit::ResourceBuff> in
     if(refuels < batches){
         return SS_enrich;
         burnup_target = target_burnup/(batches+1)*(refuels+1);
-        std::cout << "Refuels: " << burnup_target << std::endl;
+        //std::cout << "Refuels: " << burnup_target << std::endl;
     } else {
         return SS_enrich;
     }

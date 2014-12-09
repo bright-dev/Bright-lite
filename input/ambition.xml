@@ -23,7 +23,7 @@
       <Source>
         <commod>fbl</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>10000.0</capacity>
+	<capacity>100.0</capacity>
       </Source>
     </config>
   </facility>
@@ -34,7 +34,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>100000.0</capacity>
+	    <capacity>4450.0</capacity>
       </Source>
     </config>
   </facility>  
@@ -82,8 +82,28 @@
             <val>fuel</val>
         </in_commods>
         <out_commod>spentFuel</out_commod>
-        <libraries><val>extLWR</val></libraries>
-        <target_burnup>40.0</target_burnup>
+        <libraries><val>standLWR</val></libraries>
+        <target_burnup>33.0</target_burnup>
+        <nonleakage>0.966</nonleakage>
+        <core_mass>1500.0</core_mass>
+        <batches>3</batches>
+        <flux_mode>1</flux_mode>
+        <cylindrical_delta>10</cylindrical_delta>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
+      </ReactorFacility>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx1</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>fuel</val>
+        </in_commods>
+        <out_commod>spentFuel</out_commod>
+        <libraries><val>lowLWR</val></libraries>
+        <target_burnup>20.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1500.0</core_mass>
         <batches>3</batches>
@@ -149,8 +169,8 @@
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>50.0</target_burnup>
         <nonleakage>0.97</nonleakage>
-        <core_mass>500.0</core_mass>
-        <batches>3</batches>
+        <core_mass>1500.0</core_mass>
+        <batches>4</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
@@ -178,7 +198,7 @@
         </entry>
         <entry>
           <prototype>Rx</prototype>
-          <number>4</number>
+          <number>3</number>
         </entry>
         <entry>
           <prototype>FFUOX</prototype>
@@ -205,19 +225,14 @@
              <date>200</date>
            </buildorder>
 	   <buildorder>
-	     <prototype>Rx</prototype>
+	     <prototype>Rx1</prototype>
              <number>3</number>
-             <date>100</date>
-           </buildorder>
-	   <buildorder>
-	     <prototype>Rx</prototype>
-             <number>3</number>
-             <date>20</date>
+             <date>150</date>
            </buildorder>
 	   <buildorder>
 	     <prototype>FFMOX</prototype>
              <number>1</number>
-             <date>90</date>
+             <date>10</date>
            </buildorder>
         </DeployInst>
       </config>

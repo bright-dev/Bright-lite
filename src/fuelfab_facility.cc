@@ -193,7 +193,7 @@ namespace fuelfab {
         using cyclus::Trade;
         std::map<cyclus::Trader*, int> facility_request;
         std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
-        cyclus::Material::Ptr manifest;
+        std::vector<cyclus::Material::Ptr> manifest;
         //std::cout << "ffgetTRADE start" << std::endl;
         //Setting up comp map of requesters to number of requests
         for(it = trades.begin(); it != trades.end(); ++it){
@@ -219,31 +219,16 @@ namespace fuelfab {
                         if(req.requester() == id->first){
                             limit = temp_limit*k/(reactor->batches);
                             nlimit = reactor->core_mass/reactor->batches-limit;
-                            manifest = cyclus::ResCast<Material>(inventory[0].Pop());
-                            Material::Ptr offer = manifest->ExtractComp(0., manifest->comp());
-                            //catch if over extracting from current fuel fab material
-                            if(limit > manifest->quantity()){
-                                double bonus = manifest->quantity();
-                                offer->Absorb(manifest->ExtractComp(manifest->quantity(), manifest->comp()));
-                                manifest = cyclus::ResCast<Material>(inventory[0].Pop());
-                                offer->Absorb(manifest->ExtractComp(limit-bonus, manifest->comp()));
-                            } else {
-                                offer = manifest->ExtractComp(limit, manifest->comp());
+                            manifest = cyclus::ResCast<Material>(inventory[0].PopQty(limit));
+                            Material::Ptr offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
+                            for(int i = 0; i < manifest.size(); i++){
+                                offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
-                            //std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
-                            inventory[0].Push(manifest);
-                            manifest = cyclus::ResCast<Material>(inventory[1].Pop());
-                            //catch for second resource buffer
-                            if(nlimit > manifest->quantity()){
-                                double bonus = manifest->quantity();
-                                offer->Absorb(manifest->ExtractComp(bonus, manifest->comp()));
-                                manifest = cyclus::ResCast<Material>(inventory[1].Pop());
-                                offer->Absorb(manifest->ExtractComp(nlimit-bonus, manifest->comp()));
-                            } else {
-                                offer->Absorb(manifest->ExtractComp(nlimit, manifest->comp()));
+
+                            manifest = cyclus::ResCast<Material>(inventory[1].PopQty(nlimit));
+                            for(int i = 0; i < manifest.size(); i++){
+                                offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
-                            //std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
-                            inventory[1].Push(manifest);
                             responses.push_back(std::make_pair(*it, offer));
                             k++;
                         }
@@ -255,29 +240,15 @@ namespace fuelfab {
                         if(req.requester() == id->first){
                             limit = reactor->blend_next(inventory);
                             nlimit = reactor->core_mass/reactor->batches-limit;
-                            manifest = cyclus::ResCast<Material>(inventory[0].Pop());
-                            Material::Ptr offer = manifest->ExtractComp(0., manifest->comp());
-                            if(limit > manifest->quantity()){
-                                double bonus = manifest->quantity();
-                                offer->Absorb(manifest->ExtractComp(manifest->quantity(), manifest->comp()));
-                                manifest = cyclus::ResCast<Material>(inventory[0].Pop());
-                                offer->Absorb(manifest->ExtractComp(limit-bonus, manifest->comp()));
-                            } else {
-                                offer = manifest->ExtractComp(limit, manifest->comp());
+                            manifest = cyclus::ResCast<Material>(inventory[0].PopQty(limit));
+                            Material::Ptr offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
+                            for(int i = 0; i < manifest.size(); i++){
+                                offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
-                            //std::cout << "limit " << limit << " : quant" << manifest->quantity() << std::endl;
-                            inventory[0].Push(manifest);
-                            manifest = cyclus::ResCast<Material>(inventory[1].Pop());
-                            if(nlimit > manifest->quantity()){
-                                double bonus = manifest->quantity();
-                                offer->Absorb(manifest->ExtractComp(bonus, manifest->comp()));
-                                manifest = cyclus::ResCast<Material>(inventory[1].Pop());
-                                offer->Absorb(manifest->ExtractComp(nlimit-bonus, manifest->comp()));
-                            } else {
-                                offer->Absorb(manifest->ExtractComp(nlimit, manifest->comp()));
+                            manifest = cyclus::ResCast<Material>(inventory[1].PopQty(nlimit));
+                            for(int i = 0; i < manifest.size(); i++){
+                                offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
-                            //std::cout << "nlimit " << nlimit << " : quant" << manifest->quantity() << std::endl;
-                            inventory[1].Push(manifest);
                             responses.push_back(std::make_pair(*it, offer));
                         }
                     }
