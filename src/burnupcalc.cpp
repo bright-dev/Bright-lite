@@ -215,7 +215,7 @@ double Siga_finder(batch_info batch){
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 fuelBundle phicalc_cylindrical(fuelBundle core){
-cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
+//cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
 
 //the word 'region' is interchanged with the word 'batch' in comments, water layer is the outermost region
 

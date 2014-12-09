@@ -16,12 +16,12 @@ namespace reprocess {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void ReprocessFacility::Tick() {
     //inventory check is done in this phase, inventories initialized in the beginning of simulation
-    	std::cout << std::endl << std::endl << "~~tick~~" << std::endl;
-    	std::cout << "Input inventory: " << input_inventory.quantity() << std::endl;
-    	std::cout << "Waste inventory: " << waste_inventory.quantity() << std::endl;
-    	for(int i = 0; i < out_inventory.size(); i++){
+    	//std::cout << std::endl << std::endl << "~~tick~~" << std::endl;
+    	//std::cout << "Input inventory: " << input_inventory.quantity() << std::endl;
+    	//std::cout << "Waste inventory: " << waste_inventory.quantity() << std::endl;
+    	/*for(int i = 0; i < out_inventory.size(); i++){
     	  std::cout << "Out inventory " << i << ": " << out_inventory[i].quantity() << std::endl;
-    	}
+    	}*/
 
     	//check to see beginning of simulation
     	if(pi != 3.141592){
@@ -65,13 +65,13 @@ namespace reprocess {
          }
     	}
 
-    	std::cout << "-//tick//-" << std::endl;
+    	//std::cout << "-//tick//-" << std::endl;
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void ReprocessFacility::Tock() {
     //the reprocessing is done in this phase
-    	std::cout << "~~tock~~" << std::endl;
+    	//std::cout << "~~tock~~" << std::endl;
 
 
     	//Creates a vector Material (manifest) that has been popped out.
@@ -79,7 +79,7 @@ namespace reprocess {
     	 double extract = output_capacity >= input_inventory.quantity() ? input_inventory.quantity() : output_capacity;
          manifest = cyclus::ResCast<cyclus::Material>(input_inventory.PopQty(extract));
          double tot_mass = 0; //total mass of the reprocessed batch (all isotopes)
-         std::cout << "Amount of inventory batches being reprocessed: " << manifest.size() << '\n';
+         //std::cout << "Amount of inventory batches being reprocessed: " << manifest.size() << '\n';
 
          for(int o = 0; o < out_eff.size(); o++){
              for(int m = 0; m < manifest.size(); m++){
@@ -117,7 +117,7 @@ namespace reprocess {
          //adds the remaining materials (the waste) in the waste_inventory
          waste_inventory.PushAll(manifest);
 
-    	std::cout << "-//tock//-" << std::endl;
+    	//std::cout << "-//tock//-" << std::endl;
     }
 
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReprocessFacility::GetMatlRequests() {
@@ -136,7 +136,7 @@ namespace reprocess {
         RequestPortfolio<Material>::Ptr port(new RequestPortfolio<Material>());
 
         double qty = input_inventory.space();
-        std::cout << "REPO " << qty << std::endl;
+        //std::cout << "REPO " << qty << std::endl;
         port->AddRequest(target, this, in_commod[0]);
 
         CapacityConstraint<Material> cc(qty);
@@ -145,7 +145,7 @@ namespace reprocess {
 
 
 
-        std::cout << "-//GetReq//-" << std::endl;
+        //std::cout << "-//GetReq//-" << std::endl;
         return ports;
     }
 
@@ -219,7 +219,8 @@ void ReprocessFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::M
         waste[0]->Absorb(waste[i]);
     }
     for (it = trades.begin(); it != trades.end(); ++it) {
-        std::cout << "Trade Commodity: "<<it->request->commodity() << std::endl;
+        //std::cout << "Trade Commodity: "<<it->request->commodity() << std::endl;
+        //std::cout << "Trade Commodity: "<<it->request->commodity() << std::endl;
         if(it->request->commodity() == commod_out[commod_out.size()-1]){
             responses.push_back(std::make_pair(*it, waste[0]));
         }
