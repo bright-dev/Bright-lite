@@ -75,15 +75,15 @@
   </facility>
 
   <facility>
-    <name>Rx</name>
+    <name>Rx1</name>
     <config>
       <ReactorFacility>
         <in_commods>
             <val>fuel</val>
         </in_commods>
         <out_commod>spentFuel</out_commod>
-        <libraries><val>standLWR</val></libraries>
-        <target_burnup>33.0</target_burnup>
+        <libraries><val>extLWR</val></libraries>
+        <target_burnup>35.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1500.0</core_mass>
         <batches>3</batches>
@@ -95,18 +95,39 @@
   </facility>
 
   <facility>
-    <name>Rx1</name>
+    <name>Rx2</name>
     <config>
       <ReactorFacility>
         <in_commods>
             <val>fuel</val>
         </in_commods>
         <out_commod>spentFuel</out_commod>
-        <libraries><val>lowLWR</val></libraries>
-        <target_burnup>20.0</target_burnup>
-        <nonleakage>0.966</nonleakage>
+        <libraries><val>standLWR</val></libraries>
+        <target_burnup>40.0</target_burnup>
+        <nonleakage>0.948</nonleakage>
         <core_mass>1500.0</core_mass>
         <batches>3</batches>
+        <flux_mode>1</flux_mode>
+        <cylindrical_delta>10</cylindrical_delta>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
+      </ReactorFacility>
+    </config>
+  </facility>
+  
+  
+  <facility>
+    <name>Rx3</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>fuel</val>
+        </in_commods>
+        <out_commod>spentFuel</out_commod>
+        <libraries><val>extLWR</val></libraries>
+        <target_burnup>45.0</target_burnup>
+        <nonleakage>0.966</nonleakage>
+        <core_mass>1500.0</core_mass>
+        <batches>4</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
@@ -197,8 +218,8 @@
           <number>1</number>
         </entry>
         <entry>
-          <prototype>Rx</prototype>
-          <number>3</number>
+          <prototype>Rx1</prototype>
+          <number>2</number>
         </entry>
         <entry>
           <prototype>FFUOX</prototype>
@@ -218,23 +239,28 @@
         </entry>
       </initialfacilitylist>
       <config> 
-	<DeployInst>
-	   <buildorder>
-	     <prototype>RxMOX</prototype>
+    <DeployInst>
+       <buildorder>
+         <prototype>RxMOX</prototype>
              <number>1</number>
              <date>200</date>
-           </buildorder>
-	   <buildorder>
-	     <prototype>Rx1</prototype>
-             <number>3</number>
-             <date>150</date>
-           </buildorder>
-	   <buildorder>
-	     <prototype>FFMOX</prototype>
+       </buildorder>
+       <buildorder>
+         <prototype>Rx2</prototype>
+             <number>2</number>
+             <date>60</date>
+       </buildorder>
+       <buildorder>
+         <prototype>Rx3</prototype>
+             <number>2</number>
+             <date>120</date>
+       </buildorder>
+       <buildorder>
+         <prototype>FFMOX</prototype>
              <number>1</number>
-             <date>10</date>
-           </buildorder>
-        </DeployInst>
+             <date>8</date>
+       </buildorder>
+    </DeployInst>
       </config>
     </institution>
   </region>
