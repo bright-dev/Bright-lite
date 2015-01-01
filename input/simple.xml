@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>10</duration>
+    <duration>100</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -55,10 +55,16 @@
 	       <val>42.5</val>
         </interpol_pairs>
         <batches>3</batches>
-        <reactor_life>90</reactor_life>
         <flux_mode>2</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
+        <trans_created>
+            <val>942380</val>
+            <val>942390</val>
+        </trans_created>
+        <trans_fission>
+            <val>922350</val>
+        </trans_fission>
       </ReactorFacility>
     </config>
   </facility>
@@ -91,11 +97,11 @@
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>4.3</comp>
+      <comp>4</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>95.7</comp>
+      <comp>96</comp>
     </nuclide>
   </recipe>
 

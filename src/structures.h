@@ -98,6 +98,8 @@ struct fuelBundle {
     double disadv_fuel_sigs; //disadvantage calc fuel Sig s
     double struct_prod; //neutron production rate of structural materials
     double struct_dest; //neutron destruction rate of structural materials
+    std::vector<int> trans_created; //list of fuel isotopes that are tracked for CR calc, numerator
+    std::vector<int> trans_fission; //list of fuel isotopes that are tracked for CR calc, denominator
     std::vector<batch_info> batch;
     std::vector<isoInformation> all_iso; //change to manifest
     std::vector<interpol_pair> interpol_pairs;
