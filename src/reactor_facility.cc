@@ -116,6 +116,16 @@ void ReactorFacility::Tick() {
 
         outfile.close();
 /************************End of output file*********************************/
+    
+        //read list of isotopes for conversion ratio calculation
+   ///inputed as string, should be able to handle just numbers or letter number descrptn of isos
+        for(int i = 0; i < trans_created.size(); i++){
+            fuel_library_.trans_created.push_back(std::stoi(trans_created[i]));
+                    }
+        for(int i = 0; i < trans_fission.size(); i++){
+            fuel_library_.trans_fission.push_back(std::stoi(trans_fission[i]));
+        }
+    
     }
 
 
@@ -214,9 +224,11 @@ void ReactorFacility::Tock() {
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
+        
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-        //std::cout << "burnup at shutdown " << burnup << std::endl;
+        std::cout << "burnup at shutdown " << burnup << std::endl;
+        std::cout << "  " << fuel_library_.batch[i].comp[942380]  << "  " << fuel_library_.batch[i].comp[942390]  << "  " << fuel_library_.batch[i].comp[942400]  << "  " << fuel_library_.batch[i].comp[942410]  << "  " << fuel_library_.batch[i].comp[942420] << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)

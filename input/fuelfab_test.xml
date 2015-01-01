@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>500</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -59,10 +59,10 @@
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>PWRMOX</val></libraries>
-        <target_burnup>60.0</target_burnup>
-        <nonleakage>0.966</nonleakage>
+        <target_burnup>51.0</target_burnup>
+        <nonleakage>0.97</nonleakage>
         <core_mass>1500.0</core_mass>
-        <batches>5</batches>
+        <batches>4</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
@@ -132,19 +132,31 @@
     <basis>mass</basis>
     <nuclide>
       <id>PU238</id>
-      <comp>0.031</comp>
+      <comp>0.000567</comp>
     </nuclide>
     <nuclide>
       <id>PU239</id>
-      <comp>0.5949</comp>
+      <comp>0.017448</comp>
     </nuclide>
     <nuclide>
       <id>PU240</id>
-      <comp>0.2297</comp>
+      <comp>0.006826</comp>
     </nuclide>
     <nuclide>
       <id>PU241</id>
-      <comp>0.2005</comp>
+      <comp>0.005643</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU242</id>
+      <comp>0.002269</comp>
+    </nuclide>
+    <nuclide>
+      <id>U235</id>
+      <comp>0.003322</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>0.463925</comp>
     </nuclide>
   </recipe>
 

@@ -88,7 +88,7 @@ class ReactorFacility : public cyclus::Facility  {
   int refuels;
 
   void batch_reorder();
-  /// This facility has one output commodity and one input commodity
+  
   double SS_enrich;
 
   #pragma cyclus var {"default": 0.001, \
@@ -253,6 +253,17 @@ class ReactorFacility : public cyclus::Facility  {
                       "userlevel": 1, \
                       "tooltip": "Time before reactor is shutdown after startup."}
   int reactor_life;
+  
+  #pragma cyclus var {"units": "NUCID", \
+                      "userlevel": 3, \
+                      "tooltip": "List of isotopes created for conversion ratio calculation."}
+  std::vector<std::string> trans_created;
+  
+  #pragma cyclus var {"units": "NUCID", \
+                      "userlevel": 3, \
+                      "tooltip": "List of isotopes fissioned for conversion ratio calculation."}
+  std::vector<std::string> trans_fission;
+  
 
  private:
   bool shutdown;
