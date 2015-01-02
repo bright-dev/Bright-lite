@@ -128,7 +128,7 @@ namespace fuelfab {
         } else {
             // Check for reactor start up
             if (reactor->inventory.count() == 0){
-                limit = reactor->start_up(fissle_inv, non_fissle_inv, inventory);
+                limit = reactor->start_up(fissle_inv, non_fissle_inv, inventory, in_commods);
                 double temp_limit = limit;
                 int k = 1;
                 //For each request from reactor create a trade portfolio
@@ -159,7 +159,7 @@ namespace fuelfab {
                     Request<Material>* req = *it;
                     if(req->requester() == id->first){
                         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
-                        limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory);
+                        limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
                         nlimit = reactor->core_mass/reactor->batches-limit;
                         double qty = limit + nlimit;
                         qty = qty <= 0 ? 1 : qty;
@@ -230,7 +230,7 @@ namespace fuelfab {
             } else {
                 //start up
                 if (reactor->inventory.count() == 0){
-                    limit = reactor->start_up(fissle_inv, non_fissle_inv, inventory);
+                    limit = reactor->start_up(fissle_inv, non_fissle_inv, inventory, in_commods);
                     double temp_limit = limit;
                     int k = 0;
                     for(it = trades.begin(); it!=trades.end(); ++it){
@@ -243,10 +243,18 @@ namespace fuelfab {
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
-
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                            }
+                            std::map<std::string, double>::iterator md;
+                            int k = 0;
+                            for(md = in_commods.begin(); md != in_commods.end(); ++md){
+                                manifest = cyclus::ResCast<Material>(inventory[k].PopQty(reactor->core_mass/reactor->batches * md->second));
+                                for(int i = 0; i < manifest.size(); i++){
+                                    offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                                }
+                                k++;
                             }
                             responses.push_back(std::make_pair(*it, offer));
                             k++;
@@ -257,7 +265,7 @@ namespace fuelfab {
                     for(it = trades.begin(); it!=trades.end(); ++it){
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
-                            limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory);
+                            limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commmods);
                             nlimit = reactor->core_mass/reactor->batches-limit;
                             manifest = cyclus::ResCast<Material>(fissle_inv, manifest[0]->comp());
                             for(int i = 0; i < manifest.size(); i++){
@@ -266,6 +274,15 @@ namespace fuelfab {
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                            }
+                            std::map<std::string, double>::iterator md;
+                            int k = 0;
+                            for(md = in_commods.begin(); md != in_commods.end(); ++md){
+                                manifest = cyclus::ResCast<Material>(inventory[k].PopQty(reactor->core_mass/reactor->batches * md->second));
+                                for(int i = 0; i < manifest.size(); i++){
+                                    offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                                }
+                                k++;
                             }
                             responses.push_back(std::make_pair(*it, offer));
                         }
