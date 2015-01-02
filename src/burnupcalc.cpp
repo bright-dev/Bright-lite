@@ -797,7 +797,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         core.batch[N-1].collapsed_iso.batch_fluence = 0;
         core.batch[N-1].Fg = 0;
 
-        if(abs(burnup - BU_prev)/burnup < 0.01 && counter > 15){
+        if(abs(burnup - BU_prev)/burnup < 0.0001 && counter > 5){
             notsteady = false;
         }
         counter++;
