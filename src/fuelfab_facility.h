@@ -74,6 +74,9 @@ class FuelfabFacility : public cyclus::Facility  {
                                         cyclus::Material::Ptr> >& responses);
 
     double start_time;
+
+    cyclus::toolkit::ResourceBuff fissle_inv;
+    cyclus::toolkit::ResourceBuff non_fissle_inv;
     // and away we go!
     std::vector<cyclus::toolkit::ResourceBuff> inventory;
 
@@ -81,10 +84,18 @@ class FuelfabFacility : public cyclus::Facility  {
                         "default": 1E60}
     double maximum_storage;
 
+    #pragma cyclus var {"uitype": "incommodity", \
+                        "uilabel": "Fissle Stream"}
+    std::string fissle_stream;
+
+    #pragma cyclus var {"uitype": "incommodity", \
+                        "uilabel": "Nonfissle Stream"}
+    std::string non_fissle_stream;
+
     #pragma cyclus var {"tooltip": "input commodities", \
                         "doc": "A list of the commodities that this facility can recieve", \
                         "uitype": ["oneOrMore", "incommodity", " "]}
-    std::vector<std::string> in_commods;
+    std::map<std::string, double> in_commods;
 
     #pragma cyclus var {"tooltip": "output commodity", \
                       "doc": "commodity that the brightlite supplies", \
