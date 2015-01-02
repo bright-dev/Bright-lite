@@ -84,11 +84,13 @@ class ReactorFacility : public cyclus::Facility  {
 
   double blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
-                                   std::vector<cyclus::toolkit::ResourceBuff> inventory);
+                                   std::vector<cyclus::toolkit::ResourceBuff> inventory,
+                                   std::map<std::string, double> incommods);
 
   double start_up(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
-                                   std::vector<cyclus::toolkit::ResourceBuff> inventory);
+                                   std::vector<cyclus::toolkit::ResourceBuff> inventory,
+                                   std::map<std::string, double> incommods);
   int refuels;
 
   void batch_reorder();
