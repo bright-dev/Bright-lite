@@ -390,49 +390,45 @@ double kcalc(fuelBundle core){
     return prod_tot * pnl / dest_tot;
 }
 
-double CR_numerator(fuelBundle core){
+double CR_numerator(fuelBundle core, int i){
     //uses the trans_created and Fg and returns transuranics for CR calculation numerator of fuel
+    //i is the batch number starting from zero
     double numerator = 0;
     
-    for(int i = 0; i < core.batch.size(); i++){
-        for(int j = 0; j < core.trans_created.size(); j++){
-            int point;
-            //find dicrete point to interpolate on
-            for(point = 0; core.batch[i].collapsed_iso.fluence[point] < core.batch[i].Fg; point++){}
-            if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-                point = core.batch[i].collapsed_iso.fluence.size() - 1;
+    
+    for(int j = 0; j < core.trans_created.size(); j++){
+        int point;
+        //find dicrete point to interpolate on
+        for(point = 0; core.batch[i].collapsed_iso.fluence[point] < core.batch[i].Fg; point++){}
+        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
+            point = core.batch[i].collapsed_iso.fluence.size() - 1;
+        }
+        for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
+            if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_created[j]){
+                numerator += intpol(core.batch[i].collapsed_iso.iso_vector[k].mass[point-1],core.batch[i].collapsed_iso.iso_vector[k].mass[point], core.batch[i].collapsed_iso.fluence[point-1], core.batch[i].collapsed_iso.fluence[point], core.batch[i].Fg);
             }
-            for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
-                if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_created[j]){
-                    numerator += intpol(core.batch[i].collapsed_iso.iso_vector[k].mass[point-1],core.batch[i].collapsed_iso.iso_vector[k].mass[point], core.batch[i].collapsed_iso.fluence[point-1], core.batch[i].collapsed_iso.fluence[point], core.batch[i].Fg);
-                }
-            }
-        }   
-    }
+        }
+    }   
+    
     cout << "CR numerator: " << numerator << endl;
     return numerator;
 }
 
 
-double CR_denominator(fuelBundle core){
+double CR_denominator(fuelBundle core, int i){
     //uses the trans_fission and Fg and returns transuranics for CR calculation denominator of fuel
+    //i is the batch number starting from zero
+    //unlike the numerator, independent of fluence
     double denominator = 0;
     
-    for(int i = 0; i < core.batch.size(); i++){
-        for(int j = 0; j < core.trans_fission.size(); j++){
-            int point;
-            //find dicrete point to interpolate on
-            for(point = 0; core.batch[i].collapsed_iso.fluence[point] < core.batch[i].Fg; point++){}
-            if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-                point = core.batch[i].collapsed_iso.fluence.size() - 1;
+    for(int j = 0; j < core.trans_fission.size(); j++){
+        for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
+            if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_fission[j]){
+                denominator += core.batch[i].collapsed_iso.iso_vector[k].mass[0];
             }
-            for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
-                if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_fission[j]){
-                    denominator += intpol(core.batch[i].collapsed_iso.iso_vector[k].mass[point-1],core.batch[i].collapsed_iso.iso_vector[k].mass[point], core.batch[i].collapsed_iso.fluence[point-1], core.batch[i].collapsed_iso.fluence[point], core.batch[i].Fg);
-                }
-            }
-        }   
-    }
+        }
+    }   
+    
     cout << "CR denominator: " << denominator << endl;
     return denominator;
 }
@@ -487,8 +483,6 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         kcore_prev = kcore;
         //if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
         
-        cout << "CR: " << CR_numerator(core)/CR_denominator(core) << endl << endl;
-
         //find the normalized relative flux of each batch
         if(mode == 1){
             //simplest case, all batches get the same flux
@@ -520,7 +514,9 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         kcore = kcalc(core);
     }
     //cout << endl;
-
+    
+    cout << "CR: " << CR_numerator(core, N-1)/CR_denominator(core, N-1) << endl << endl;
+    
     //update core fluences
     for(int i = 0; i < N; i++){
         //y0 is the fluence value before the last interation
