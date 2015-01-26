@@ -557,7 +557,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.0001){
+    while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.001){
         fraction_1 = fraction_2;
         fraction_2 = fraction;
         burnup_1 = burnup_2;
