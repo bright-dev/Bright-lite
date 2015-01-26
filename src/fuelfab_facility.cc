@@ -70,19 +70,20 @@ namespace fuelfab {
         qty = non_fissle_inv.space();
         port2->AddRequest(target, this, non_fissle_stream);
         CapacityConstraint<Material> cc2(qty);
-        port2->AddConstraint(cc);
-        ports.insert(port);
+        port2->AddConstraint(cc2);
+        ports.insert(port2);
 
         std::map<std::string, double>::iterator i;
+        int it = 0;
         for(i = in_commods.begin(); i != in_commods.end(); ++i){
-            double qty = inventory[i].space();
+            qty = inventory[it].space();
             RequestPortfolio<Material>::Ptr port3(new RequestPortfolio<Material>());
             //std::cout << "FF _ QTY " << qty << std::endl;
-            port->AddRequest(target, this, in_commods[i]);
-
+            port3->AddRequest(target, this, i->first);
             CapacityConstraint<Material> cc3(qty);
-            port->AddConstraint(cc);
-            ports.insert(port);
+            port3->AddConstraint(cc);
+            ports.insert(port3);
+            it++;
         }
         //std::cout << "ff GetMatreq end" << std::endl;
         return ports;
@@ -101,6 +102,9 @@ namespace fuelfab {
     //std::cout << "FF matbid" << std::endl;
     // respond to all requests of my commodity
     int inventory_test = 0;
+    if(fissle_inv.count() > 0 && non_fissle_inv.count() > 0 ){
+        inventory_test += 1;
+    }
     for(int i = 0; i < inventory.size(); i++){
         if(inventory[i].count() > 0){
             inventory_test += 1;
@@ -137,6 +141,7 @@ namespace fuelfab {
                     if(req->requester() == id->first){
                         BidPortfolio<Material>::Ptr port(new BidPortfolio<Material>());
                         limit = temp_limit*k/(reactor->batches);
+                        nlimit = reactor->core_mass/reactor->batches-limit;
                         double qty = limit + nlimit;
                         qty = qty <= 0 ? 1 : qty;
                         CapacityConstraint<Material> cc(qty);
@@ -173,14 +178,14 @@ namespace fuelfab {
                         non_fissle_inv.Push(manifest);
                         port->AddBid(req, offer, this);
                         port->AddConstraint(cc);
-                        ports.insert(port)
+                        ports.insert(port);
                         }
                     }
                 }
             }
         }
-        return ports;
         //std::cout << "FF matbid end" << std::endl;
+        return ports;
     }
 
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
@@ -190,7 +195,7 @@ namespace fuelfab {
             std::map<std::string, double>::iterator i;
             double k = 0;
             for(i = in_commods.begin(); i != in_commods.end(); ++i){
-                if(it->first.request->commodity() == in_commods[i]){
+                if(it->first.request->commodity() == i->first){
                     inventory[k].Push(it->second);
                 }
                 k++;
@@ -265,9 +270,10 @@ namespace fuelfab {
                     for(it = trades.begin(); it!=trades.end(); ++it){
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
-                            limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commmods);
+                            limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
                             nlimit = reactor->core_mass/reactor->batches-limit;
-                            manifest = cyclus::ResCast<Material>(fissle_inv, manifest[0]->comp());
+                            manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(limit));
+                            Material::Ptr offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }

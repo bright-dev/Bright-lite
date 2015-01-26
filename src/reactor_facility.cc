@@ -512,6 +512,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    std::map<std::string, double> incommods){
     double return_amount;//function return the amount of first stream in inventory to reach target burnup
     double return_prev = SS_enrich;
+    double mass_frac = 1.;
     //turn inventory to materials
     //Read the fuelfab inventory
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
@@ -537,19 +538,19 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     }*/
 
     double fraction_1 = 0;
-    cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(1, non_fissile_mani[0]->comp());
+    cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(mass_frac, non_fissile_mani[0]->comp());
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_1 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
     //Finding the second burnup iterator
-    double fraction_2 = 1;
-    mat1 = cyclus::Material::CreateUntracked(1, fissile_mani[0]->comp());
+    double fraction_2 = mass_frac;
+    mat1 = cyclus::Material::CreateUntracked(mass_frac, fissile_mani[0]->comp());
     temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
-    cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
+    cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
     //std::cout << "Fraction SU " << fraction << std::endl;
     temp_bundle = comp_function(mat1, fuel_library_);
@@ -565,7 +566,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
         //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
-        mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
+        mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
         temp_bundle = comp_function(mat1, fuel_library_);
         burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
@@ -584,10 +585,10 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
                                  std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                  std::map<std::string, double> incommods){
     double return_amount;
-    double mass_frac;
+    double mass_frac = 1.;
     //Read the fuelfab inventory
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
-    std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(fissle.count()));
+    std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
 
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
     for(int i = 0; i < inventory.size(); i++){
@@ -601,10 +602,14 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     std::map<std::string, double>::iterator it;
     for(it = incommods.begin(); it!=incommods.end(); ++it){
         double frac = it->second;
-        if(inventory[i].quantity() > core_mass * frac;
-        mass_frac -= frac;
+        if(inventory[i].quantity() > core_mass * frac){
+            mass_frac -= frac;
+        }
     }
-
+    /** TODO  - add in a precalculation of the total mass in the fuel from incommods
+                this means check that there is enough in incommods and then create a
+                new material for this section.
+    **/
     // Starting blending of materials
     double fraction_1 = 0;
     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(mass_frac, non_fissile_mani[0]->comp());
@@ -617,7 +622,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
-    double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 X- fraction_2)/(burnup_1 - burnup_2));
+    double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);

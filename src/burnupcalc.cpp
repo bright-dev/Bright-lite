@@ -771,7 +771,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
             iter++;
             if(iter > 100){
-                cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
+                //cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
                 continue;
             }
         }
