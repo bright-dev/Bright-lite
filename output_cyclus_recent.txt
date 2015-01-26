@@ -1,0 +1,19 @@
+Fuel library name: extLWR
+Batches: 3
+libcheck: 0
+Leakage: 0.966
+Burnup calculation timestep: 40 [days]
+Flux calculation method: 2
+
+|Thermal disadvantage calculation:
+| Fuel radius: 0.4095 [cm]
+| Moderator radius: 0.70749 [cm]
+| Moderator Sigma_a: 0.222 [cm-1]
+| Moderator Sigma_s: 3.44 [cm-1]
+| Fuel Sigma_s: 0.43 [cm-1]
+
+Base flux: 1.08694e-322
+Base power: 1000
+Base mass: 750
+
+
