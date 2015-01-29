@@ -768,14 +768,13 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
             kcore = kcalc(core);
-
+            //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 100){
-                //cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
+                cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
                 continue;
             }
         }
-
         //update core fluences
         for(int i = 0; i < N; i++){
 
