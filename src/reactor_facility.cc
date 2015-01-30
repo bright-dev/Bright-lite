@@ -4,7 +4,7 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-      cycle_end_ = ctx->time() +1;
+      cycle_end_ = ctx->time() +2;
       start_time_ = cycle_end_;
       shutdown = false;
       refuels = 0;
@@ -465,7 +465,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
                 isoInformation temp_iso;
                 temp_iso = temp_bundle.all_iso[j];
                 temp_iso.fraction = it->second;
-                std::cout << "Name: " << it->first << "Amount " << it->second << std::endl;
+                //std::cout << "Name: " << it->first << "Amount " << it->second << std::endl;
                 temp_bundle.batch[0].iso.push_back(temp_iso);
             }
         }
@@ -633,7 +633,6 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     //Read the fuelfab inventory
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
-
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
     for(int i = 0; i < inventory.size(); i++){
         std::vector<cyclus::Material::Ptr> manifest;
@@ -706,7 +705,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         }
         inter++;
     }
-    return_amount = fraction * total_mass * mass_frac;
+    return_amount = fraction * total_mass;
     SS_enrich = return_amount;
     return return_amount;
 }
@@ -747,8 +746,6 @@ void ReactorFacility::batch_reorder(){
 }
 
 ///TODO Make this better.
-
-
 
 void CompOutMat(cyclus::Material mat1){
     cyclus::CompMap comp;
