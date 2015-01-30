@@ -71,7 +71,7 @@ namespace reprocess {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void ReprocessFacility::Tock() {
     //the reprocessing is done in this phase
-    	//std::cout << "~~tock~~" << std::endl;
+    	//std::cout << "~~REPOtock~~" << std::endl;
 
 
     	//Creates a vector Material (manifest) that has been popped out.
@@ -93,7 +93,7 @@ namespace reprocess {
                    if(out_it->first == mani_it->first){
                      //std::cout << mani_it->first << "   " << mani_it->second << "   " << out_it->second << std::endl;
                      temp_comp[mani_it->first] = mani_it->second * out_it->second;
-                     tot_mass += manifest[m]->quantity() * mani_it->second * out_it->second;
+                     tot_mass += mani_it->second * out_it->second;
                    }
                  }
                }
@@ -117,11 +117,11 @@ namespace reprocess {
          //adds the remaining materials (the waste) in the waste_inventory
          waste_inventory.PushAll(manifest);
 
-    	//std::cout << "-//tock//-" << std::endl;
+    	//std::cout << "-//REPOtock//-" << std::endl;
     }
 
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReprocessFacility::GetMatlRequests() {
-        //std::cout << "~~GetReq~~" << std::endl;
+        //std::cout << "~~REPOGetReq~~" << std::endl;
         using cyclus::RequestPortfolio;
         using cyclus::Material;
         using cyclus::Composition;
@@ -145,14 +145,14 @@ namespace reprocess {
 
 
 
-        //std::cout << "-//GetReq//-" << std::endl;
+        //std::cout << "-//REPOGetReqEND//-" << std::endl;
         return ports;
     }
 
     // MatlBids //
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>ReprocessFacility::GetMatlBids(
             cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
-        //std::cout << "~~GetBid~~" << std::endl;
+        //std::cout << "~~REPOGetBid~~" << std::endl;
 
         using cyclus::Bid;
         using cyclus::BidPortfolio;
@@ -193,23 +193,25 @@ namespace reprocess {
                 out_inventory[i].PushAll(manifest);
             }
         }
+        //std::cout << "~~REPOGetBidEND~~" << std::endl;
         return ports;
 
     }
 
 void ReprocessFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
-    //std::cout << "~~AcptTrades~~" << std::endl;
+    //std::cout << "~~REPOAcptTrades~~" << std::endl;
 
     std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
     for (it = responses.begin(); it != responses.end(); ++it) {
          input_inventory.Push(it->second);
     }
 
-    //std::cout << "-//AcptTrades//-" << std::endl;
+    //std::cout << "-//REPO ENDAcptTrades//-" << std::endl;
 }
 
 void ReprocessFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
+    //std::cout << "REPOMAT TRADES BEGIN" << std::endl;
     using cyclus::Material;
     using cyclus::Trade;
     std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
@@ -235,6 +237,7 @@ void ReprocessFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::M
                 responses.push_back(std::make_pair(*it, discharge[0]));
             }
         }
+    //std::cout << "REPOMAT TRADES END" << std::endl;
     }
 
 }
