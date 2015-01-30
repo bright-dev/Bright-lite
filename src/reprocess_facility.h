@@ -82,11 +82,11 @@ class ReprocessFacility : public cyclus::Facility  {
   #pragma cyclus var {"tooltip": "input commodity", \
                       "doc": "commodity that the brightlite reprocess facility consumes", \
                       "schematype": "token", \
-                      "uitype": "incommodity"}
+                      "uitype": ["oneOrMore", "incommodity"]}
   std::vector<std::string> in_commod;
 
   #pragma cyclus var {"tooltip": "output commodity", \
-                      "uitype": "outcommodity"}
+                      "uitype": ["oneOrMore", "outcommodity"]}
   std::vector<std::string> commod_out;
 
   #pragma cyclus var {"tooltip": "Efficiency input file"}
