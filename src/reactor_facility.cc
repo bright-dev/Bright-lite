@@ -465,7 +465,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
                 isoInformation temp_iso;
                 temp_iso = temp_bundle.all_iso[j];
                 temp_iso.fraction = it->second;
-                //std::cout << "Name: " << it->first << "Amount " << it->second << std::endl;
+                std::cout << "Name: " << it->first << "Amount " << it->second << std::endl;
                 temp_bundle.batch[0].iso.push_back(temp_iso);
             }
         }
@@ -527,6 +527,13 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     double mass_frac = 1.;
     //turn inventory to materials
     //Read the fuelfab inventory
+    if(refuels < batches){
+        return SS_enrich;
+        //burnup_target = target_burnup/(batches+1)*(refuels+1);
+        //std::cout << "Refuels: " << burnup_target << std::endl;
+    } else {
+        return SS_enrich;
+    }
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
 
