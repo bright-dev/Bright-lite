@@ -66,6 +66,7 @@ struct batch_info {
     double rflux; //relative flux of batch
     double DA; //thermal disadvantage, phi_M/phi_F
     double discharge_BU; //the discharge burnup of the batch
+    double CR; //conversion ratio at the batch_fluence fluence level
     std::map<int, double> comp; //current composition of batch at this batch_fluence
 };
 
@@ -73,6 +74,7 @@ struct fuelBundle {
     std::string name;
     std::string operation_type;
     int tot_batch;
+    int CR_terminal;
     bool libcheck;
     double pnl; //leakage
     double tres; //residence time
