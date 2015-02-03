@@ -117,7 +117,7 @@ void ReactorFacility::Tick() {
 
         outfile.close();
 /************************End of output file*********************************/
-    
+
         //read list of isotopes for conversion ratio calculation
    ///inputed as string, should be able to handle just numbers or letter number descrptn of isos
         for(int i = 0; i < trans_created.size(); i++){
@@ -126,7 +126,7 @@ void ReactorFacility::Tick() {
         for(int i = 0; i < trans_fission.size(); i++){
             fuel_library_.trans_fission.push_back(std::stoi(trans_fission[i]));
         }
-    
+
     }
 
 
@@ -175,7 +175,7 @@ void ReactorFacility::Tock() {
                     std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
                     isoInformation temp_iso;
                     temp_iso = fuel_library_.all_iso[j];
-                    temp_iso.fraction = it->second;
+                    temp_iso.fraction = it->second/(core_mass/batches);
                     fuel_library_.batch[i].iso.push_back(temp_iso);
                 }
             }
@@ -226,7 +226,7 @@ void ReactorFacility::Tock() {
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
-        
+
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
         std::cout << "burnup at shutdown " << burnup << std::endl;
