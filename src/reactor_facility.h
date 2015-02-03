@@ -264,6 +264,11 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "List of isotopes fissioned for conversion ratio calculation."}
   std::vector<std::string> trans_fission;
 
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 0, \
+                      "tooltip": "Suppress CR to be displayed in terminal, 1:display."}
+  int CR_terminal;
+
 
  private:
   bool shutdown;
