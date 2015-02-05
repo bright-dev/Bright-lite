@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>800</duration>
+    <duration>1000</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -34,7 +34,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>4450.0</capacity>
+	    <capacity>3050.0</capacity>
       </Source>
     </config>
   </facility>  
@@ -83,7 +83,7 @@
         </in_commods>
         <out_commod>spentFuel</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>35.0</target_burnup>
+        <target_burnup>50.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1500.0</core_mass>
         <batches>3</batches>
@@ -105,7 +105,7 @@
         <libraries><val>standLWR</val></libraries>
         <target_burnup>40.0</target_burnup>
         <nonleakage>0.948</nonleakage>
-        <core_mass>1500.0</core_mass>
+        <core_mass>2000.0</core_mass>
         <batches>3</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
@@ -188,7 +188,7 @@
         </in_commods>
         <out_commod>spentMOX</out_commod>
         <libraries><val>PWRMOX</val></libraries>
-        <target_burnup>50.0</target_burnup>
+        <target_burnup>51.0</target_burnup>
         <nonleakage>0.97</nonleakage>
         <core_mass>1500.0</core_mass>
         <batches>4</batches>

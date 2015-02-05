@@ -82,9 +82,15 @@ class ReactorFacility : public cyclus::Facility  {
 
   fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
 
-  double blend_next(std::vector<cyclus::toolkit::ResourceBuff> inventory);
+  double blend_next(cyclus::toolkit::ResourceBuff fissle,
+                                   cyclus::toolkit::ResourceBuff non_fissle,
+                                   std::vector<cyclus::toolkit::ResourceBuff> inventory,
+                                   std::map<std::string, double> incommods);
 
-  double start_up(std::vector<cyclus::toolkit::ResourceBuff> inventory);
+  double start_up(cyclus::toolkit::ResourceBuff fissle,
+                                   cyclus::toolkit::ResourceBuff non_fissle,
+                                   std::vector<cyclus::toolkit::ResourceBuff> inventory,
+                                   std::map<std::string, double> incommods);
   int refuels;
 
   void batch_reorder();

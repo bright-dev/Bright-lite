@@ -364,7 +364,7 @@ double kcalc(fuelBundle core){
         //find dicrete point j to interpolate on
         for(j = 0; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){}
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (kcalc)" << endl;
+            //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (kcalc)" << endl;
             //cout << "  Values on max fluence will be used. Do not trust results." << endl;
             j = core.batch[i].collapsed_iso.fluence.size() - 1;
         }
@@ -656,22 +656,26 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
         for(int i = 0; i < N; i++){
             //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+            //cout << "i " << i << "  " <<  core.batch[i].Fg << endl;
         }
         //cout << " " <<counter++;
         kcore = kcalc(core);
+        //cout << kcore << endl;
     }
 
-    core.batch[0].Fg = intpol(y0, y1, kcore_prev, kcore, 1);
+    //core.batch[0].Fg = intpol(y0, y1, kcore_prev, kcore, 1);
+    //cout << core.batch[0].Fg <<" asdfa" <<endl;
 
     //the oldest batch is always index=0
     int ii;
     for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].Fg; ii++){}
     if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].Fg){
-        //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc3)" << endl;
-        //cout << "  Values on max fluence will be used. Do not trust results." << endl;
+        cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc3)" << endl;
+        cout << "  Values on max fluence will be used. Do not trust results." << endl;
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
+       //return core.batch[0].collapsed_iso.BU[ii];
     }
-    burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
+    burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].Fg);
 
     //cout<< "BURNUPUPUPUPU: " << burnup<< endl;
     core.batch[0].discharge_BU = burnup;
@@ -816,14 +820,13 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
             kcore = kcalc(core);
-
+            //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 100){
-                cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
+                //cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
                 continue;
             }
         }
-
         //update core fluences
         for(int i = 0; i < N; i++){
 
@@ -845,7 +848,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         core.batch[N-1].collapsed_iso.batch_fluence = 0;
         core.batch[N-1].Fg = 0;
 
-        if(abs(burnup - BU_prev)/burnup < 0.01 && counter > 15){
+        if(abs(burnup - BU_prev)/burnup < 0.0001 && counter > 5){
             notsteady = false;
         }
         counter++;
