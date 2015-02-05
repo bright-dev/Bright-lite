@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>1000</duration>
+    <duration>800</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -34,7 +34,7 @@
       <Source>
         <commod>fbl1</commod>
         <recipe_name>U238</recipe_name>
-	    <capacity>3050.0</capacity>
+	    <capacity>4450.0</capacity>
       </Source>
     </config>
   </facility>  
@@ -67,7 +67,7 @@
     <config>
       <Sink>
         <in_commods>
-          <val>spentMOX</val>
+          <val>spentFF</val>
         </in_commods>
         <capacity>1000000.0</capacity>
       </Sink>
@@ -83,7 +83,7 @@
         </in_commods>
         <out_commod>spentFuel</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>50.0</target_burnup>
+        <target_burnup>35.0</target_burnup>
         <nonleakage>0.966</nonleakage>
         <core_mass>1500.0</core_mass>
         <batches>3</batches>
@@ -122,7 +122,7 @@
         <libraries><val>standLWR</val></libraries>
         <target_burnup>40.0</target_burnup>
         <nonleakage>0.948</nonleakage>
-        <core_mass>2000.0</core_mass>
+        <core_mass>1500.0</core_mass>
         <batches>3</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
@@ -225,25 +225,29 @@
             <val>reproFuel0</val>
 	    <val>NU</val>
         </in_commods>
-        <out_commod>MOXfuel</out_commod>
+        <out_commod>FFfuel</out_commod>
       </FuelfabFacility>
     </config>
   </facility>    
-  
+
   <facility>
-    <name>RxMOX</name>
+    <name>RxFR</name>
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>MOXfuel</val>
+            <val>FFfuel</val>       
         </in_commods>
-        <out_commod>spentMOX</out_commod>
-        <libraries><val>PWRMOX</val></libraries>
-        <target_burnup>51.0</target_burnup>
-        <nonleakage>0.97</nonleakage>
-        <core_mass>1500.0</core_mass>
-        <batches>4</batches>
-        <flux_mode>1</flux_mode>
+        <out_commod>spentFF</out_commod>
+        <libraries><val>FR50</val></libraries>
+        <target_burnup>185.0</target_burnup>
+        <nonleakage>0.57</nonleakage>
+        <core_mass>300.0</core_mass>
+    	<interpol_pairs>
+           <key>BURNUP</key>
+	       <val>185</val>
+        </interpol_pairs>
+        <batches>6</batches>
+        <flux_mode>2</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
         <trans_created>
@@ -265,7 +269,7 @@
         <CR_terminal>1</CR_terminal>
       </ReactorFacility>
     </config>
-  </facility>  
+  </facility>
 
   <region>
     <name>SingleRegion</name>
@@ -309,7 +313,7 @@
       <config> 
     <DeployInst>
        <buildorder>
-         <prototype>RxMOX</prototype>
+         <prototype>RxFR</prototype>
              <number>1</number>
              <date>200</date>
        </buildorder>

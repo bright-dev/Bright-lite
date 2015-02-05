@@ -410,7 +410,7 @@ double CR_numerator(fuelBundle core, int i){
         }
     }   
     
-    cout << "CR numerator: " << numerator << endl;
+    //cout << "CR numerator: " << numerator << endl;
     return numerator;
 }
 
@@ -429,7 +429,8 @@ double CR_denominator(fuelBundle core, int i){
         }
     }   
     
-    cout << "CR denominator: " << denominator << endl;
+    
+    //cout << "CR denominator: " << denominator << endl;
     return denominator;
 }
 
@@ -477,7 +478,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     kcore = 3.141592;
     kcore_prev = kcalc(core);
 
-
+    cout << endl;
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
@@ -503,6 +504,9 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         if(DA_mode == 1){
             core = DA_calc(core);
         }
+        
+        //CR calculation
+        //cout << CR_numerator(core, 5)/CR_denominator(core, 5) << " ";
 
         //update fluences
         for(int i = 0; i < N; i++){
@@ -515,14 +519,15 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     }
     //cout << endl;
     
-    cout << "CR: " << CR_numerator(core, N-1)/CR_denominator(core, N-1) << endl << endl;
     
-    //update core fluences
+    //update core fluences and CR
     for(int i = 0; i < N; i++){
         //y0 is the fluence value before the last interation
         y0 = core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt);
         y1 = core.batch[i].Fg;
         core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
+        core.batch[i].CR = CR_numerator(core,i)/CR_denominator(core,i);
+        //cout << "batch " << i+1 << " CR: " << core.batch[i].CR << endl;
         //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
 
     }
@@ -545,7 +550,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         }
     }
 
-    //the oldest batch is always index=0
+    //the oldest batch is index=0
     int ii;
     for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
     if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
@@ -554,12 +559,22 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         ii = core.batch[0].collapsed_iso.fluence.size() - 1;
     }
 
+
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
     core.batch[0].discharge_BU = burnup;
+    core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
+    
+    if(core.CR_terminal == 1){
+        cout << "CR: ";
+        for(int i = N-1; i >= 0; i--){
+            cout << core.batch[i].CR << " " ;
+        }
+        cout << endl;
+    }
 
 
-    cout << endl << "Discharge burnup: " << burnup << endl << endl;
+    cout << "Discharge burnup: " << burnup << endl;
 
     /************************output file*********************************/
     std::ofstream outfile;

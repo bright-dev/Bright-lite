@@ -68,7 +68,13 @@
         </trans_created>
         <trans_fission>
             <val>922350</val>
+            <val>942380</val>
+            <val>942390</val>
+            <val>942400</val>
+            <val>942410</val>
+            <val>942420</val>
         </trans_fission>
+        <CR_terminal>1</CR_terminal>
       </ReactorFacility>
     </config>
   </facility>
