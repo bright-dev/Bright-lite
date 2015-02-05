@@ -73,7 +73,6 @@ namespace reprocess {
     //the reprocessing is done in this phase
     	//std::cout << "~~REPOtock~~" << std::endl;
 
-
     	//Creates a vector Material (manifest) that has been popped out.
     	std::vector<cyclus::Material::Ptr> manifest;
     	 double extract = output_capacity >= input_inventory.quantity() ? input_inventory.quantity() : output_capacity;
@@ -86,6 +85,8 @@ namespace reprocess {
                cyclus::CompMap temp_comp; //stores the masses of extracted isotopes
                //cyclus::CompMap out_comp = out_eff[o].mass();
                cyclus::CompMap mani_comp = manifest[m]->comp()->mass();
+               double  size_tad = manifest[m]->quantity();
+               //std::cout << "Size M "<< m << " " << size_tad << std::endl;
                std::map<int, double>::iterator out_it;
                cyclus::CompMap::iterator mani_it;
                for(out_it = out_eff[o].begin(); out_it != out_eff[o].end(); ++out_it){
@@ -93,7 +94,8 @@ namespace reprocess {
                    if(out_it->first == mani_it->first){
                      //std::cout << mani_it->first << "   " << mani_it->second << "   " << out_it->second << std::endl;
                      temp_comp[mani_it->first] = mani_it->second * out_it->second;
-                     tot_mass += mani_it->second * out_it->second;
+                     tot_mass += size_tad * mani_it->second * out_it->second;
+                     //std::cout << "TOT+AMSS " << tot_mass <<std::endl;
                    }
                  }
                }
@@ -203,7 +205,12 @@ void ReprocessFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Tr
 
     std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
     for (it = responses.begin(); it != responses.end(); ++it) {
-         input_inventory.Push(it->second);
+        //std::cout << it->first.request->commodity() << std::endl;
+        for(int i = 0; i < in_commod.size(); i++){
+            if(it->first.request->commodity() == in_commod[i]){
+                input_inventory.Push(it->second);
+            }
+        }
     }
 
     //std::cout << "-//REPO ENDAcptTrades//-" << std::endl;
