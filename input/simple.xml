@@ -49,7 +49,7 @@
         <libraries><val>extLWR</val></libraries>
         <target_burnup>40.0</target_burnup>
         <nonleakage>0.966</nonleakage>
-        <core_mass>750.0</core_mass>
+        <core_mass>3.0</core_mass>
     	<interpol_pairs>
            <key>BURNUP</key>
 	       <val>42.5</val>
