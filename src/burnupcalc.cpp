@@ -9,44 +9,6 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
     double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
     return y;
 }
-/*
-fuelBundle NBuilder(fuelBundle fuel, vector<nonActinide> nona){
-    //assumes the actinides are built in fuel, and that fuel has correct mass fractions
-    int name;
-    double total_prod = 0;
-    double total_dest = 0;
-    for(int i=0; i < fuel.iso.size(); i++){
-        for(int j=0; j < nona.size(); j++){
-            if(fuel.iso[i].name == nona[j].name){
-                name = fuel.iso[i].name;
-                name = name % 10000;
-                name = name / 10;
-                fuel.iso[i].neutron_prod.push_back(nona[j].total_prod*1000*0.602/name);
-                total_prod += nona[j].total_prod*1000*0.602/name*fuel.iso[i].fraction[3];
-                fuel.iso[i].neutron_dest.push_back(nona[j].total_dest*1000*0.602/name);
-                total_dest += nona[j].total_dest*1000*0.602/name*fuel.iso[i].fraction[3];
-            }
-        }
-    }
-    cout << total_dest << "     " << total_prod << endl;
-    int datasize;
-    for(int i=0; i<fuel.iso.size(); i++){
-        if(fuel.iso[i].type == "A"){
-            datasize = fuel.iso[i].neutron_prod.size();
-            break;
-        }
-    }
-
-    for(int i =0; i<fuel.iso.size(); i++){
-        if(fuel.iso[i].type == "N"){
-            for(int j=0; j< datasize; j++){
-                fuel.iso[i].neutron_prod.push_back(fuel.iso[i].neutron_prod[0]);
-                fuel.iso[i].neutron_dest.push_back(fuel.iso[i].neutron_dest[0]);
-            }
-        }
-    }
-    return fuel;
-}*/
 
 
 fuelBundle regionCollapse(fuelBundle fuel){
@@ -394,8 +356,8 @@ double CR_numerator(fuelBundle core, int i){
     //uses the trans_created and Fg and returns transuranics for CR calculation numerator of fuel
     //i is the batch number starting from zero
     double numerator = 0;
-    
-    
+
+
     for(int j = 0; j < core.trans_created.size(); j++){
         int point;
         //find dicrete point to interpolate on
@@ -408,8 +370,8 @@ double CR_numerator(fuelBundle core, int i){
                 numerator += intpol(core.batch[i].collapsed_iso.iso_vector[k].mass[point-1],core.batch[i].collapsed_iso.iso_vector[k].mass[point], core.batch[i].collapsed_iso.fluence[point-1], core.batch[i].collapsed_iso.fluence[point], core.batch[i].Fg);
             }
         }
-    }   
-    
+    }
+
     //cout << "CR numerator: " << numerator << endl;
     return numerator;
 }
@@ -420,16 +382,16 @@ double CR_denominator(fuelBundle core, int i){
     //i is the batch number starting from zero
     //unlike the numerator, independent of fluence
     double denominator = 0;
-    
+
     for(int j = 0; j < core.trans_fission.size(); j++){
         for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
             if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_fission[j]){
                 denominator += core.batch[i].collapsed_iso.iso_vector[k].mass[0];
             }
         }
-    }   
-    
-    
+    }
+
+
     //cout << "CR denominator: " << denominator << endl;
     return denominator;
 }
@@ -483,7 +445,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     while(kcore > 1){
         kcore_prev = kcore;
         //if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
-        
+
         //find the normalized relative flux of each batch
         if(mode == 1){
             //simplest case, all batches get the same flux
@@ -504,7 +466,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         if(DA_mode == 1){
             core = DA_calc(core);
         }
-        
+
         //CR calculation
         //cout << CR_numerator(core, 5)/CR_denominator(core, 5) << " ";
 
@@ -518,8 +480,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         kcore = kcalc(core);
     }
     //cout << endl;
-    
-    
+
+
     //update core fluences and CR
     for(int i = 0; i < N; i++){
         //y0 is the fluence value before the last interation
@@ -564,7 +526,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     core.batch[0].discharge_BU = burnup;
     core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
-    
+
     if(core.CR_terminal == 1){
         cout << "CR: ";
         for(int i = N-1; i >= 0; i--){
@@ -602,7 +564,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     outfile.close();
     /************************End of output file**************************/
 
-    
+
 
     return core;
 }
@@ -778,7 +740,7 @@ fuelBundle DA_calc(fuelBundle fuel){
 }
 
 
-double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux){
+double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux, int DA_mode){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -827,6 +789,11 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
             //calculate necessary parameters
             core = phicalc_simple(core);
+
+            //disadvantage calculation
+            if(DA_mode == 1){
+                core = DA_calc(core);
+            }
 
             for(int i = 0; i < N; i++){
                 //!NOTE when updating this, MUST also update interpolation calcs (y0) below
