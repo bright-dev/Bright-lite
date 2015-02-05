@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><simulation><control><duration>500</duration><startmonth>1</startmonth><startyear>0</startyear></control>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><simulation><control><duration>1500</duration><startmonth>1</startmonth><startyear>0</startyear></control>
 
 <archetypes><spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec><spec><lib>agents</lib><name>Source</name></spec><spec><lib>agents</lib><name>Source</name></spec><spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec><spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec><spec><lib>Brightlite</lib><name>ReactorFacility</name></spec><spec><lib>Brightlite</lib><name>ReactorFacility</name></spec><spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec><spec><lib>agents</lib><name>Sink</name></spec><spec><lib>agents</lib><name>NullRegion</name></spec><spec><lib>agents</lib><name>NullInst</name></spec><spec><lib>cycamore</lib><name>DeployInst</name></spec></archetypes>
 
@@ -12,7 +12,7 @@
 			<fissle_stream>LWR Reprocessed</fissle_stream>
 			<non_fissle_stream>DU2</non_fissle_stream>
 			<in_commods>
-				<key>FR Reprocessed</key><val>0.00</val>
+				<key>FR Reprocessed</key><val>0.03</val>
 			</in_commods>
 			<out_commod>FR Fuel</out_commod>
 		</FuelfabFacility>
@@ -78,7 +78,7 @@
 			<val>LWR Reprocessed</val>
 			<val>WASTE</val>
 		</commod_out>
-		<repro_input_path>input/FR_reprocess.txt</repro_input_path>
+		<repro_input_path>Bright-lite/input/FR_reprocess.txt</repro_input_path>
 		<max_inv_size>1.000000000000000E+299</max_inv_size>
 		<input_capacity>2000</input_capacity>
 		<output_capacity>2000</output_capacity>
@@ -132,7 +132,7 @@
 			<val>FR Reprocessed</val>
 			<val>WASTE</val>
 		</commod_out>
-		<repro_input_path>input/FR_reprocess.txt</repro_input_path>
+		<repro_input_path>Bright-lite/input/FR_reprocess.txt</repro_input_path>
 		<max_inv_size>1.000000000000000E+299</max_inv_size>
 		<input_capacity>2000</input_capacity>
 		<output_capacity>2000</output_capacity>
