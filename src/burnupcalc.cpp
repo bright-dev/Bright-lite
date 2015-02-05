@@ -806,33 +806,38 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
                 //!NOTE when updating this, MUST also update interpolation calcs (y0) below
                 double fluence = core.batch[i].rflux * core.base_flux * dt;
                 core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
-                //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
+
+                cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
+
             kcore = kcalc(core);
+
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 100){
                 //cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
                 continue;
             }
+
         }
         //update core fluences
         for(int i = 0; i < N; i++){
-
-            y0 = core.batch[i].Fg - (core.base_flux * dt);
+            cout << "test1 " << endl;
+            y0 = core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt);
             y1 = core.batch[i].Fg;
             core.batch[i].collapsed_iso.batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
         }
-
+        cout << "test2 " << endl;
         for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].collapsed_iso.batch_fluence; ii++){}
         burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].collapsed_iso.batch_fluence);
-        //cout << ii << " intermed burnup: " << burnup << endl;
+        cout << ii << " intermed burnup: " << burnup << endl;
 
         //move each batch one left, now the last and second from last are the same
         for(int i = 0; i < N-1; i++){
             core.batch[i].collapsed_iso.batch_fluence = core.batch[i+1].collapsed_iso.batch_fluence;
             core.batch[i].Fg = core.batch[i].collapsed_iso.batch_fluence;
         }
+        cout << "test3 " << endl;
         //fix last one
         core.batch[N-1].collapsed_iso.batch_fluence = 0;
         core.batch[N-1].Fg = 0;
@@ -841,7 +846,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
             notsteady = false;
         }
         counter++;
-
+        cout << "test4 " << endl;
     }
 
     cout << "SSrflux: " << core.batch[1].rflux << endl;
