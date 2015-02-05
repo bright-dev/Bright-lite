@@ -35,7 +35,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double tolerance);
 fuelBundle DA_calc(fuelBundle fuel);
 fuelBundle lib_interpol(fuelBundle input_fuel);
 void mass_check(fuelBundle fuel);
-double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux);
+double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux, int DA_mode);
 std::pair<double, std::pair<double, std::map<int, double> > > blending_calc(fuelBundle fuel, double BU_end, int mode, int da_mode, double time_step);
 double CR_denominator(fuelBundle core, int i);
 double CR_numerator(fuelBundle core, int i);
