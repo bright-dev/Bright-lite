@@ -560,7 +560,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     /************************End of output file**************************/
 
 
-cout << "rflux: " << core.batch[1].rflux << endl;
+//cout << "rflux: " << core.batch[1].rflux << endl;
     return core;
 }
 
@@ -812,9 +812,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
-
             kcore = kcalc(core);
-
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 100){
