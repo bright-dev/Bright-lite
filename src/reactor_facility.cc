@@ -183,7 +183,7 @@ void ReactorFacility::Tock() {
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
                 int fl_iso = fuel_library_.all_iso[j].name;
                 if(fl_iso == comp_iso && fuel_library_.batch[i].batch_fluence == 0){
-                    std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
+                    //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
                     isoInformation temp_iso;
                     temp_iso = fuel_library_.all_iso[j];
                     temp_iso.fraction = it->second/(core_mass/batches);
@@ -779,7 +779,7 @@ void CompOutMat(cyclus::Material mat1){
     cyclus::CompMap::iterator it;
     //each iso in comp
     for (it = comp.begin(); it != comp.end(); ++it){
-        std::cout<<it->first<< " " << it->second << std::endl;
+        //std::cout<<it->first<< " " << it->second << std::endl;
     }
 }
 

@@ -246,7 +246,7 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
   int flux_mode;
 
-  #pragma cyclus var {"default": 1, \
+  #pragma cyclus var {"default": 0, \
                       "userlevel": 2, \
                       "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
   int DA_mode;

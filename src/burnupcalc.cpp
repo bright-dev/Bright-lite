@@ -536,7 +536,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     }
 
 
-    cout << "Discharge burnup: " << burnup << endl;
+    //cout << "Discharge burnup: " << burnup << endl;
 
     /************************output file*********************************/
     std::ofstream outfile;
