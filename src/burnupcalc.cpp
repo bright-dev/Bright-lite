@@ -426,7 +426,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     //turn zero fluences to one to avoid zero rates
     for(int i = 0; i < N; i++){
-        if(core.batch[i].Fg == 0){core.batch[i].Fg = 1;}
+        //if(core.batch[i].Fg == 0){core.batch[i].Fg = 1;}
     }
 
     for(int i = 0; i < core.batch[0].collapsed_iso.fluence.size(); i++){
@@ -527,14 +527,6 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     core.batch[0].discharge_BU = burnup;
     core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
 
-    if(core.CR_terminal == 1){
-        cout << "CR: ";
-        for(int i = N-1; i >= 0; i--){
-            cout << core.batch[i].CR << " " ;
-        }
-        cout << endl;
-    }
-
 
     //cout << "Discharge burnup: " << burnup << endl;
 
@@ -565,7 +557,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     /************************End of output file**************************/
 
 
-
+cout << "rflux: " << core.batch[1].rflux << endl;
     return core;
 }
 
@@ -740,7 +732,7 @@ fuelBundle DA_calc(fuelBundle fuel){
 }
 
 
-double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux, int DA_mode){
+double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux, int DA_mode, int mode){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -769,6 +761,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
 /*
     cout << "SS_burnupcalc start neutron prod: " << core.batch[0].collapsed_iso.neutron_prod[0] << " " << core.batch[1].collapsed_iso.neutron_prod[0] << " " << core.batch[2].collapsed_iso.neutron_prod[0] << endl;
+
     cout << "   " << core.batch[0].collapsed_iso.BU[1] << " " << core.batch[1].collapsed_iso.BU[1] << " " << core.batch[2].collapsed_iso.BU[1]  << endl;
     cout << "   " << core.batch[0].collapsed_iso.fluence[1] << " " << core.batch[1].collapsed_iso.fluence[1] << " " << core.batch[2].collapsed_iso.fluence[1]  << endl;
     cout << "     " << dt << endl;
@@ -777,6 +770,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     /*for(int jj = 0; jj <core.batch[0].collapsed_iso.BU.size(); jj++){
         cout <<  core.batch[0].collapsed_iso.fluence[jj] << ": "<< core.batch[0].collapsed_iso.BU[jj] << endl;
     }*/
+
 
     while(notsteady){
         double kcore = 3.141592;
@@ -787,8 +781,21 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
         while(kcore > 1){
             kcore_prev = kcore;
 
-            //calculate necessary parameters
-            core = phicalc_simple(core);
+            //find the normalized relative flux of each batch
+            if(mode == 1){
+                //simplest case, all batches get the same flux
+                for(int i = 0; i < N; i++){
+                    core.batch[i].rflux = 1;
+                }
+            }else if(mode == 2){
+                //inverse-production flux calculation
+                core = phicalc_simple(core);
+            }else if(mode == 3){
+                core = phicalc_cylindrical(core);
+            }else{
+                cout << endl << "Error in mode input for batch-level flux calculation(SS_burnupcalc)." << endl;
+                return 0;
+            }
 
             //disadvantage calculation
             if(DA_mode == 1){
@@ -798,7 +805,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
             for(int i = 0; i < N; i++){
                 //!NOTE when updating this, MUST also update interpolation calcs (y0) below
                 double fluence = core.batch[i].rflux * core.base_flux * dt;
-                core.batch[i].Fg += core.base_flux * dt;
+                core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
             kcore = kcalc(core);
@@ -837,102 +844,8 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
     }
 
-    /*
-    //find when k drops under 1 for single batch
-    int ii = 0;
-    for(ii = 0; fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii] >= 1; ii++){
-        if(ii == fuel.neutron_prod.size()-1){
-            cout << endl << "SS_burnupcalc error! Fuel criticality doesn't drop below 1." << endl;
-            ii -= 1;
-            return fuel.BU[ii+1];
-        }
-    }
+    cout << "SSrflux: " << core.batch[1].rflux << endl;
 
-    //find the just critical fluence for single batch
-    F_est = intpol(fuel.fluence[ii-1], fuel.fluence[ii], fuel.neutron_prod[ii-1]*PNL/fuel.neutron_dest[ii-1], fuel.neutron_prod[ii]*PNL/fuel.neutron_dest[ii], 1);
-
-    if(F_est < 0){F_est = 0;}
-
-    //find the corresponding BU
-    BU_est = intpol(fuel.BU[ii-1], fuel.BU[ii], fuel.fluence[ii-1], fuel.fluence[ii], F_est);
-
-    //estimate the N batch BU
-    BU_est = 2. * N * BU_est / (N + 1.);
-
-    //cout << "balbalbla  " << BU_est << "  " << N << "  " << F_est << endl;
-
-    //assign the linearly divided burnup and fluence to each batch
-    for(int i = 0; i < N; i++){
-        batch_info temp_batch;
-        temp_batch.collapsed_iso = fuel;
-        temp_batch.BUg = BU_est * i / N; //first batch gets zero BU
-
-
-        for(ii = 0; temp_batch.collapsed_iso.BU[ii] < temp_batch.BUg; ii++){}
-        temp_batch.Fg = intpol(temp_batch.collapsed_iso.fluence[ii-1], temp_batch.collapsed_iso.fluence[ii], temp_batch.collapsed_iso.BU[ii-1], temp_batch.collapsed_iso.BU[ii], temp_batch.BUg);
-
-        if(temp_batch.Fg < 0){temp_batch.Fg = 0;}
-
-        //cout << "temp fg: " << temp_batch.Fg << endl;
-
-        core.batch.push_back(temp_batch);
-    }
-
-    //this function ignores structural material effects (for now)
-    core.struct_prod = 0;
-    core.struct_dest = 0;
-    for(int i = 0; i < core.batch.size(); i++){
-        core.batch[i].DA = 0;
-    }
-
-
-    double kcore = 1.141592;
-    int iter = 0;
-
-    while(kcore > 1){
-        kcore_prev = kcore;
-
-        //calculate necessary parameters
-        core = phicalc_simple(core);
-
-        for(int i = 0; i < N; i++){
-            double fluence = core.batch[i].rflux * core.base_flux * dt;
-
-            core.batch[i].Fg += core.base_flux * dt;
-            //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << endl;
-        }
-        kcore = kcalc(core);
-        //cout << "kcalc:" << kcore  << endl;
-
-        iter++;
-        if(iter > 100){
-            cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
-        }
-    }
-
-    //update core fluences
-    for(int i = 0; i < N; i++){
-        //y0 is the fluence value before the last interation
-        y0 = core.batch[i].Fg - core.batch[i].rflux * core.base_flux * dt;
-        y1 = core.batch[i].Fg;
-        //cout << y0 << " and " << y1 << endl; //<-------
-        //cout << "  " << kcore_prev << " " << kcore << endl; //<-------
-        core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
-        //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
-
-    }
-
-    for(ii = 0; core.batch[N-1].collapsed_iso.fluence[ii] < core.batch[N-1].batch_fluence; ii++){}
-    if(core.batch[N-1].collapsed_iso.fluence.back() < core.batch[N-1].batch_fluence){
-        //cout << endl << "Maximum fluence error!(SS_burnupcalc) Batch fluence exceeded max library fluence. (burnupcalc2)" << endl;
-        //cout << "  Values on max fluence will be used. Do not trust results." << endl;
-
-        return fuel.BU[fuel.BU.size()-1];
-    }
-    burnup = intpol(core.batch[N-1].collapsed_iso.BU[ii-1], core.batch[N-1].collapsed_iso.BU[ii], core.batch[N-1].collapsed_iso.fluence[ii-1], core.batch[N-1].collapsed_iso.fluence[ii], core.batch[N-1].batch_fluence);
-    cout << "burnup: " << burnup << endl;
-*/
-    //cout << "SS: " << burnup << endl;
     return burnup;
 }
 
