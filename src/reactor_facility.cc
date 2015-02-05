@@ -83,6 +83,7 @@ void ReactorFacility::Tick() {
         fuel_library_.disadv_mod_siga = disadv_mod_siga;
         fuel_library_.disadv_mod_sigs = disadv_mod_sigs;
         fuel_library_.disadv_fuel_sigs = disadv_fuel_sigs;
+        fuel_library_.CR_terminal = CR_terminal;
 
 
         batch_info empty_batch;
@@ -176,12 +177,13 @@ void ReactorFacility::Tock() {
         //each iso in comp
         for (it = comp.begin(); it != comp.end(); ++it){
             comp_iso = pyne::nucname::zzaaam(it->first);
+            
             //std::cout << "Isotope " << it->first << " amount " << it->second << std::endl;
             //each iso in all_iso
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
                 int fl_iso = fuel_library_.all_iso[j].name;
                 if(fl_iso == comp_iso && fuel_library_.batch[i].batch_fluence == 0){
-                    //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
+                    std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
                     isoInformation temp_iso;
                     temp_iso = fuel_library_.all_iso[j];
                     temp_iso.fraction = it->second/(core_mass/batches);
@@ -245,6 +247,7 @@ void ReactorFacility::Tock() {
         ->AddVal("Time", cycle_end_)
         ->AddVal("Discharge_Fluence", burnup)
         ->AddVal("Batch_No", std::to_string(refuels+i+1))
+        ->AddVal("Batch_CR", fuel_library_.batch[i].CR)
         ->Record();
 
      }
@@ -273,6 +276,7 @@ void ReactorFacility::Tock() {
                ->AddVal("Time", cycle_end_)
                ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
                ->AddVal("Batch_No", std::to_string(refuels))
+               ->AddVal("Batch_CR", fuel_library_.batch[0].CR)
                //->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
                /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
                ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
