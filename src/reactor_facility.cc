@@ -4,7 +4,7 @@ namespace reactor {
 
 ReactorFacility::ReactorFacility(cyclus::Context* ctx)
     : cyclus::Facility(ctx) {
-      cycle_end_ = ctx->time() +2;
+      cycle_end_ = ctx->time() + 0;
       start_time_ = cycle_end_;
       shutdown = false;
       refuels = 0;
@@ -140,7 +140,7 @@ void ReactorFacility::Tock() {
 
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
-        //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
+        //[std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
         return;
     }
 
@@ -335,6 +335,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
 
   //if its not the end of a cycle dont get rid of your fuel
   if (ctx->time() != cycle_end_){
+      //std::cout << ctx->time() << " " << cycle_end_ << std::endl;
     return ports;
   }
 
@@ -527,13 +528,11 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     double mass_frac = 1.;
     //turn inventory to materials
     //Read the fuelfab inventory
-    if(refuels < batches){
+    /*if(refuels < batches){
         return SS_enrich;
-        //burnup_target = target_burnup/(batches+1)*(refuels+1);
-        //std::cout << "Refuels: " << burnup_target << std::endl;
     } else {
         return SS_enrich;
-    }
+    }*/
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
 
@@ -553,10 +552,15 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     std::map<std::string, double>::iterator it;
     for(it = incommods.begin(); it!=incommods.end(); ++it){
         double frac = it->second;
-        if(materials[i][0]->quantity() > core_mass * frac){
-            cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
-            mat->Absorb(mat_temp);
-            mass_frac -= frac;
+        if(materials.size() > 0){
+            if(materials[i].size() > 0){
+                if(materials[i][0]->quantity() > core_mass/batches * frac){
+                    cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
+                    mat->Absorb(mat_temp);
+                    mass_frac -= frac;
+                    std::cout << "Mass Frac " << mass_frac << std::endl;
+                }
+            }
         }
         i++;
     }
@@ -619,7 +623,8 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         }
         inter++;
     }
-    return_amount = fraction * total_mass * mass_frac;
+    std::cout << "FRACTION " << fraction << std::endl;
+    return_amount = fraction * total_mass;
     SS_enrich = return_amount;
     return return_amount;
 }
@@ -645,10 +650,14 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     std::map<std::string, double>::iterator it;
     for(it = incommods.begin(); it!=incommods.end(); ++it){
         double frac = it->second;
-        if(materials[i][0]->quantity() > core_mass * frac){
-            cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
-            mat->Absorb(mat_temp);
-            mass_frac -= frac;
+        if(materials.size() > 0){
+            if(materials[i].size() > 0){
+                if(materials[i][0]->quantity() > core_mass * frac){
+                    cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
+                    mat->Absorb(mat_temp);
+                    mass_frac -= frac;
+                }
+            }
         }
         i++;
     }
@@ -673,8 +682,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    //std::cout << "fraction " << fraction << std::endl;
+    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -692,8 +701,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        //std::cout << "fraction " << fraction << std::endl;
+        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
