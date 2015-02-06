@@ -77,7 +77,11 @@ fuelBundle phicalc_simple(fuelBundle core){
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
             //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (method2)" << endl;
             //cout << "  Values on max fluence will be used. Do not trust results." << endl;
-            ii = core.batch[i].collapsed_iso.fluence.size() - 1;
+            for(int j = 0; j < core.batch.size(); j++){
+                core.batch[j].rflux = 1;
+            }
+            return core;
+
         } else {
             for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
         }
@@ -103,7 +107,9 @@ fuelBundle phicalc_simple(fuelBundle core){
     //normalizes all the flux values
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux /= maxphi;
+        cout << " " << core.batch[i].rflux;
     }
+    cout << endl;
 
     return core;
 }
