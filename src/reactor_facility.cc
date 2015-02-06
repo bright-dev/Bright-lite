@@ -576,7 +576,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                     cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
                     mat->Absorb(mat_temp);
                     mass_frac -= frac;
-                    //std::cout << "Mass Frac " << mass_frac << std::endl;
+                    std::cout << "Mass Frac " << mass_frac << std::endl;
                 }
             }
         }
