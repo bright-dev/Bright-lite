@@ -107,9 +107,9 @@ fuelBundle phicalc_simple(fuelBundle core){
     //normalizes all the flux values
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux /= maxphi;
-        cout << " " << core.batch[i].rflux;
+        //cout << " " << core.batch[i].rflux;
     }
-    cout << endl;
+    //cout << endl;
 
     return core;
 }
@@ -361,49 +361,74 @@ double kcalc(fuelBundle core){
     return prod_tot * pnl / dest_tot;
 }
 
-double CR_numerator(fuelBundle core, int i){
-    //uses the trans_created and Fg and returns transuranics for CR calculation numerator of fuel
+double CR_finder(fuelBundle core){
+    //
     //i is the batch number starting from zero
-    double numerator = 0;
+    double FP = 0, FP0 = 0, FP1 = 0;
+    double fissile = 0, fissile0 = 0, fissile1 = 0;
+    double ini_fissile = 0;
+    double mass = 0;
+    double CR;
+    int ii, ZZ;
 
 
-    for(int j = 0; j < core.trans_created.size(); j++){
-        int point;
-        //find dicrete point to interpolate on
-        for(point = 0; core.batch[i].collapsed_iso.fluence[point] < core.batch[i].Fg; point++){}
-        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            point = core.batch[i].collapsed_iso.fluence.size() - 1;
-        }
-        for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
-            if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_created[j]){
-                numerator += intpol(core.batch[i].collapsed_iso.iso_vector[k].mass[point-1],core.batch[i].collapsed_iso.iso_vector[k].mass[point], core.batch[i].collapsed_iso.fluence[point-1], core.batch[i].collapsed_iso.fluence[point], core.batch[i].Fg);
+    for(int i = 0; i < core.batch.size(); i++){
+        for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
+
+        for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
+            //convert name to mass number
+            ZZ = core.batch[i].collapsed_iso.iso_vector[j].name;
+            ZZ = ZZ % 10000;
+            ZZ /= 10;
+
+            //add up the FP
+            if(ZZ < core.CR_upper && ZZ > core.CR_lower){
+                //interpolation will be done at the end
+                FP0 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1];
+                FP1 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii];
+            }
+
+            //add up fissiles
+            for(int fis = 0; fis < core.CR_fissile.size(); fis++){
+                if(core.batch[i].collapsed_iso.iso_vector[j].name == core.CR_fissile[fis]){
+                    fissile0 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1];
+                    fissile1 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii];
+                }
             }
         }
+
+        FP += intpol(FP0, FP1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+        fissile += intpol(fissile0, fissile1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+
+        FP0 = 0;
+        FP1 = 0;
+        fissile0 = 0;
+        fissile1 = 0;
+
+        //find the initial composition of the batch
+        //find total mass
+        mass = 0;
+        for(int jk = 0; jk < core.batch[i].collapsed_iso.iso_vector.size(); jk++){
+            mass += core.batch[i].collapsed_iso.iso_vector[jk].mass[0];
+        }
+
+        //use total mass to add up initial fissile mass
+        for(int jj = 0; jj < core.batch[i].iso.size(); jj++){
+            for(int fis = 0; fis < core.CR_fissile.size(); fis++){
+                if(core.batch[i].iso[jj].name == core.CR_fissile[fis]){
+                    ini_fissile += mass*core.batch[i].iso[jj].fraction;
+                }
+            }
+        }
+
     }
+
+    cout << "FP: " << FP << "  fissile: " << fissile << "  ini_fissile: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
 
     //cout << "CR numerator: " << numerator << endl;
-    return numerator;
+    return CR;
 }
 
-
-double CR_denominator(fuelBundle core, int i){
-    //uses the trans_fission and Fg and returns transuranics for CR calculation denominator of fuel
-    //i is the batch number starting from zero
-    //unlike the numerator, independent of fluence
-    double denominator = 0;
-
-    for(int j = 0; j < core.trans_fission.size(); j++){
-        for(int k = 0; k < core.batch[i].collapsed_iso.iso_vector.size(); k++){
-            if(core.batch[i].collapsed_iso.iso_vector[k].name == core.trans_fission[j]){
-                denominator += core.batch[i].collapsed_iso.iso_vector[k].mass[0];
-            }
-        }
-    }
-
-
-    //cout << "CR denominator: " << denominator << endl;
-    return denominator;
-}
 
 
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
@@ -485,7 +510,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
             //cout << "flux: " << core.batch[i].rflux << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
-
+        CR_finder(core);
         kcore = kcalc(core);
     }
     //cout << endl;
@@ -497,7 +522,6 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         y0 = core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt);
         y1 = core.batch[i].Fg;
         core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
-        core.batch[i].CR = CR_numerator(core,i)/CR_denominator(core,i);
         //cout << "batch " << i+1 << " CR: " << core.batch[i].CR << endl;
         //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
 
@@ -534,7 +558,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
 
     core.batch[0].discharge_BU = burnup;
-    core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
+    //core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
+
 
 
     //cout << "Discharge burnup: " << burnup << endl;
@@ -1285,57 +1310,4 @@ void iso_output(pair<double, map <int, double> > iso_vector){
     }
 }
 */
-/*
-int main(){
 
-    fuelBundle fuel;
-
-    vector<int> iso_index;
-    vector<fuelBundle> batches;
-
-
-    fuel = InputReader();
-
-    fuel = fluxcalc_reader(fuel, "fluxCalcinput");
-    DataReader2(fuel.name, fuel.iso);
-
-    vector<nonActinide> nona; //"NONA"ctinide ;)
-    nona = NonActinideReader(fuel.name + "/TAPE9.INP");
-    fuel = NBuilder(fuel, nona);
-
-
-    //this should probably be its own function
-    //builds bundle-vector and assigns fluence
-    batches.push_back(fuel);
-    batches[0].batch_fluence = 0;
-    for(int i = 0; i < fuel.batch-1; i++){
-        batches.push_back(batches[0]);
-        batches[i+1].batch_fluence = batches[i].batch_fluence + 600.2; //123.2 is a random choice
-    }
-
-    burnupcalc(batches, fuel.pnl, 0.001, 1);
-
-    if (fuel.libcheck == true){
-        fuel = lib_interpol(fuel);
-    }
-
-    if (fuel.operation_type == "BURNUP"){
-        fuel = burnup_collapse(fuel);
-        pair< double, map < int, double> > test = burnupcalc(fuel, fuel.batch, fuel.pnl, 0.001);
-        cout <<"burnup: "<< test.first << endl;
-        iso_output(test);
-    } else {
-        pair< double, pair<double, map<int, double> > > enrichment = enrichcalc(fuel.target_BUd, fuel.batch, 0.001, fuel);
-        if (enrichment.first == 0){
-            cout << "Reactor could not reach desired burnup." << endl;
-        } else {
-            cout << "Enrichment:    " << enrichment.first << endl;
-        }
-        pair< double, map < int, double> > test = enrichment.second;
-        iso_output(test);
-    }
-
-    return 0;
-}
-
-*/

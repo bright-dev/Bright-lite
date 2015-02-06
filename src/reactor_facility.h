@@ -262,18 +262,18 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"units": "NUCID", \
                       "userlevel": 3, \
-                      "tooltip": "List of isotopes created for conversion ratio calculation."}
-  std::vector<std::string> trans_created;
-
-  #pragma cyclus var {"units": "NUCID", \
-                      "userlevel": 3, \
-                      "tooltip": "List of isotopes fissioned for conversion ratio calculation."}
-  std::vector<std::string> trans_fission;
+                      "tooltip": "List of fissile isotopes for conversion ratio calculation."}
+  std::vector<std::string> CR_fissile;
 
   #pragma cyclus var {"userlevel": 3, \
-                      "default": 0, \
-                      "tooltip": "Suppress CR to be displayed in terminal, 1:display."}
-  int CR_terminal;
+                      "default": 70, \
+                      "tooltip": "Lower bound of the fission product mass number for conversion ratio calculation."}
+  int CR_lower;
+
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 160, \
+                      "tooltip": "Upper bound of the fission product mass number for conversion ratio calculation."}
+  int CR_upper;
 
 
  private:
