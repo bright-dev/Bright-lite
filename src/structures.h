@@ -66,7 +66,6 @@ struct batch_info {
     double rflux; //relative flux of batch
     double DA; //thermal disadvantage, phi_M/phi_F
     double discharge_BU; //the discharge burnup of the batch
-    double CR; //conversion ratio at the batch_fluence fluence level
     std::map<int, double> comp; //current composition of batch at this batch_fluence
 };
 
@@ -101,6 +100,8 @@ struct fuelBundle {
     double struct_dest; //neutron destruction rate of structural materials
     double CR_upper;
     double CR_lower;
+    double CR_target; //target CR value
+    double CR; //current conversion ratio
     std::vector<int> CR_fissile; //list of fissile isotopes that are tracked for CR calc
     std::vector<batch_info> batch;
     std::vector<isoInformation> all_iso; //change to manifest

@@ -423,9 +423,9 @@ double CR_finder(fuelBundle core){
 
     }
 
-    cout << "FP: " << FP << "  fissile: " << fissile << "  ini_fissile: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
+    //cout << "FP: " << FP << "  fissile: " << fissile << "  ini_fissile: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
 
-    //cout << "CR numerator: " << numerator << endl;
+    CR = (FP+fissile-ini_fissile)/FP;
     return CR;
 }
 
@@ -474,7 +474,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     kcore = 3.141592;
     kcore_prev = kcalc(core);
 
-    cout << endl;
+
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
@@ -510,10 +510,10 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
             //cout << "flux: " << core.batch[i].rflux << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
-        CR_finder(core);
+        core.CR = CR_finder(core);
         kcore = kcalc(core);
     }
-    //cout << endl;
+    cout << "CR: " << core.CR << endl;
 
 
     //update core fluences and CR
@@ -766,16 +766,14 @@ fuelBundle DA_calc(fuelBundle fuel){
 }
 
 
-double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, double base_flux, int DA_mode, int mode){
+double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
     //cout << endl;
+    isoInformation fuel = core.batch[0].collapsed_iso;
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
-    fuelBundle core;
-    core.pnl = PNL;
-    core.base_flux = base_flux;
     double BU, BU_est, F_est;
     double y0, y1;
     double kcore_prev;
@@ -784,13 +782,13 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
     double BU_prev = 0;
     int counter = 0;
 
+
     batch_info temp_batch;
     temp_batch.collapsed_iso = fuel;
     temp_batch.Fg = 1;
     temp_batch.collapsed_iso.batch_fluence = 0;
-    for(int i = 0; i < N; i++){
+    for(int i = 1; i < N; i++){
         core.batch.push_back(temp_batch);
-
     }
 
 /*
@@ -843,6 +841,7 @@ double SS_burnupcalc(isoInformation fuel, int N, double delta, double PNL, doubl
 
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
+            core.CR = CR_finder(core);
             kcore = kcalc(core);
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;

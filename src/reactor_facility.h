@@ -275,6 +275,11 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Upper bound of the fission product mass number for conversion ratio calculation."}
   int CR_upper;
 
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 0, \
+                      "tooltip": "Target for conversion ratio."}
+  int CR_target;
+
 
  private:
   bool shutdown;
