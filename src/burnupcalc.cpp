@@ -512,6 +512,10 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         }
         core.CR = CR_finder(core);
         kcore = kcalc(core);
+
+        if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
+            break;
+        }
     }
     cout << "CR: " << core.CR << endl;
 
@@ -847,7 +851,11 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
             iter++;
             if(iter > 100){
                 //cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
-                continue;
+                break;
+            }
+
+            if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
+                break;
             }
 
         }
