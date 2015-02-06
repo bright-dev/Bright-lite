@@ -261,7 +261,7 @@ namespace fuelfab {
                                     manifest = cyclus::ResCast<Material>(inventory[j].PopQty(reactor->core_mass/reactor->batches * md->second));
                                     for(int i = 0; i < manifest.size(); i++){
                                         offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
-                                        //std::cout << offer->quantity() << std::endl;
+                                        std::cout << offer->quantity() << std::endl;
                                     }
                                 }
                                 j++;
