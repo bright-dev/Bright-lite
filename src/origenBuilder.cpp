@@ -28,11 +28,11 @@ fuelBundle StructReader(fuelBundle core){
     double tot_prod = 0;
 
     string line;
-    ifstream fin("./" + core.name + "/structural.txt");
+    ifstream fin(cyclus::Env::GetInstallPath() + "/share/brightlite/" + core.name + "/structural.txt");
 
     vector<nonActinide> nonas;
 
-    nonas = NonActinideReader("./" + core.name + "/TAPE9.INP");
+    nonas = NonActinideReader(cyclus::Env::GetInstallPath() + "/share/brightlite/" + core.name + "/TAPE9.INP");
 
 
 
@@ -218,7 +218,11 @@ isoInformation BuildIsotope2(ifstream &input, isoInformation &iso, double flux_v
 }
 
 double flux_finder(std::string type){
+    //std::cout << "ADESEEE " << type + "/params.txt" << std::endl;
     ifstream inf(type + "/params.txt");
+    if(!inf){
+        cout << "SADF AD " <<type << "/params.txt" << std::endl;
+    }
     string buffer;
     double value;
     string line;

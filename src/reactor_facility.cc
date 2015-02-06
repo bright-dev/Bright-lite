@@ -66,7 +66,7 @@ void ReactorFacility::Tick() {
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
         fuel_library_.name = libraries[0];
-        fuel_library_.base_flux = flux_finder(fuel_library_.name);
+        fuel_library_.base_flux = flux_finder(cyclus::Env::GetInstallPath() + "/share/brightlite/" + fuel_library_.name);
         fuel_library_.base_mass = core_mass;
         fuel_library_.base_power = generated_power;
         fuel_library_.pnl = nonleakage;
@@ -146,12 +146,13 @@ void ReactorFacility::Tick() {
 }
 
 void ReactorFacility::Tock() {
+
     if(inventory.count() == 0){return;}
     if(shutdown == true){return;}
 
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
-        //[std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
+        //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
         return;
     }
 
@@ -162,7 +163,7 @@ void ReactorFacility::Tock() {
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
     if(manifest.size() > fuel_library_.batch.size()){
-        std::cout << "manifest: " << manifest.size() << "  fuel lib.batch: " << fuel_library_.batch.size() << std::endl;
+        //std::cout << "manifest: " << manifest.size() << "  fuel lib.batch: " << fuel_library_.batch.size() << std::endl;
         for(int i = 0; i < manifest.size() - fuel_library_.batch.size(); i++){
             batch_info temp_batch;
             temp_batch.batch_fluence = 0;
@@ -575,7 +576,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                     cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
                     mat->Absorb(mat_temp);
                     mass_frac -= frac;
-                    std::cout << "Mass Frac " << mass_frac << std::endl;
+                    //std::cout << "Mass Frac " << mass_frac << std::endl;
                 }
             }
         }
@@ -640,7 +641,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         }
         inter++;
     }
-    std::cout << "FRACTION " << fraction << std::endl;
+    //std::cout << "FRACTION " << fraction << std::endl;
     return_amount = fraction * total_mass;
     SS_enrich = return_amount;
     return return_amount;
@@ -699,8 +700,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    std::cout << "fraction " << fraction << std::endl;
+    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    //std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -718,8 +719,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        std::cout << "fraction " << fraction << std::endl;
+        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
