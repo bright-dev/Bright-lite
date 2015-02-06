@@ -83,7 +83,8 @@ void ReactorFacility::Tick() {
         fuel_library_.disadv_mod_siga = disadv_mod_siga;
         fuel_library_.disadv_mod_sigs = disadv_mod_sigs;
         fuel_library_.disadv_fuel_sigs = disadv_fuel_sigs;
-        fuel_library_.CR_terminal = CR_terminal;
+        fuel_library_.CR_lower = CR_lower;
+        fuel_library_.CR_upper = CR_upper;
 
 
         batch_info empty_batch;
@@ -131,12 +132,10 @@ void ReactorFacility::Tick() {
 
         //read list of isotopes for conversion ratio calculation
    ///inputed as string, should be able to handle just numbers or letter number descrptn of isos
-        for(int i = 0; i < trans_created.size(); i++){
-            fuel_library_.trans_created.push_back(std::stoi(trans_created[i]));
-                    }
-        for(int i = 0; i < trans_fission.size(); i++){
-            fuel_library_.trans_fission.push_back(std::stoi(trans_fission[i]));
+        for(int i = 0; i < CR_fissile.size(); i++){
+            fuel_library_.CR_fissile.push_back(std::stoi(CR_fissile[i]));
         }
+
 
     }
 
