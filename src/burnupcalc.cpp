@@ -512,6 +512,8 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         }
         core.CR = CR_finder(core);
         kcore = kcalc(core);
+            if(core.fuel_area == 1.123)
+    cout << "CR: " << core.CR << endl;
 
         if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
             break;
