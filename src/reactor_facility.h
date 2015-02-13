@@ -96,6 +96,7 @@ class ReactorFacility : public cyclus::Facility  {
   void batch_reorder();
 
   double SS_enrich;
+  double ss_fraction;
 
   #pragma cyclus var {"default": 0.001, \
                       "userlevel": 3, \
@@ -278,7 +279,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"userlevel": 3, \
                       "default": 0, \
                       "tooltip": "Target for conversion ratio."}
-  int CR_target;
+  double CR_target;
 
 
  private:

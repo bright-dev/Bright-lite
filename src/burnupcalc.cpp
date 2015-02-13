@@ -372,7 +372,7 @@ double CR_finder(fuelBundle core){
     int ii, ZZ;
 
 
-    for(int i = 0; i < core.batch.size(); i++){
+    for(int i = 0; i < 1; i++){
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
 
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
@@ -510,13 +510,13 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
             //cout << "flux: " << core.batch[i].rflux << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
         }
-        core.CR = CR_finder(core);
         kcore = kcalc(core);
-
-        if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
+        //core.CR = CR_finder(core);
+        /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
             break;
-        }
+        }*/
     }
+    core.CR = CR_finder(core);
     cout << "CR: " << core.CR << endl;
 
 
@@ -845,7 +845,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
             }
-            core.CR = CR_finder(core);
+            //core.CR = CR_finder(core);
             kcore = kcalc(core);
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
@@ -853,10 +853,10 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 //cout << "SS_burnupcalc kcore exceeds 100 iterations." << endl;
                 break;
             }
-
-            if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
+            //std::cout << core.CR << std::endl;
+            /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
                 break;
-            }
+            }*/
 
         }
 
@@ -881,7 +881,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
         core.batch[N-1].collapsed_iso.batch_fluence = 0;
         core.batch[N-1].Fg = 0;
 
-        if(abs(burnup - BU_prev)/burnup < 0.0001 && counter > 5){
+        if(abs(burnup - BU_prev)/burnup < 0.01 && counter > 5){
             notsteady = false;
         }
         counter++;
