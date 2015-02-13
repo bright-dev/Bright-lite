@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>800</duration>
+    <duration>600</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -85,28 +85,25 @@
         <libraries><val>extLWR</val></libraries>
         <target_burnup>35.0</target_burnup>
         <nonleakage>0.966</nonleakage>
-        <core_mass>1500.0</core_mass>
+        <core_mass>1</core_mass>
         <batches>3</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
-        <trans_created>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
             <val>922350</val>
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
-        </trans_created>
-        <trans_fission>
-            <val>922350</val>
-            <val>942380</val>
-            <val>942390</val>
-            <val>942400</val>
-            <val>942410</val>
-            <val>942420</val>
-        </trans_fission>
-        <CR_terminal>0</CR_terminal>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
       </ReactorFacility>
     </config>
   </facility>
@@ -122,28 +119,25 @@
         <libraries><val>standLWR</val></libraries>
         <target_burnup>40.0</target_burnup>
         <nonleakage>0.948</nonleakage>
-        <core_mass>1500.0</core_mass>
+        <core_mass>1</core_mass>
         <batches>3</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
-        <trans_created>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
             <val>922350</val>
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
-        </trans_created>
-        <trans_fission>
-            <val>922350</val>
-            <val>942380</val>
-            <val>942390</val>
-            <val>942400</val>
-            <val>942410</val>
-            <val>942420</val>
-        </trans_fission>
-        <CR_terminal>0</CR_terminal>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
       </ReactorFacility>
     </config>
   </facility>
@@ -160,28 +154,25 @@
         <libraries><val>extLWR</val></libraries>
         <target_burnup>45.0</target_burnup>
         <nonleakage>0.966</nonleakage>
-        <core_mass>1500.0</core_mass>
+        <core_mass>1</core_mass>
         <batches>4</batches>
         <flux_mode>1</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
-        <trans_created>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
             <val>922350</val>
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
-        </trans_created>
-        <trans_fission>
-            <val>922350</val>
-            <val>942380</val>
-            <val>942390</val>
-            <val>942400</val>
-            <val>942410</val>
-            <val>942420</val>
-        </trans_fission>
-        <CR_terminal>0</CR_terminal>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
       </ReactorFacility>
     </config>
   </facility>
@@ -190,11 +181,7 @@
     <name>FFUOX</name>
     <config>
       <FuelfabFacility>
-        <in_commods>
-            <val>fbl</val>
-	    <val>fbl1</val>
-        </in_commods>
-        <out_commod>fuel</out_commod>
+        <out_commod>fuel</out_commod><fissle_stream>fbl</fissle_stream><non_fissle_stream>fbl1</non_fissle_stream>
       </FuelfabFacility>
     </config>
   </facility>  
@@ -221,11 +208,7 @@
     <name>FFMOX</name>
     <config>
       <FuelfabFacility>
-        <in_commods>
-            <val>reproFuel0</val>
-	    <val>NU</val>
-        </in_commods>
-        <out_commod>FFfuel</out_commod>
+        <out_commod>FFfuel</out_commod><fissle_stream>reproFuel0</fissle_stream><non_fissle_stream>NU</non_fissle_stream>
       </FuelfabFacility>
     </config>
   </facility>    
@@ -250,23 +233,21 @@
         <flux_mode>2</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
-        <trans_created>
+	<fuel_area>1.123</fuel_area>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
             <val>922350</val>
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
-        </trans_created>
-        <trans_fission>
-            <val>922350</val>
-            <val>942380</val>
-            <val>942390</val>
-            <val>942400</val>
-            <val>942410</val>
-            <val>942420</val>
-        </trans_fission>
-        <CR_terminal>1</CR_terminal>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
       </ReactorFacility>
     </config>
   </facility>
