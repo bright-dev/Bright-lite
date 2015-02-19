@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <cblas.h>
+//#include <cblas.h>
 
 //#include "lapacke.h"
 
