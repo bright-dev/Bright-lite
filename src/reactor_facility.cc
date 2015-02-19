@@ -273,6 +273,7 @@ void ReactorFacility::Tock() {
 
   if(shutdown != true && record == true){
       std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
+      //cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(a, 42.0);
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
@@ -492,7 +493,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
         }
     }
     temp_bundle = StructReader(temp_bundle);
-    temp_bundle = regionCollapse(temp_bundle);
+    temp_bundle = fast_region_collapse(temp_bundle);
     for(int i = 0; i < temp_bundle.batch.size(); i++){
         temp_bundle.batch[i].Fg = 0;
     }
