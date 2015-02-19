@@ -600,7 +600,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     //cout << "Discharge burnup: " << burnup << endl;
 
     /************************output file*********************************/
-    std::ofstream outfile;
+    /*std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
 
     outfile << "Discharge burnup: " << burnup;
@@ -622,7 +622,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     outfile << "\r\n";
 
-    outfile.close();
+    outfile.close();*/
     /************************End of output file**************************/
 
 

@@ -101,7 +101,7 @@ void ReactorFacility::Tick() {
         }*/
 
 /************************output file*********************************/
-        std::ofstream outfile("../output_cyclus_recent.txt");
+        /*std::ofstream outfile("../output_cyclus_recent.txt");
 
         outfile << "Fuel library name: " << fuel_library_.name << "\r\n";
         outfile << "Batches: " << batches << "\r\n";
@@ -128,7 +128,7 @@ void ReactorFacility::Tick() {
         outfile << "Base power: " << fuel_library_.base_power << "\r\n";
         outfile << "Base mass: " << fuel_library_.base_mass << "\r\n\r\n\r\n";
 
-        outfile.close();
+        outfile.close();*/
 /************************End of output file*********************************/
 
         //read list of isotopes for conversion ratio calculation
@@ -410,7 +410,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
                 cyclus::CompMap::iterator cit;
 
         /************************output file*********************************/
-                std::ofstream outfile;
+                /*std::ofstream outfile;
                 outfile.open("../output_cyclus_recent.txt", std::ios::app);
                 outfile << "Composition of fresh batch:\r\n";
 
