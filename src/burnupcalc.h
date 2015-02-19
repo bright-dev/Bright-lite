@@ -23,6 +23,7 @@
 
 double intpol(double y0, double y1, double x0, double x1, double x);
 fuelBundle regionCollapse(fuelBundle fuel);
+fuelBundle fast_region_collapse(fuelBundle fuel);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
 fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_cylindrical(fuelBundle core);

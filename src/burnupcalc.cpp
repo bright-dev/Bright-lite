@@ -45,6 +45,37 @@ fuelBundle regionCollapse(fuelBundle fuel){
 };
 
 
+fuelBundle fast_region_collapse(fuelBundle fuel){
+///add micro region flux effects
+//struct effects accounted here
+    //cout << "Begin regionCollapse" << endl;
+    for(int i = 0; i < fuel.batch.size(); i++){
+        //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
+        fuel.batch[i].collapsed_iso = BurnupBuilder(fuel.batch[i].iso);
+        //}
+        //builds total BU from BUd
+        fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BUd[0]);
+
+        for(int j = 1; j < fuel.batch[i].collapsed_iso.BUd.size(); j++){
+        //cout << "    1.5tst" << i+1 << "  " << j << endl;
+            fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BU[j-1]+fuel.batch[i].collapsed_iso.BUd[j]);
+        }
+        //test to see if the prod/dest vectors are the same length
+        if(fuel.batch[i].collapsed_iso.neutron_prod.size() != fuel.batch[i].collapsed_iso.neutron_dest.size()){
+            cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
+        }
+        if(fuel.batch[i].collapsed_iso.neutron_prod[0] == 0 || fuel.batch[i].collapsed_iso.neutron_dest[0] == 0){
+            fuel.batch[i].collapsed_iso.neutron_prod.erase(fuel.batch[i].collapsed_iso.neutron_prod.begin());
+            fuel.batch[i].collapsed_iso.neutron_dest.erase(fuel.batch[i].collapsed_iso.neutron_dest.begin());
+            fuel.batch[i].collapsed_iso.BUd.erase(fuel.batch[i].collapsed_iso.BUd.begin());
+            fuel.batch[i].collapsed_iso.BU.erase(fuel.batch[i].collapsed_iso.BU.begin());
+            fuel.batch[i].collapsed_iso.fluence.erase(fuel.batch[i].collapsed_iso.fluence.begin());
+        }
+    }
+    return fuel;
+};
+
+
 map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
     map<int, double> out = map<int, double>();
     double mass_i;
