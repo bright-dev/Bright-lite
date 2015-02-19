@@ -273,7 +273,7 @@ void ReactorFacility::Tock() {
 
   if(shutdown != true && record == true){
       std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
-      //cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(a, 42.0);
+      cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
