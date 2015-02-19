@@ -63,6 +63,13 @@ class ReprocessFacility : public cyclus::Facility  {
   /// @param time the time of the tock
   virtual void Tock();
 
+  virtual void Build(cyclus::Agent* parent) {
+    Facility::Build(parent);
+    if (lifetime() >= 0) {
+      context()->SchedDecom(this, exit_time());
+    }
+  }
+
   std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
 
   std::vector<std::map<int, double>> out_eff; //isotopic efficiencies of each output

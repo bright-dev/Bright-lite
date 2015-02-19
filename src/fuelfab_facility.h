@@ -61,6 +61,13 @@ class FuelfabFacility : public cyclus::Facility  {
     /// @param time the time of the tock
     virtual void Tock();
 
+    virtual void Build(cyclus::Agent* parent) {
+      Facility::Build(parent);
+      if (lifetime() >= 0) {
+        context()->SchedDecom(this, exit_time());
+      }
+    }
+
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> GetMatlRequests();
 
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> GetMatlBids(
