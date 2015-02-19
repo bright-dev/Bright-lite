@@ -548,7 +548,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
         }*/
     }
     core.CR = CR_finder(core);
-    cout << "CR: " << core.CR << endl;
+    //cout << "CR: " << core.CR << endl;
 
 
     //update core fluences and CR
