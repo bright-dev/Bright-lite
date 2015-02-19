@@ -227,8 +227,8 @@ void ReactorFacility::Tock() {
 
   // cycle end update
   cycle_end_ = ctx->time() + floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
-  std::cout << "Cycle Months:  " << floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
-  std::cout << "Cycle Days: " << fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28) << std::endl;
+  //std::cout << "Cycle Months:  " << floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
+  //std::cout << "Cycle Days: " << fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28) << std::endl;
   refuels += 1;
 
 
@@ -261,14 +261,14 @@ void ReactorFacility::Tock() {
 
 
     /************************output file*********************************/
-    std::ofstream outfile;
+    /*std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
 
     outfile << " Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << " [months]";
 
     outfile << "\r\n\r\n\r\n";
 
-    outfile.close();
+    outfile.close();*/
     /************************End of output file**************************/
 
   if(shutdown != true && record == true){
@@ -579,7 +579,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                     cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
                     mat->Absorb(mat_temp);
                     mass_frac -= frac;
-                    std::cout << "Mass Frac " << mass_frac << std::endl;
+                    //std::cout << "Mass Frac " << mass_frac << std::endl;
                 }
             }
         }
