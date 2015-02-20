@@ -4,6 +4,16 @@
 
 using namespace std;
 
+typedef unsigned long long timestamp_t;
+
+static timestamp_t
+get_timestamp ()
+    {
+      struct timeval now;
+      gettimeofday (&now, NULL);
+      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+    }
+
 double intpol(double y0, double y1, double x0, double x1, double x) {
     // linear interpolation function
     double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
@@ -87,16 +97,14 @@ fuelBundle phicalc_simple(fuelBundle core){
         }
 
         if(ii == 0){
-            core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
-            if(maxphi < core.batch[i].rflux){
-                maxphi = core.batch[i].rflux;
-            }
+            //core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
+            core.batch[i].rflux = (core.batch[i].collapsed_iso.fluence[ii+1]-core.batch[i].collapsed_iso.fluence[ii])
+                /(core.batch[i].collapsed_iso.BU[ii+1]-core.batch[i].collapsed_iso.BU[ii]);
 
         } else{
 
-            core.batch[i].rflux =
-            1/intpol(core.batch[i].collapsed_iso.neutron_prod[ii-1],core.batch[i].collapsed_iso.neutron_prod[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg+1);
-
+            core.batch[i].rflux = (core.batch[i].collapsed_iso.fluence[ii]-core.batch[i].collapsed_iso.fluence[ii-1])
+                /(core.batch[i].collapsed_iso.BU[ii]-core.batch[i].collapsed_iso.BU[ii-1]);
         }
 
         if(maxphi < core.batch[i].rflux){
@@ -105,6 +113,7 @@ fuelBundle phicalc_simple(fuelBundle core){
     }
 
     //normalizes all the flux values
+    //cout << "EqPow Flux: ";
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux /= maxphi;
         //cout << " " << core.batch[i].rflux;
@@ -128,14 +137,20 @@ double nusigf_finder(batch_info batch){
 
     prod = intpol(batch.collapsed_iso.neutron_prod[ii-1], batch.collapsed_iso.neutron_prod[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
 
-    //Nusig_f[barn] = prod rate / Avagadros number * mass * barn
-    Nusig_f = prod/(6.0221413E+23)*A*1E24;
+
+    if(ii == 0){
+        prod = batch.collapsed_iso.neutron_prod[0];
+    }
+
+    //Nusig_f[cm-1] = prod rate / Avagadros number * mass * barn
+    //Nusig_f = prod/(6.0221413E+23)*A*1E24/1000;
+    Nusig_f = prod*0.01097/1.;
 
     return Nusig_f;
 }
 
 double siga_finder(batch_info batch){
-//returns the microscopic cross section [barn] at fluence Fg
+//returns the macroscopic cross section at fluence Fg
     double sig_a;
     int ii;
     double dest = 0;
@@ -147,38 +162,18 @@ double siga_finder(batch_info batch){
         ii = batch.collapsed_iso.fluence.size() - 1;
     }
 
-
-    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
-
-    //sig_a[barn] = dest rate [cm2/kg] / Avagadros number * mass * barn
-    sig_a = dest/(6.0221413E+23)*A*1E24/100;
-
-    return sig_a;
-}
-
-double Siga_finder(batch_info batch){
-//returns the macroscopic cross section [cm-1] at fluence Fg
-    double Sig_a;
-    int ii;
-    double dest = 0;
-    double rho = 0.01097; // [g/cm3]
-
-    //find the index to interpolate on
-    for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
-    if(batch.collapsed_iso.fluence.back() < batch.Fg){
-        ii = batch.collapsed_iso.fluence.size() - 1;
-    }
-
-    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
-
     if(ii == 0){
         dest = batch.collapsed_iso.neutron_dest[0];
     }
 
-    //Sig_a[cm-1] = dest rate * density
-    Sig_a = dest*rho;
 
-    return Sig_a;
+    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
+
+    //sig_a[barn] = dest rate [cm2/kg] / Avagadros number * mass * barn
+    //sig_a = dest/(6.0221413E+23)*A*1E24/1000;
+    sig_a = dest*0.01097/1.;
+
+    return sig_a;
 }
 
 
@@ -192,6 +187,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     double delta = core.cylindrical_delta;
     double R[region+1]; //radial thickness of each region
     int N[region+1]; //number of mesh points in each region
+    int NC[region+1]; //cumulative N
     int NTotal; //total number of mesh points
     double dd2[region+1]; // D/delta^2
     double Sigma_a[region+1]; //mac. abs. cs of each region
@@ -199,6 +195,11 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     double Sigma_tr[region+1]; //mac. transport cs of each region
     double D[region+1]; //diff coef. for each region
     double LSquared[region+1];
+    double k = 1;
+    double k_prev = 0.9;
+    double prod, prod_prev;
+    double flux[region+1], maxflux=0;
+    double sum = 0;
 
     //set the radial thickness of each region
     R[0] = sqrt(core.fuel_area/region/3.141592);
@@ -207,20 +208,20 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     }
     R[region] = R[region-1] + core.mod_thickness; //this is the moderator region
 
+
+/*
+    Sigma_a[0] = 0.0230;
+    Sigma_a[1] = 0.0246;
+    Sigma_a[2] = 0.0324;
+    NuSigma_f[0] = 0.0184;
+    NuSigma_f[1] = 0.0217;
+    NuSigma_f[2] = 0.0382;*/
     //assign fuel cross sections
     for(int i = 0; i < region; i++){
-        int ii;
-        double prod, dest;
-        //find the index to interpolate on
-        for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++);
-        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            ii = core.batch[i].collapsed_iso.fluence.size() - 1;
-        }
 
-        prod = intpol(core.batch[i].collapsed_iso.neutron_prod[ii-1], core.batch[i].collapsed_iso.neutron_prod[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
-        NuSigma_f[i] = 0.0203;
+        NuSigma_f[i] = nusigf_finder(core.batch[i]);
 
-        Sigma_a[i] = 1;
+        Sigma_a[i] = siga_finder(core.batch[i]);
 
         Sigma_tr[i] = core.fuel_Sig_tr;
         D[i] = 1/(Sigma_tr[i]*3.);
@@ -229,7 +230,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     }
 
     //assign moderator cross sections
-    Sigma_a[region] = core.mod_Sig_a;
+    Sigma_a[region] = 0.0066;// core.mod_Sig_a;
     Sigma_tr[region] = core.mod_Sig_tr;
     D[region] = 1/(Sigma_tr[region]*3.);
     LSquared[region] = D[region]/Sigma_a[region];
@@ -240,19 +241,31 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
         dd2[i] = D[i]/delta/delta;
     }
 
+    /*
+    cout << "Cross sections in cylindrical calc: " << endl << "Sig_a      Sig_f      R" << endl;
+    for(int r = 0; r < region+1; r++){
+        cout << Sigma_a[r] << "  " << NuSigma_f[r] << "  " << R[r] << endl;
+    }*/
+
     //populate N, number of mesh points in each region
     N[0] = R[0]/delta;
+    NC[0] = N[0];
     NTotal = N[0];
 
     for(int i = 1; i < region+1; i++){
-        N[i] = round((R[i] - R[i-1]) / delta);
+        N[i] = ceil((R[i] - R[i-1]) / delta);
+        NC[i] = NC[i-1] + N[i];
         NTotal += N[i];
     }
+    NC[region] += 1;
     NTotal += 1;
-
-    /*
-    Eigen::MatrixXd A(NTotal, NTotal);
-    Eigen::MatrixXd F(NTotal, NTotal);
+/*
+    Eigen::MatrixXf A(NTotal, NTotal);
+    Eigen::MatrixXf F(NTotal, 1);
+    Eigen::MatrixXf phi(NTotal, 1);
+    Eigen::MatrixXf phi_prev(NTotal, 1);
+    Eigen::MatrixXf S(NTotal, 1);
+    Eigen::MatrixXf S_prev(NTotal, 1);
 
     A.setZero();
     F.setZero();
@@ -260,60 +273,121 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     int jprev = 0;
     int j;
 
-    //build the matrix A and F
-    for(int i = 0; i <= region; i++){
-        for(j = jprev+1; j < jprev + N[i]; j++){
-            A(j,j-1) = -dd2[i]*(2.*(j)-1)/(2.*j);
-            A(j,j) = 2*dd2[i] + Sigma_a[i];
-            A(j,j+1) = -dd2[i]*(2.*(j)+1)/(2.*j);
-            F(j,j) = NuSigma_f[i];
+    int r = 0; //region index
+    for(int i = 1; i < NTotal-1; i++){
+        A(i, i-1) = (-1.)*dd2[r]*(2*i-1)/(2*i);
+        A(i,i) = dd2[r]*2. + Sigma_a[r];
+        A(i, i+1) = (-1.)*dd2[r]*(2*i+1)/(2*i);
+        if(i == NC[r]){
+            r += 1;
         }
-
-        jprev = j;
-        if(i != region){
-            A(jprev,jprev-1) = D[i];
-            A(jprev,jprev) = -D[i]-D[i+1];
-            A(jprev,jprev+1) = D[i+1];
+        if(core.batch[r].rflux < 1.1 && core.batch[r].rflux > 0){
+            phi_prev(i) = core.batch[r].rflux; //uses last runs results if available
+        } else{
+            phi_prev(i) = 1;
         }
 
     }
+    A(0,0) = 1;
+    A(0,1) = -1;
+    A(NTotal-1,NTotal-1) = 1;
+    phi_prev(NTotal-1) = 0;
 
-    A(0,0) = 8;//1;
-    A(0,1) = 9;//-1;
-    A(NTotal-1,NTotal-1) = 10;//1;
-
-    // eigen.tuxfamily.org/dox/classEigen_1_1GeneralizedEigenSolver.html
-    Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> ges;
-
-    ges.compute(A, F);
-    cout << ges.eigenvalues() << endl;
-   */
-   /*
-    arma::mat  A = arma::zeros<arma::mat>(5,5);
-    arma::mat F = arma::zeros<arma::mat>(5,5);
-
-    for(int i = 0; i < 5; i++){
-        A(i,i) = i+1;
-        F(i,i) = i+2;
+    for(r = 0; r < region; r++){
+        A(NC[r],NC[r]-1) = D[r];
+        A(NC[r],NC[r]) = -D[r]-D[r+1];
+        A(NC[r],NC[r]+1) = D[r+1];
     }
 
-    arma::cx_vec eigval;
-    arma::cx_mat eigvec;
+    r = 0;
+    for(int i = 1; i < NTotal; i++){
+        if(i != NC[r]){
+            F(i) = NuSigma_f[r];
+        }
+        if( i == NC[r]){
+            r += 1;
+        }
+        S_prev(i) = F(i)*phi(i);
+    }
 
-    arma::eig_pair(eigval, eigvec, A, F);
 
-    cout << A << endl;
-    cout << F << endl;
+    for(int iter = 0; iter < 10; iter++){
+        phi = A.colPivHouseholderQr().solve(S_prev)/k_prev;
 
-    cout << eigval << endl;
-    cout << eigvec << endl;
-    */
+
+        if(!phi.allFinite()){
+            phi = phi_prev;
+        }
+
+        S = F.array() * phi.array();
+
+        prod = (0.25)*3.141592*NuSigma_f[0]*phi(0)*delta*delta;
+        prod_prev = (0.25)*3.141592*NuSigma_f[0]*phi_prev(0)*delta*delta;
+        r = 0;
+
+        for(int i = 0; i < NTotal; i++){
+            if(i == NC[r]){
+                prod += 3.141592*NuSigma_f[r]*phi(i)*(i-0.25)*delta*delta;
+                prod_prev += 3.141592*NuSigma_f[r]*phi_prev(i)*(i-0.25)*delta*delta;
+                r += 1;
+                prod += 3.141592*NuSigma_f[r]*phi(i)*(i-0.25)*delta*delta;
+                prod_prev += 3.141592*NuSigma_f[r]*phi_prev(i)*(i-0.25)*delta*delta;
+            } else {
+                prod += 2.*3.141592*NuSigma_f[r]*phi(i)*i*delta*delta;
+                prod_prev += 2.*3.141592*NuSigma_f[r]*phi_prev(i)*i*delta*delta;
+            }
+        }
+
+        if(abs((k_prev-k)/k) < 0.01 && iter > 3){
+            break;
+        }
+        //cout << "prod: " << prod << "  prod_prev: " << prod_prev << "  k: " << prod/prod_prev << endl;
+        k = prod/prod_prev*k_prev;
+        phi_prev = phi;
+        k_prev = k;
+        S_prev = S;
+
+
+    }
+
+    //NO NEED TO normalize phi
+    //phi = phi.array()/phi.maxCoeff();
+
+    //find area weighted average phi per batch
+    r = 0;
+    flux[0] = 0;
+    for(int i = 0; i < NTotal; i++){
+        flux[r] += phi(i)*(2*(i+1)-1);
+        sum += (2*(i+1)-1);
+
+        if(i == NC[r] || i == NTotal-1){
+            flux[r] /= sum;
+            sum = 0;
+            r += 1;
+            flux[r] = 0;
+        }
+    }
+    for(r = 0; r < region+1; r++){
+        if(flux[r] > maxflux){
+            maxflux = flux[r];
+        }
+    }
+
+    //cout << "flux: ";
+    //cout << core.fuel_area << " " << delta << " | " << Sigma_a[0] << " " << Sigma_a[1] << " " << Sigma_a[2] << " | "
+    //<< NuSigma_f[0] << " " << NuSigma_f[1] << " " << NuSigma_f[2] << " | ";
+    //normalize the fluxes
+    for(r = 0; r < region+1; r++){
+        flux[r] /= maxflux;
+        //cout << flux[r] << " ";
+    }
+    //cout << endl;
 
 
     for(int i = 0; i < core.batch.size(); i++){
-        core.batch[i].rflux = 1;
+        core.batch[i].rflux = flux[i];
     }
-
+*/
     return core;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -432,6 +506,7 @@ double CR_finder(fuelBundle core){
 
 
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
+timestamp_t t0 = get_timestamp();
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
@@ -506,20 +581,19 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
         //update fluences
         for(int i = 0; i < N; i++){
-            //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             //cout << "flux: " << core.batch[i].rflux << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+
         }
+
         core.CR = CR_finder(core);
         kcore = kcalc(core);
-            if(core.fuel_area == 1.123)
-    cout << "CR: " << core.CR << endl;
 
         if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
             break;
         }
     }
-    cout << "CR: " << core.CR << endl;
+    //cout << "CR: " << core.CR << endl;
 
 
     //update core fluences and CR
@@ -570,34 +644,15 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     //cout << "Discharge burnup: " << burnup << endl;
 
-    /************************output file*********************************/
-    std::ofstream outfile;
-    outfile.open("../output_cyclus_recent.txt", std::ios::app);
 
-    outfile << "Discharge burnup: " << burnup;
-    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
-        outfile << "\r\n\r\nBatch fluence exceeded max fluence in library! Do not trust results.\r\n     Discharge values extrapolated from last two discrete points.\r\n\r\n";
-    }
-
-    outfile << "\r\n Fluences at the end of this burnup cycle:";
-
-    for(int i = 0; i < N; i++){
-        outfile << "\r\n  Batch " << i+1 << ": " << core.batch[i].batch_fluence;
-    }
-
-    outfile << "\r\n    Discharge fuel fractions '[ISOTOPE]  [FRACTION]':";
-    //depends on variable ii, which was found during burnup calculation
-    for(std::map<int,double>::iterator it = core.batch[0].comp.begin(); it!=core.batch[0].comp.end(); ++it){
-        outfile << "\r\n       " << it->first << "  " << it->second;
-     }
-
-    outfile << "\r\n";
-
-    outfile.close();
-    /************************End of output file**************************/
 
 
 //cout << "rflux: " << core.batch[1].rflux << endl;
+
+timestamp_t t1 = get_timestamp();
+
+    double secs = (t1 - t0) / 1000000.0L;
+    cout << "burnupcalc time: " << secs << endl;
     return core;
 }
 
@@ -735,7 +790,7 @@ fuelBundle DA_calc(fuelBundle fuel){
     //cout << endl << "thermal disadvtg cals: " << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
 
-        Sig_aF = Siga_finder(fuel.batch[i]);
+        Sig_aF = siga_finder(fuel.batch[i]);
         //cout << "Siga: " << Sig_aF << endl;
 
         Sig_tF = Sig_aF+Sig_sF;
@@ -896,105 +951,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 }
 
 
-/*std::pair<double, std::pair<double, map<int,double> > > blending_calc(fuelBundle fuel, double BU_end, int mode, int da_mode, double time_step) {
-    std::pair<double, std::pair<double, std::map<int, double> > > rtn;
-    double X;
-    double BU_guess, enrich_guess;
-    double enrich_previous, BU_previous;
-    double enrich_lower, enrich_upper;
-    double BU_lower, BU_upper;
-    std::vector <int> blend_vector;
 
-    // This is a super quick hack to benchmark enrichcalc
-    fuelBundle fuel1;
-    fuelBundle fuel2;
-    for (int i = 0; i < fuel.stream_fraction.size(); i++){
-        if (fuel.stream_fraction[i] == -1){
-            blend_vector.push_back(i);
-        }
-    }
-    for (int i = 1; i < 100; i++){
-        X = i / 100.;
-        fuel.stream_fraction[blend_vector[0]] = X;
-        fuel.stream_fraction[blend_vector[1]] = 1 - X;
-        fuel = enrich_collapse(fuel);
-        BU_lower = burnupcalc(fuel, mode, da_mode, time_step);
-        //cout << X << "  BU_LOWER   " << BU_lower << endl;
-        if (i > 99){
-            cout << "IT'S ALL BROKEN" << endl;
-            rtn.first = 0;
-            return rtn;
-        }
-        if (BU_lower > 0){
-            enrich_lower = X;
-            break;
-        }
-    }
-
-    for (int i = enrich_lower*100; i < enrich_lower*100+10; i++){
-        X = i / 100.;
-        fuel.stream_fraction[blend_vector[0]] = X;
-        fuel.stream_fraction[blend_vector[1]] = 1 - X;
-        fuel1 = enrich_collapse(fuel);
-        BU_upper = burnupcalc(fuel1, mode, da_mode, time_step);
-        //cout << X << "  BU_UPPER   " << BU_upper << endl;
-        if (BU_upper > 2*BU_lower){
-            enrich_upper = X;
-            break;
-        }
-    }
-    X = enrich_lower + (BU_end - BU_lower)*(enrich_upper - enrich_lower)/(BU_upper - BU_lower);
-    if (BU_upper == 0){
-        cout << "Burn up code failed" << endl;
-        rtn.first = 0;
-        return rtn;
-    }
-    fuel.stream_fraction[blend_vector[0]] = X;
-    fuel.stream_fraction[blend_vector[1]] = 1 - X;
-    fuel2 = enrich_collapse(fuel);
-    BU_guess = burnupcalc(fuel2, mode, da_mode, time_step);
-    if (BU_guess == 0){
-        cout << "Burn up code failed" << endl;
-        rtn.first = 0;
-        return rtn;
-    }
-    // enrichment iteration
-    if (abs(enrich_guess - enrich_lower) > abs(enrich_guess - enrich_upper)){
-        enrich_previous = enrich_lower;
-        BU_previous = BU_lower;
-    } else {
-        enrich_previous = enrich_upper;
-        BU_previous = BU_upper;
-    }
-    enrich_guess = X;
-    int i = 0;
-    while ((abs(BU_end - BU_guess)/BU_end) > 0.001){
-        //cout << enrich_previous << "   " << BU_previous << endl;
-        //cout << enrich_guess << "   " << BU_guess << endl << endl;
-        fuelBundle fuel3;
-        X = enrich_previous + (BU_end - BU_previous)*(enrich_guess - enrich_previous)/(BU_guess - BU_previous);
-        BU_previous = BU_guess;
-        enrich_previous = enrich_guess;
-        fuel.stream_fraction[blend_vector[0]] = X;
-        fuel.stream_fraction[blend_vector[1]] = 1 - X;
-        fuel3 = enrich_collapse(fuel);
-        BU_guess = burnupcalc(fuel3, mode, da_mode, time_step);
-        enrich_guess = X;
-        /// TODO FIX THIS QUICK HACK
-        if (i > 20) {
-            X = (enrich_guess + enrich_previous)/2;
-            break;
-        }
-        i++;
-    }
-    rtn.first = X;
-    fuelBundle fuel3;
-    fuel.stream_fraction[blend_vector[0]] = X;
-    fuel.stream_fraction[blend_vector[1]] = 1 - X;
-    fuel3 = enrich_collapse(fuel);
-    rtn.second = burnupcalc(fuel3, mode, da_mode, time_step);
-    return rtn;
-}*/
 
 
 /*
@@ -1303,20 +1260,4 @@ void mass_check(fuelBundle fuel){
         }
     }
 }
-
-/*
-fuelBundle burnup_collapse(fuelBundle fuel){
-    for(int i = 0; i < fuel.iso.size(); i++){
-        fuel.iso[i].fraction[0] = fuel.iso[i].fraction[1];
-    }
-    return fuel;
-}
-
-void iso_output(pair<double, map <int, double> > iso_vector){
-    typedef std::map<int, double>::iterator test_map;
-    for (test_map iterator = iso_vector.second.begin(); iterator != iso_vector.second.end(); iterator++){
-        cout << iterator->first << "       " << iterator->second << endl;
-    }
-}
-*/
 

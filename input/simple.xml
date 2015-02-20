@@ -2,7 +2,7 @@
 
 <simulation>
   <control>
-    <duration>160</duration>
+    <duration>200</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -56,7 +56,8 @@
         </interpol_pairs>
         <batches>3</batches>
         <flux_mode>2</flux_mode>
-        <cylindrical_delta>10</cylindrical_delta>
+	<fuel_area>5000</fuel_area>
+        <cylindrical_delta>3</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
         <CR_fissile>
             <val>902250</val>

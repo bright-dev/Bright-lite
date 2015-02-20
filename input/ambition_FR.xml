@@ -233,7 +233,6 @@
         <flux_mode>2</flux_mode>
         <cylindrical_delta>10</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
-	<fuel_area>1.123</fuel_area>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
