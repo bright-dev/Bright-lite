@@ -11,11 +11,19 @@
 #include "structures.h"
 #include "origenBuilder.h"
 #include "cyclus.h"
+
 //#include <eigen3/Eigen/Eigen>
+
+#include <sys/time.h>
+#include <ctime>
+
 
 #include <stdio.h>
 #include <math.h>
-#include <cblas.h>
+//#include <cblas.h>
+
+//#include <gsl/gsl_math.h>
+//#include <gsl/gsl_eigen.h>
 
 //#include "lapacke.h"
 
@@ -28,7 +36,6 @@ fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_cylindrical(fuelBundle core);
 double nusigf_finder(batch_info batch);
 double siga_finder(batch_info batch);
-double Siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
 double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double tolerance);
