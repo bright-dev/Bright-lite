@@ -152,6 +152,7 @@ void ReactorFacility::Tock() {
 
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
+        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
         //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
         return;
     }
@@ -271,7 +272,6 @@ void ReactorFacility::Tock() {
     outfile.close();*/
     /************************End of output file**************************/
 
-      cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
   if(shutdown != true && record == true){
       std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
       //add batch variable to cyclus database
