@@ -644,10 +644,8 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     return_amount = fraction * total_mass;
     ss_fraction = fraction;
     SS_enrich = return_amount;
-    std::cout << "Blending time  " << t.elapsed() << std::endl;
+    //std::cout << "Blending time  " << t.elapsed() << std::endl;
 
-    double secs = (t1 - t0) / 1000000.0L;
-    std::cout << "blending time: " << secs << std::endl;
     return return_amount;
 }
 
