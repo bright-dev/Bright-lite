@@ -66,6 +66,7 @@ fuelBundle StructReader(fuelBundle core){
 
 isoInformation BurnupBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
+    //boost::timer t;
     for(int mm = 0; mm < fuel_values.size(); mm++){
         if(fuel_values[mm].iso_vector.size() > 0){
             if(fuel.fluence.size() < 1){
@@ -112,11 +113,13 @@ isoInformation BurnupBuilder(vector<isoInformation> fuel_values){
             }
         }
     }
+    //std::cout << "burnupblender " << t.elapsed() << std::endl;
     return fuel;
 }
 
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     isoInformation fuel;
+    //boost::timer t;
     for(int mm = 0; mm < fuel_values.size(); mm++){
         if(fuel_values[mm].iso_vector.size() > 0){
             if(fuel.fluence.size() < 1){
@@ -190,6 +193,7 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
             }
         }
     }
+    //std::cout << "fuelBlending " << t.elapsed() << std::endl;
     return fuel;
 }
 

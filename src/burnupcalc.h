@@ -11,6 +11,8 @@
 #include "structures.h"
 #include "origenBuilder.h"
 #include "cyclus.h"
+#include <cstdio>
+#include <ctime>
 //#include <eigen3/Eigen/Eigen>
 
 #include <stdio.h>

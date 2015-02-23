@@ -6,6 +6,9 @@
 #include<fstream>
 #include<sstream>
 #include<algorithm>
+#include <cstdio>
+#include <ctime>
+#include <boost/timer.hpp>
 
 #include "structures.h"
 

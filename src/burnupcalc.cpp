@@ -11,6 +11,7 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
 }
 
 
+
 fuelBundle regionCollapse(fuelBundle fuel){
 ///add micro region flux effects
 //struct effects accounted here
@@ -351,6 +352,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
 
 double kcalc(fuelBundle core){
     //uses the fluence values in core.batch.Fg to calculate the core criticality
+    //boost::timer t;
     int N = core.batch.size();
     double prod_tot = 0;
     double dest_tot = 0;
@@ -389,12 +391,14 @@ double kcalc(fuelBundle core){
         pnl = 1.000;
         }
 
+    //std::cout << "k calc time " << t.elapsed() << std::endl;
     return prod_tot * pnl / dest_tot;
 }
 
 double CR_finder(fuelBundle core){
     //
     //i is the batch number starting from zero
+    //boost::timer t;
     double FP = 0, FP0 = 0, FP1 = 0;
     double fissile = 0, fissile0 = 0, fissile1 = 0;
     double ini_fissile = 0;
@@ -457,6 +461,7 @@ double CR_finder(fuelBundle core){
     //cout << "FP: " << FP << "  fissile: " << fissile << "  ini_fissile: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
 
     CR = (FP+fissile-ini_fissile)/FP;
+    //std::cout << "CR Calc " << t.elapsed() << std::endl;
     return CR;
 }
 
@@ -467,6 +472,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
     //cout << endl << "Burnupcalc" << endl;
+    boost::timer t;
 
     double BUg = 40; //burnup guess, gets updated if a guess in passed. unused
     int N = core.batch.size(); //number of batches
@@ -627,6 +633,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
 
 //cout << "rflux: " << core.batch[1].rflux << endl;
+    std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
     return core;
 }
 
@@ -806,6 +813,8 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
     //cout << endl;
+    boost::timer t;
+
     isoInformation fuel = core.batch[0].collapsed_iso;
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
@@ -920,7 +929,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     }
 
     //cout << "SSrflux: " << core.batch[1].rflux << endl;
-
+    std::cout << "SSBurnupCalc Time " << t.elapsed() << std::endl;
     return burnup;
 }
 
