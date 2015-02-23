@@ -584,11 +584,10 @@ timestamp_t t0 = get_timestamp();
     //cout << endl << "Burnupcalc" << endl;
     boost::timer t;
 
-    double BUg = 40; //burnup guess, gets updated if a guess in passed. unused
     int N = core.batch.size(); //number of batches
     double dt = delta*24*60*60; //days to [s]
     double kcore, kcore_prev;
-    double y0, y1, x0, x1;
+    double y0, y1;
     double burnup = 0;
 
 /*
@@ -604,23 +603,7 @@ timestamp_t t0 = get_timestamp();
         core.batch[i].Fg = core.batch[i].batch_fluence;
     }
 
-
-    //turn zero fluences to one to avoid zero rates
-    for(int i = 0; i < N; i++){
-        //if(core.batch[i].Fg == 0){core.batch[i].Fg = 1;}
-    }
-
-    for(int i = 0; i < core.batch[0].collapsed_iso.fluence.size(); i++){
-        //cout << core.batch[0].collapsed_iso.fluence[i] << "  " << core.batch[0].collapsed_iso.BU[i] << "  " << core.batch[0].collapsed_iso.neutron_prod[i]/core.batch[0].collapsed_iso.neutron_dest[i] << endl;
-    }
-    //cout << "Batches: " << core.batch.size() << endl <<endl;
-    for(int i = 0; i < core.batch.size(); i++){
-        //cout << "fluence: " << core.batch[i].batch_fluence << endl;
-    }
-
     kcore = 3.141592;
-    kcore_prev = kcalc(core);
-
 
     //more forward in time until kcore drops under 1
     while(kcore > 1){
@@ -670,19 +653,16 @@ timestamp_t t0 = get_timestamp();
 
     //update core fluences and CR
     for(int i = 0; i < N; i++){
-        //y0 is the fluence value before the last interation
-        y0 = core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt);
-        y1 = core.batch[i].Fg;
-        core.batch[i].batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
+        core.batch[i].batch_fluence = intpol(core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt), core.batch[i].Fg, kcore_prev, kcore, 1);
         //cout << "batch " << i+1 << " CR: " << core.batch[i].CR << endl;
         //cout << "  fluence end of burnupcalc: " << core.batch[i].batch_fluence << endl;
 
     }
 
+    int ii;
     //update current composition of batches
     for(int i = 0; i < N; i++){
         core.batch[i].comp.clear();
-        int ii;
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].batch_fluence; ii++){}
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].batch_fluence){
             cout <<i << ": " << core.batch[i].batch_fluence << endl;
@@ -691,15 +671,19 @@ timestamp_t t0 = get_timestamp();
             ii = core.batch[i].collapsed_iso.fluence.size() - 1;
         }
 
+        double slope = (core.batch[i].batch_fluence - core.batch[i].collapsed_iso.fluence[ii-1])
+            /(core.batch[i].collapsed_iso.fluence[ii] - core.batch[i].collapsed_iso.fluence[ii-1]);
+
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
             core.batch[i].comp[core.batch[i].collapsed_iso.iso_vector[j].name] =
-            intpol(core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1],core.batch[i].collapsed_iso.iso_vector[j].mass[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].batch_fluence)/1000;
+                (core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1] + (core.batch[i].collapsed_iso.iso_vector[j].mass[ii]
+                - core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1])*slope)/1000;
         }
     }
 
     //the oldest batch is index=0
-    int ii;
-    for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
+    // ii is already found during loop above, no need to update
+    //for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
     if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
         cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (burnupcalc2    )" << endl;
         cout << "  Values on max fluence will be used. Do not trust results." << endl;
@@ -737,7 +721,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     int N = core.batch.size(); //number of batches
     double dt = delta*24*60*60; //days to [s]
     double kcore, kcore_prev;
-    double y0, y1, x0, x1;
+    double y0, y1;
     double burnup = 0;
 
     //assign the batch_fluence to Fg
