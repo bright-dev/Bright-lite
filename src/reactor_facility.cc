@@ -544,6 +544,9 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                    std::map<std::string, double> incommods){
+    boost::timer t;
+    double t_base = 0.0;
+    boost::timer t_1;
     double return_amount;//function return the amount of first stream in inventory to reach target burnup
     double return_prev = SS_enrich;
     double mass_frac = 1.;
@@ -554,6 +557,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     } else {
         return SS_enrich;
     }*/
+
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
 
@@ -596,7 +600,9 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     //fuelBundle temp_bundle = comp_trans(mat1, fuel_library_);
     //double burnup_1 = burnupcalc_BU(temp_bundle, 2, 1, 40);
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
+    t_base += t_1.elapsed();
     double burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
+    boost::timer t_2;
     if(std::abs((target_burnup - burnup_1)/target_burnup) < 0.001){
         //std::cout << "YAY" << std::endl;
         return_amount = fraction_1 * total_mass;
@@ -611,21 +617,23 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     //temp_bundle = comp_trans(mat1, fuel_library_);
     //double burnup_2 = burnupcalc_BU(temp_bundle, 2, 1, 40);
     temp_bundle = comp_function(mat1, fuel_library_);
+    t_base += t_2.elapsed();
     double burnup_2 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
     //std::cout << "fraction " << fraction << std::endl;
+    boost::timer t_3;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
     mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
     //std::cout << "Fraction SU " << fraction << std::endl;
-    //temp_bundle = comp_trans(mat1, fuel_library_);
-    //double burnup_3 = burnupcalc_BU(temp_bundle, 2, 1, 40);
     temp_bundle = comp_function(mat1, fuel_library_);
+    t_base += t_3.elapsed();
+    std::cout << "BASE TIME " << t_base << std::endl;
     double burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
@@ -653,7 +661,9 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     }
     //std::cout << "FRACTION " << fraction << std::endl;
     return_amount = fraction * total_mass;
+    ss_fraction = fraction;
     SS_enrich = return_amount;
+    std::cout << "Blending time  " << t.elapsed() << std::endl;
     return return_amount;
 }
 
