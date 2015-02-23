@@ -296,6 +296,7 @@ class ReactorFacility : public cyclus::Facility  {
   int start_time_;
   fuelBundle fuel_library_;
   fuelBundle core_;
+  double ss_fluence = 0;
 };
 
 }  // namespace reactor

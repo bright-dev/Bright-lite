@@ -899,7 +899,7 @@ fuelBundle DA_calc(fuelBundle fuel){
 }
 
 
-double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N){
+double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -920,9 +920,9 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 
     batch_info temp_batch;
     temp_batch.collapsed_iso = fuel;
-    temp_batch.Fg = 1;
     temp_batch.collapsed_iso.batch_fluence = 0;
     for(int i = 1; i < N; i++){
+        temp_batch.Fg = ss_fluence*(i+1)*0.95; // 0.6
         core.batch.push_back(temp_batch);
     }
 
@@ -1020,7 +1020,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     }
 
     //cout << "SSrflux: " << core.batch[1].rflux << endl;
-    std::cout << "SSBurnupCalc Time " << t.elapsed() << std::endl;
+    std::cout << "SSBurnupCalc fluence: " << ss_fluence << "  Time: " << t.elapsed() << std::endl;
     return burnup;
 }
 
