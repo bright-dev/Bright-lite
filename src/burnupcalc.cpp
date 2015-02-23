@@ -4,6 +4,16 @@
 
 using namespace std;
 
+typedef unsigned long long timestamp_t;
+
+static timestamp_t
+get_timestamp ()
+    {
+      struct timeval now;
+      gettimeofday (&now, NULL);
+      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+    }
+
 double intpol(double y0, double y1, double x0, double x1, double x) {
     // linear interpolation function
     double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
@@ -119,16 +129,14 @@ fuelBundle phicalc_simple(fuelBundle core){
         }
 
         if(ii == 0){
-            core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
-            if(maxphi < core.batch[i].rflux){
-                maxphi = core.batch[i].rflux;
-            }
+            //core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
+            core.batch[i].rflux = (core.batch[i].collapsed_iso.fluence[ii+1]-core.batch[i].collapsed_iso.fluence[ii])
+                /(core.batch[i].collapsed_iso.BU[ii+1]-core.batch[i].collapsed_iso.BU[ii]);
 
         } else{
 
-            core.batch[i].rflux =
-            1/intpol(core.batch[i].collapsed_iso.neutron_prod[ii-1],core.batch[i].collapsed_iso.neutron_prod[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg+1);
-
+            core.batch[i].rflux = (core.batch[i].collapsed_iso.fluence[ii]-core.batch[i].collapsed_iso.fluence[ii-1])
+                /(core.batch[i].collapsed_iso.BU[ii]-core.batch[i].collapsed_iso.BU[ii-1]);
         }
 
         if(maxphi < core.batch[i].rflux){
@@ -137,6 +145,7 @@ fuelBundle phicalc_simple(fuelBundle core){
     }
 
     //normalizes all the flux values
+    //cout << "EqPow Flux: ";
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux /= maxphi;
         //cout << " " << core.batch[i].rflux;
@@ -253,7 +262,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     }
 
     //assign moderator cross sections
-    Sigma_a[region] = core.mod_Sig_a;
+    Sigma_a[region] = 0.0066;// core.mod_Sig_a;
     Sigma_tr[region] = core.mod_Sig_tr;
     D[region] = 1/(Sigma_tr[region]*3.);
     LSquared[region] = D[region]/Sigma_a[region];
@@ -282,7 +291,6 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     }
     NC[region] += 1;
     NTotal += 1;
-
     Eigen::MatrixXf A(NTotal, NTotal);
     Eigen::MatrixXf F(NTotal, 1);
     Eigen::MatrixXf phi(NTotal, 1);
@@ -407,10 +415,46 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     cout << endl;
 
 
+    }
+
+    //NO NEED TO normalize phi
+    //phi = phi.array()/phi.maxCoeff();
+
+    //find area weighted average phi per batch
+    r = 0;
+    flux[0] = 0;
+    for(int i = 0; i < NTotal; i++){
+        flux[r] += phi(i)*(2*(i+1)-1);
+        sum += (2*(i+1)-1);
+
+        if(i == NC[r] || i == NTotal-1){
+            flux[r] /= sum;
+            sum = 0;
+            r += 1;
+            flux[r] = 0;
+        }
+    }
+    for(r = 0; r < region+1; r++){
+        if(flux[r] > maxflux){
+            maxflux = flux[r];
+        }
+    }
+
+    //cout << "flux: ";
+    //cout << core.fuel_area << " " << delta << " | " << Sigma_a[0] << " " << Sigma_a[1] << " " << Sigma_a[2] << " | "
+    //<< NuSigma_f[0] << " " << NuSigma_f[1] << " " << NuSigma_f[2] << " | ";
+    //normalize the fluxes
+    for(r = 0; r < region+1; r++){
+        flux[r] /= maxflux;
+        //cout << flux[r] << " ";
+    }
+    //cout << endl;
+
+
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux = flux[i];
     }
-
+*/
     return core;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -533,6 +577,7 @@ double CR_finder(fuelBundle core){
 
 
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
+timestamp_t t0 = get_timestamp();
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
@@ -608,10 +653,11 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
         //update fluences
         for(int i = 0; i < N; i++){
-            //cout << "  Added fluence: " << core.batch[i].rflux * core.base_flux * dt << endl;
             //cout << "flux: " << core.batch[i].rflux << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+
         }
+
         kcore = kcalc(core);
         //core.CR = CR_finder(core);
         /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
@@ -670,34 +716,14 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
     //cout << "Discharge burnup: " << burnup << endl;
 
-    /************************output file*********************************/
-    /*std::ofstream outfile;
-    outfile.open("../output_cyclus_recent.txt", std::ios::app);
 
-    outfile << "Discharge burnup: " << burnup;
-    if(core.batch[0].collapsed_iso.fluence.back() < core.batch[0].batch_fluence){
-        outfile << "\r\n\r\nBatch fluence exceeded max fluence in library! Do not trust results.\r\n     Discharge values extrapolated from last two discrete points.\r\n\r\n";
-    }
-
-    outfile << "\r\n Fluences at the end of this burnup cycle:";
-
-    for(int i = 0; i < N; i++){
-        outfile << "\r\n  Batch " << i+1 << ": " << core.batch[i].batch_fluence;
-    }
-
-    outfile << "\r\n    Discharge fuel fractions '[ISOTOPE]  [FRACTION]':";
-    //depends on variable ii, which was found during burnup calculation
-    for(std::map<int,double>::iterator it = core.batch[0].comp.begin(); it!=core.batch[0].comp.end(); ++it){
-        outfile << "\r\n       " << it->first << "  " << it->second;
-     }
-
-    outfile << "\r\n";
-
-    outfile.close();*/
-    /************************End of output file**************************/
 
 
 //cout << "rflux: " << core.batch[1].rflux << endl;
+
+timestamp_t t1 = get_timestamp();
+
+    double secs = (t1 - t0) / 1000000.0L;
     //std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
     return core;
 }
@@ -999,105 +1025,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 }
 
 
-/*std::pair<double, std::pair<double, map<int,double> > > blending_calc(fuelBundle fuel, double BU_end, int mode, int da_mode, double time_step) {
-    std::pair<double, std::pair<double, std::map<int, double> > > rtn;
-    double X;
-    double BU_guess, enrich_guess;
-    double enrich_previous, BU_previous;
-    double enrich_lower, enrich_upper;
-    double BU_lower, BU_upper;
-    std::vector <int> blend_vector;
 
-    // This is a super quick hack to benchmark enrichcalc
-    fuelBundle fuel1;
-    fuelBundle fuel2;
-    for (int i = 0; i < fuel.stream_fraction.size(); i++){
-        if (fuel.stream_fraction[i] == -1){
-            blend_vector.push_back(i);
-        }
-    }
-    for (int i = 1; i < 100; i++){
-        X = i / 100.;
-        fuel.stream_fraction[blend_vector[0]] = X;
-        fuel.stream_fraction[blend_vector[1]] = 1 - X;
-        fuel = enrich_collapse(fuel);
-        BU_lower = burnupcalc(fuel, mode, da_mode, time_step);
-        //cout << X << "  BU_LOWER   " << BU_lower << endl;
-        if (i > 99){
-            cout << "IT'S ALL BROKEN" << endl;
-            rtn.first = 0;
-            return rtn;
-        }
-        if (BU_lower > 0){
-            enrich_lower = X;
-            break;
-        }
-    }
-
-    for (int i = enrich_lower*100; i < enrich_lower*100+10; i++){
-        X = i / 100.;
-        fuel.stream_fraction[blend_vector[0]] = X;
-        fuel.stream_fraction[blend_vector[1]] = 1 - X;
-        fuel1 = enrich_collapse(fuel);
-        BU_upper = burnupcalc(fuel1, mode, da_mode, time_step);
-        //cout << X << "  BU_UPPER   " << BU_upper << endl;
-        if (BU_upper > 2*BU_lower){
-            enrich_upper = X;
-            break;
-        }
-    }
-    X = enrich_lower + (BU_end - BU_lower)*(enrich_upper - enrich_lower)/(BU_upper - BU_lower);
-    if (BU_upper == 0){
-        cout << "Burn up code failed" << endl;
-        rtn.first = 0;
-        return rtn;
-    }
-    fuel.stream_fraction[blend_vector[0]] = X;
-    fuel.stream_fraction[blend_vector[1]] = 1 - X;
-    fuel2 = enrich_collapse(fuel);
-    BU_guess = burnupcalc(fuel2, mode, da_mode, time_step);
-    if (BU_guess == 0){
-        cout << "Burn up code failed" << endl;
-        rtn.first = 0;
-        return rtn;
-    }
-    // enrichment iteration
-    if (abs(enrich_guess - enrich_lower) > abs(enrich_guess - enrich_upper)){
-        enrich_previous = enrich_lower;
-        BU_previous = BU_lower;
-    } else {
-        enrich_previous = enrich_upper;
-        BU_previous = BU_upper;
-    }
-    enrich_guess = X;
-    int i = 0;
-    while ((abs(BU_end - BU_guess)/BU_end) > 0.001){
-        //cout << enrich_previous << "   " << BU_previous << endl;
-        //cout << enrich_guess << "   " << BU_guess << endl << endl;
-        fuelBundle fuel3;
-        X = enrich_previous + (BU_end - BU_previous)*(enrich_guess - enrich_previous)/(BU_guess - BU_previous);
-        BU_previous = BU_guess;
-        enrich_previous = enrich_guess;
-        fuel.stream_fraction[blend_vector[0]] = X;
-        fuel.stream_fraction[blend_vector[1]] = 1 - X;
-        fuel3 = enrich_collapse(fuel);
-        BU_guess = burnupcalc(fuel3, mode, da_mode, time_step);
-        enrich_guess = X;
-        /// TODO FIX THIS QUICK HACK
-        if (i > 20) {
-            X = (enrich_guess + enrich_previous)/2;
-            break;
-        }
-        i++;
-    }
-    rtn.first = X;
-    fuelBundle fuel3;
-    fuel.stream_fraction[blend_vector[0]] = X;
-    fuel.stream_fraction[blend_vector[1]] = 1 - X;
-    fuel3 = enrich_collapse(fuel);
-    rtn.second = burnupcalc(fuel3, mode, da_mode, time_step);
-    return rtn;
-}*/
 
 
 /*
@@ -1406,20 +1334,4 @@ void mass_check(fuelBundle fuel){
         }
     }
 }
-
-/*
-fuelBundle burnup_collapse(fuelBundle fuel){
-    for(int i = 0; i < fuel.iso.size(); i++){
-        fuel.iso[i].fraction[0] = fuel.iso[i].fraction[1];
-    }
-    return fuel;
-}
-
-void iso_output(pair<double, map <int, double> > iso_vector){
-    typedef std::map<int, double>::iterator test_map;
-    for (test_map iterator = iso_vector.second.begin(); iterator != iso_vector.second.end(); iterator++){
-        cout << iterator->first << "       " << iterator->second << endl;
-    }
-}
-*/
 

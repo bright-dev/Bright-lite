@@ -15,6 +15,16 @@ std::string ReactorFacility::str() {
   return Facility::str();
 }
 
+typedef unsigned long long timestamp_t;
+
+static timestamp_t
+get_timestamp ()
+    {
+      struct timeval now;
+      gettimeofday (&now, NULL);
+      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+    }
+
 void CompOut(cyclus::Material::Ptr mat1){
     cyclus::CompMap comp;
     comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
@@ -66,7 +76,7 @@ void ReactorFacility::Tick() {
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
         fuel_library_.name = libraries[0];
-        fuel_library_.base_flux = flux_finder(fuel_library_.name);
+        fuel_library_.base_flux = flux_finder(cyclus::Env::GetInstallPath() + "/share/brightlite/" + fuel_library_.name);
         fuel_library_.base_mass = core_mass;
         fuel_library_.base_power = generated_power;
         fuel_library_.pnl = nonleakage;
@@ -83,6 +93,9 @@ void ReactorFacility::Tick() {
         fuel_library_.disadv_mod_siga = disadv_mod_siga;
         fuel_library_.disadv_mod_sigs = disadv_mod_sigs;
         fuel_library_.disadv_fuel_sigs = disadv_fuel_sigs;
+        fuel_library_.CR_lower = CR_lower;
+        fuel_library_.CR_upper = CR_upper;
+        fuel_library_.CR_target = CR_target;
 
 
         batch_info empty_batch;
@@ -90,15 +103,16 @@ void ReactorFacility::Tick() {
         for(int i = 0; i < batches; i++){
             fuel_library_.batch.push_back(empty_batch);
             fuel_library_.batch[i].batch_fluence = 0; //fluence of the batch is set to zero
-            fuel_library_.batch[i].fraction.push_back(1);//fraction of the batch is set to one
+            //fuel_library_.batch[i].fraction.push_back(1);//fraction of the batch is set to one
         }/*
         core_ = std::vector<fuelBundle>(batches); //core_ is size of batches, which will be changed
         for(int i = 0; i < core_.size(); i++){
           core_[i] = fuel_library_[i];
         }*/
 
+<<<<<<< HEAD
 /************************output file*********************************/
-        std::ofstream outfile("../output_cyclus_recent.txt");
+        /*std::ofstream outfile("../output_cyclus_recent.txt");
 
         outfile << "Fuel library name: " << fuel_library_.name << "\r\n";
         outfile << "Batches: " << batches << "\r\n";
@@ -125,17 +139,18 @@ void ReactorFacility::Tick() {
         outfile << "Base power: " << fuel_library_.base_power << "\r\n";
         outfile << "Base mass: " << fuel_library_.base_mass << "\r\n\r\n\r\n";
 
-        outfile.close();
+        outfile.close();*/
 /************************End of output file*********************************/
+=======
+
+>>>>>>> timestep
 
         //read list of isotopes for conversion ratio calculation
    ///inputed as string, should be able to handle just numbers or letter number descrptn of isos
-        for(int i = 0; i < trans_created.size(); i++){
-            fuel_library_.trans_created.push_back(std::stoi(trans_created[i]));
-                    }
-        for(int i = 0; i < trans_fission.size(); i++){
-            fuel_library_.trans_fission.push_back(std::stoi(trans_fission[i]));
+        for(int i = 0; i < CR_fissile.size(); i++){
+            fuel_library_.CR_fissile.push_back(std::stoi(CR_fissile[i]));
         }
+
 
     }
 
@@ -145,12 +160,14 @@ void ReactorFacility::Tick() {
 }
 
 void ReactorFacility::Tock() {
+
     if(inventory.count() == 0){return;}
     if(shutdown == true){return;}
 
     cyclus::Context* ctx = context();
     if (ctx->time() != cycle_end_) {
-        //[std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
+        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
+        //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
         return;
     }
 
@@ -161,6 +178,7 @@ void ReactorFacility::Tock() {
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
     if(manifest.size() > fuel_library_.batch.size()){
+        //std::cout << "manifest: " << manifest.size() << "  fuel lib.batch: " << fuel_library_.batch.size() << std::endl;
         for(int i = 0; i < manifest.size() - fuel_library_.batch.size(); i++){
             batch_info temp_batch;
             temp_batch.batch_fluence = 0;
@@ -176,6 +194,7 @@ void ReactorFacility::Tock() {
         //each iso in comp
         for (it = comp.begin(); it != comp.end(); ++it){
             comp_iso = pyne::nucname::zzaaam(it->first);
+
             //std::cout << "Isotope " << it->first << " amount " << it->second << std::endl;
             //each iso in all_iso
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
@@ -222,7 +241,9 @@ void ReactorFacility::Tock() {
   }
 
   // cycle end update
-  cycle_end_ = ctx->time() + ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
+  cycle_end_ = ctx->time() + floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
+  //std::cout << "Cycle Months:  " << floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
+  //std::cout << "Cycle Days: " << fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28) << std::endl;
   refuels += 1;
 
 
@@ -238,17 +259,14 @@ void ReactorFacility::Tock() {
 
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-<<<<<<< HEAD
         std::cout << "burnup at shutdown " << burnup << std::endl;
         std::cout << "  " << fuel_library_.batch[i].comp[942380]  << "  " << fuel_library_.batch[i].comp[942390]  << "  " << fuel_library_.batch[i].comp[942400]  << "  " << fuel_library_.batch[i].comp[942410]  << "  " << fuel_library_.batch[i].comp[942420] << std::endl;
-=======
-        //std::cout << "Reactor " << libraries[0] << " burnup at shutdown " << burnup << std::endl;
->>>>>>> nstream
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
         ->AddVal("Discharge_Fluence", burnup)
         ->AddVal("Batch_No", std::to_string(refuels+i+1))
+        ->AddVal("CR", fuel_library_.CR)
         ->Record();
 
      }
@@ -258,14 +276,14 @@ void ReactorFacility::Tock() {
 
 
     /************************output file*********************************/
-    std::ofstream outfile;
+    /*std::ofstream outfile;
     outfile.open("../output_cyclus_recent.txt", std::ios::app);
 
     outfile << " Cycle length: " << ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << " [months]";
 
     outfile << "\r\n\r\n\r\n";
 
-    outfile.close();
+    outfile.close();*/
     /************************End of output file**************************/
 
   if(shutdown != true && record == true){
@@ -277,6 +295,7 @@ void ReactorFacility::Tock() {
                ->AddVal("Time", cycle_end_)
                ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
                ->AddVal("Batch_No", std::to_string(refuels))
+               ->AddVal("CR", fuel_library_.CR)
                //->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
                /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
                ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
@@ -405,7 +424,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
                 cyclus::CompMap::iterator cit;
 
         /************************output file*********************************/
-                std::ofstream outfile;
+                /*std::ofstream outfile;
                 outfile.open("../output_cyclus_recent.txt", std::ios::app);
                 outfile << "Composition of fresh batch:\r\n";
 
@@ -488,7 +507,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
         }
     }
     temp_bundle = StructReader(temp_bundle);
-    temp_bundle = regionCollapse(temp_bundle);
+    temp_bundle = fast_region_collapse(temp_bundle);
     for(int i = 0; i < temp_bundle.batch.size(); i++){
         temp_bundle.batch[i].Fg = 0;
     }
@@ -539,6 +558,13 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                    std::map<std::string, double> incommods){
+<<<<<<< HEAD
+    boost::timer t;
+    double t_base = 0.0;
+    boost::timer t_1;
+=======
+   timestamp_t t0 = get_timestamp();
+>>>>>>> timestep
     double return_amount;//function return the amount of first stream in inventory to reach target burnup
     double return_prev = SS_enrich;
     double mass_frac = 1.;
@@ -549,6 +575,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     } else {
         return SS_enrich;
     }*/
+
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
 
@@ -574,22 +601,31 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                     cyclus::Material::Ptr mat_temp = cyclus::Material::CreateUntracked(frac, materials[i][0]->comp());
                     mat->Absorb(mat_temp);
                     mass_frac -= frac;
-                    std::cout << "Mass Frac " << mass_frac << std::endl;
+                    //std::cout << "Mass Frac " << mass_frac << std::endl;
                 }
             }
         }
         i++;
     }
     // Starting blending of materials
-    double fraction_1 = mass_frac;
+    double fraction_1 = ss_fraction;
     cyclus::Material::Ptr mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
-    cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(mass_frac, fissile_mani[0]->comp());
+    cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(ss_fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
+    cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(mass_frac-ss_fraction, non_fissile_mani[0]->comp());
+    mat1->Absorb(mat2);
     //CompOut(mat1);
     //fuelBundle temp_bundle = comp_trans(mat1, fuel_library_);
     //double burnup_1 = burnupcalc_BU(temp_bundle, 2, 1, 40);
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
-    double burnup_1 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+    t_base += t_1.elapsed();
+    double burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
+    boost::timer t_2;
+    if(std::abs((target_burnup - burnup_1)/target_burnup) < 0.001){
+        //std::cout << "YAY" << std::endl;
+        return_amount = fraction_1 * total_mass;
+        return return_amount;
+    }
     //Finding the second burnup iterator
     double fraction_2 = 0;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
@@ -599,25 +635,27 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     //temp_bundle = comp_trans(mat1, fuel_library_);
     //double burnup_2 = burnupcalc_BU(temp_bundle, 2, 1, 40);
     temp_bundle = comp_function(mat1, fuel_library_);
-    double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+    t_base += t_2.elapsed();
+    double burnup_2 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
     //std::cout << "fraction " << fraction << std::endl;
+    boost::timer t_3;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
-    cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
+    mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
     //std::cout << "Fraction SU " << fraction << std::endl;
-    //temp_bundle = comp_trans(mat1, fuel_library_);
-    //double burnup_3 = burnupcalc_BU(temp_bundle, 2, 1, 40);
     temp_bundle = comp_function(mat1, fuel_library_);
-    double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+    t_base += t_3.elapsed();
+    std::cout << "BASE TIME " << t_base << std::endl;
+    double burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.001){
+    while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.0001){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
@@ -633,15 +671,24 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         //temp_bundle = comp_trans(mat1, fuel_library_);
         //burnup_3 = burnupcalc_BU(temp_bundle, 2, 1, 40);
         temp_bundle = comp_function(mat1, fuel_library_);
-        burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+        burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
         if(inter == 50){
             continue;
         }
         inter++;
     }
-    std::cout << "FRACTION " << fraction << std::endl;
+    //std::cout << "FRACTION " << fraction << std::endl;
     return_amount = fraction * total_mass;
+    ss_fraction = fraction;
     SS_enrich = return_amount;
+<<<<<<< HEAD
+    std::cout << "Blending time  " << t.elapsed() << std::endl;
+=======
+    timestamp_t t1 = get_timestamp();
+
+    double secs = (t1 - t0) / 1000000.0L;
+    std::cout << "blending time: " << secs << std::endl;
+>>>>>>> timestep
     return return_amount;
 }
 
@@ -649,6 +696,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
                                  cyclus::toolkit::ResourceBuff non_fissle,
                                  std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                  std::map<std::string, double> incommods){
+    timestamp_t t0 = get_timestamp();
     double return_amount;
     double mass_frac = 1.;
     //Read the fuelfab inventory
@@ -687,19 +735,19 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(mass_frac, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
-    double burnup_1 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+    double burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     //Finding the second burnup iterator
     double fraction_2 = 0;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(mass_frac, non_fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
     temp_bundle = comp_function(mat1, fuel_library_);
-    double burnup_2 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+    double burnup_2 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    std::cout << "fraction " << fraction << std::endl;
+    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    //std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -707,7 +755,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     mat1->Absorb(mat2);
     //std::cout << "Fraction SU " << fraction << std::endl;
     temp_bundle = comp_function(mat1, fuel_library_);
-    double burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+    double burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
     while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.0001){
@@ -717,14 +765,14 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (target_burnup - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        std::cout << "fraction " << fraction << std::endl;
+        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
         mat1->Absorb(mat_pass);
         temp_bundle = comp_function(mat1, fuel_library_);
-        burnup_3 = SS_burnupcalc(temp_bundle.batch[0].collapsed_iso, batches, burnupcalc_timestep, nonleakage, fuel_library_.base_flux);
+        burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches);
         if(inter == 50){
             continue;
         }
@@ -732,6 +780,15 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     }
     return_amount = fraction * total_mass;
     SS_enrich = return_amount;
+<<<<<<< HEAD
+    ss_fraction = fraction;
+=======
+
+    timestamp_t t1 = get_timestamp();
+
+    double secs = (t1 - t0) / 1000000.0L;
+    std::cout << "startup time: " << secs << std::endl;
+>>>>>>> timestep
     return return_amount;
 }
 
@@ -779,7 +836,7 @@ void CompOutMat(cyclus::Material mat1){
     cyclus::CompMap::iterator it;
     //each iso in comp
     for (it = comp.begin(); it != comp.end(); ++it){
-        std::cout<<it->first<< " " << it->second << std::endl;
+        //std::cout<<it->first<< " " << it->second << std::endl;
     }
 }
 
