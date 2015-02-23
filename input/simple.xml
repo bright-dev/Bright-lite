@@ -55,9 +55,11 @@
 	       <val>42.5</val>
         </interpol_pairs>
         <batches>3</batches>
-        <flux_mode>2</flux_mode>
-        <cylindrical_delta>10</cylindrical_delta>
+        <flux_mode>3</flux_mode>
+        <cylindrical_delta>8</cylindrical_delta>
         <burnupcalc_timestep>40</burnupcalc_timestep>
+	<fuel_Sig_tr>0.12</fuel_Sig_tr>
+	<fuel_area>3000</fuel_area>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>

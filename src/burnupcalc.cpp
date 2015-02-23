@@ -160,14 +160,20 @@ double nusigf_finder(batch_info batch){
 
     prod = intpol(batch.collapsed_iso.neutron_prod[ii-1], batch.collapsed_iso.neutron_prod[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
 
-    //Nusig_f[barn] = prod rate / Avagadros number * mass * barn
-    Nusig_f = prod/(6.0221413E+23)*A*1E24;
+
+    if(ii == 0){
+        prod = batch.collapsed_iso.neutron_prod[0];
+    }
+
+    //Nusig_f[cm-1] = prod rate / Avagadros number * mass * barn
+    //Nusig_f = prod/(6.0221413E+23)*A*1E24/1000;
+    Nusig_f = prod*0.01097;
 
     return Nusig_f;
 }
 
 double siga_finder(batch_info batch){
-//returns the microscopic cross section [barn] at fluence Fg
+//returns the macroscopic cross section at fluence Fg
     double sig_a;
     int ii;
     double dest = 0;
@@ -179,38 +185,18 @@ double siga_finder(batch_info batch){
         ii = batch.collapsed_iso.fluence.size() - 1;
     }
 
-
-    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
-
-    //sig_a[barn] = dest rate [cm2/kg] / Avagadros number * mass * barn
-    sig_a = dest/(6.0221413E+23)*A*1E24/100;
-
-    return sig_a;
-}
-
-double Siga_finder(batch_info batch){
-//returns the macroscopic cross section [cm-1] at fluence Fg
-    double Sig_a;
-    int ii;
-    double dest = 0;
-    double rho = 0.01097; // [g/cm3]
-
-    //find the index to interpolate on
-    for(ii = 0; batch.collapsed_iso.fluence[ii] < batch.Fg; ii++);
-    if(batch.collapsed_iso.fluence.back() < batch.Fg){
-        ii = batch.collapsed_iso.fluence.size() - 1;
-    }
-
-    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
-
     if(ii == 0){
         dest = batch.collapsed_iso.neutron_dest[0];
     }
 
-    //Sig_a[cm-1] = dest rate * density
-    Sig_a = dest*rho;
 
-    return Sig_a;
+    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
+
+    //sig_a[barn] = dest rate [cm2/kg] / Avagadros number * mass * barn
+    //sig_a = dest/(6.0221413E+23)*A*1E24/1000;
+    sig_a = dest*0.01097;
+
+    return sig_a;
 }
 
 
@@ -224,6 +210,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     double delta = core.cylindrical_delta;
     double R[region+1]; //radial thickness of each region
     int N[region+1]; //number of mesh points in each region
+    int NC[region+1]; //cumulative N
     int NTotal; //total number of mesh points
     double dd2[region+1]; // D/delta^2
     double Sigma_a[region+1]; //mac. abs. cs of each region
@@ -231,6 +218,11 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     double Sigma_tr[region+1]; //mac. transport cs of each region
     double D[region+1]; //diff coef. for each region
     double LSquared[region+1];
+    double k = 1;
+    double k_prev = 0.9;
+    double prod, prod_prev;
+    double flux[region+1], maxflux=0;
+    double sum = 0;
 
     //set the radial thickness of each region
     R[0] = sqrt(core.fuel_area/region/3.141592);
@@ -239,20 +231,20 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     }
     R[region] = R[region-1] + core.mod_thickness; //this is the moderator region
 
+
+/*
+    Sigma_a[0] = 0.0230;
+    Sigma_a[1] = 0.0246;
+    Sigma_a[2] = 0.0324;
+    NuSigma_f[0] = 0.0184;
+    NuSigma_f[1] = 0.0217;
+    NuSigma_f[2] = 0.0382;*/
     //assign fuel cross sections
     for(int i = 0; i < region; i++){
-        int ii;
-        double prod, dest;
-        //find the index to interpolate on
-        for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++);
-        if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            ii = core.batch[i].collapsed_iso.fluence.size() - 1;
-        }
 
-        prod = intpol(core.batch[i].collapsed_iso.neutron_prod[ii-1], core.batch[i].collapsed_iso.neutron_prod[ii], core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
-        NuSigma_f[i] = 0.0203;
+        NuSigma_f[i] = nusigf_finder(core.batch[i]);
 
-        Sigma_a[i] = 1;
+        Sigma_a[i] = siga_finder(core.batch[i]);
 
         Sigma_tr[i] = core.fuel_Sig_tr;
         D[i] = 1/(Sigma_tr[i]*3.);
@@ -272,19 +264,31 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
         dd2[i] = D[i]/delta/delta;
     }
 
+    /*
+    cout << "Cross sections in cylindrical calc: " << endl << "Sig_a      Sig_f      R" << endl;
+    for(int r = 0; r < region+1; r++){
+        cout << Sigma_a[r] << "  " << NuSigma_f[r] << "  " << R[r] << endl;
+    }*/
+
     //populate N, number of mesh points in each region
     N[0] = R[0]/delta;
+    NC[0] = N[0];
     NTotal = N[0];
 
     for(int i = 1; i < region+1; i++){
-        N[i] = round((R[i] - R[i-1]) / delta);
+        N[i] = ceil((R[i] - R[i-1]) / delta);
+        NC[i] = NC[i-1] + N[i];
         NTotal += N[i];
     }
+    NC[region] += 1;
     NTotal += 1;
 
-    /*
-    Eigen::MatrixXd A(NTotal, NTotal);
-    Eigen::MatrixXd F(NTotal, NTotal);
+    Eigen::MatrixXf A(NTotal, NTotal);
+    Eigen::MatrixXf F(NTotal, 1);
+    Eigen::MatrixXf phi(NTotal, 1);
+    Eigen::MatrixXf phi_prev(NTotal, 1);
+    Eigen::MatrixXf S(NTotal, 1);
+    Eigen::MatrixXf S_prev(NTotal, 1);
 
     A.setZero();
     F.setZero();
@@ -292,58 +296,119 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     int jprev = 0;
     int j;
 
-    //build the matrix A and F
-    for(int i = 0; i <= region; i++){
-        for(j = jprev+1; j < jprev + N[i]; j++){
-            A(j,j-1) = -dd2[i]*(2.*(j)-1)/(2.*j);
-            A(j,j) = 2*dd2[i] + Sigma_a[i];
-            A(j,j+1) = -dd2[i]*(2.*(j)+1)/(2.*j);
-            F(j,j) = NuSigma_f[i];
+    int r = 0; //region index
+    for(int i = 1; i < NTotal-1; i++){
+        A(i, i-1) = (-1.)*dd2[r]*(2*i-1)/(2*i);
+        A(i,i) = dd2[r]*2. + Sigma_a[r];
+        A(i, i+1) = (-1.)*dd2[r]*(2*i+1)/(2*i);
+        if(i == NC[r]){
+            r += 1;
         }
-
-        jprev = j;
-        if(i != region){
-            A(jprev,jprev-1) = D[i];
-            A(jprev,jprev) = -D[i]-D[i+1];
-            A(jprev,jprev+1) = D[i+1];
+        if(core.batch[r].rflux < 1.1 && core.batch[r].rflux > 0){
+            phi_prev(i) = core.batch[r].rflux; //uses last runs results if available
+        } else{
+            phi_prev(i) = 1;
         }
 
     }
+    A(0,0) = 1;
+    A(0,1) = -1;
+    A(NTotal-1,NTotal-1) = 1;
+    phi_prev(NTotal-1) = 0;
 
-    A(0,0) = 8;//1;
-    A(0,1) = 9;//-1;
-    A(NTotal-1,NTotal-1) = 10;//1;
-
-    // eigen.tuxfamily.org/dox/classEigen_1_1GeneralizedEigenSolver.html
-    Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> ges;
-
-    ges.compute(A, F);
-    cout << ges.eigenvalues() << endl;
-   */
-   /*
-    arma::mat  A = arma::zeros<arma::mat>(5,5);
-    arma::mat F = arma::zeros<arma::mat>(5,5);
-
-    for(int i = 0; i < 5; i++){
-        A(i,i) = i+1;
-        F(i,i) = i+2;
+    for(r = 0; r < region; r++){
+        A(NC[r],NC[r]-1) = D[r];
+        A(NC[r],NC[r]) = -D[r]-D[r+1];
+        A(NC[r],NC[r]+1) = D[r+1];
     }
 
-    arma::cx_vec eigval;
-    arma::cx_mat eigvec;
+    r = 0;
+    for(int i = 1; i < NTotal; i++){
+        if(i != NC[r]){
+            F(i) = NuSigma_f[r];
+        }
+        if( i == NC[r]){
+            r += 1;
+        }
+        S_prev(i) = F(i)*phi_prev(i);
+    }
 
-    arma::eig_pair(eigval, eigvec, A, F);
 
-    cout << A << endl;
-    cout << F << endl;
+    for(int iter = 0; iter < 10; iter++){
+        phi = A.colPivHouseholderQr().solve(S_prev)/k_prev;
 
-    cout << eigval << endl;
-    cout << eigvec << endl;
-    */
+
+        if(!phi.allFinite()){
+            phi = phi_prev;
+        }
+
+        S = F.array() * phi.array();
+
+        prod = (0.25)*3.141592*NuSigma_f[0]*phi(0)*delta*delta;
+        prod_prev = (0.25)*3.141592*NuSigma_f[0]*phi_prev(0)*delta*delta;
+        r = 0;
+
+        for(int i = 0; i < NTotal; i++){
+            if(i == NC[r]){
+                prod += 3.141592*NuSigma_f[r]*phi(i)*(i-0.25)*delta*delta;
+                prod_prev += 3.141592*NuSigma_f[r]*phi_prev(i)*(i-0.25)*delta*delta;
+                r += 1;
+                prod += 3.141592*NuSigma_f[r]*phi(i)*(i-0.25)*delta*delta;
+                prod_prev += 3.141592*NuSigma_f[r]*phi_prev(i)*(i-0.25)*delta*delta;
+            } else {
+                prod += 2.*3.141592*NuSigma_f[r]*phi(i)*i*delta*delta;
+                prod_prev += 2.*3.141592*NuSigma_f[r]*phi_prev(i)*i*delta*delta;
+            }
+        }
+
+        if(abs((k_prev-k)/k) < 0.01 && iter > 3){
+            break;
+        }
+        //cout << "prod: " << prod << "  prod_prev: " << prod_prev << "  k: " << prod/prod_prev << endl;
+        k = prod/prod_prev*k_prev;
+        phi_prev = phi;
+        k_prev = k;
+        S_prev = S;
+
+
+    }
+
+    //NO NEED TO normalize phi
+    //phi = phi.array()/phi.maxCoeff();
+
+    //find area weighted average phi per batch
+    r = 0;
+    flux[0] = 0;
+    for(int i = 0; i < NTotal; i++){
+        flux[r] += phi(i)*(2*(i+1)-1);
+        sum += (2*(i+1)-1);
+
+        if(i == NC[r] || i == NTotal-1){
+            flux[r] /= sum;
+            sum = 0;
+            r += 1;
+            flux[r] = 0;
+        }
+    }
+    for(r = 0; r < region+1; r++){
+        if(flux[r] > maxflux){
+            maxflux = flux[r];
+        }
+    }
+
+    //cout << "flux: ";
+    cout << core.fuel_area << " " << delta << " | " << Sigma_a[0] << " " << Sigma_a[1] << " " << Sigma_a[2] << " | "
+    << NuSigma_f[0] << " " << NuSigma_f[1] << " " << NuSigma_f[2] << " | ";
+    //normalize the fluxes
+    for(r = 0; r < region+1; r++){
+        flux[r] /= maxflux;
+        cout << flux[r] << " ";
+    }
+    cout << endl;
 
 
     for(int i = 0; i < core.batch.size(); i++){
-        core.batch[i].rflux = 1;
+        core.batch[i].rflux = flux[i];
     }
 
     return core;
@@ -633,7 +698,7 @@ fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
 
 
 //cout << "rflux: " << core.batch[1].rflux << endl;
-    std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
+    //std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
     return core;
 }
 
@@ -771,7 +836,7 @@ fuelBundle DA_calc(fuelBundle fuel){
     //cout << endl << "thermal disadvtg cals: " << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
 
-        Sig_aF = Siga_finder(fuel.batch[i]);
+        Sig_aF = siga_finder(fuel.batch[i]);
         //cout << "Siga: " << Sig_aF << endl;
 
         Sig_tF = Sig_aF+Sig_sF;
