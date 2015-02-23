@@ -13,7 +13,7 @@
 #include "cyclus.h"
 #include <cstdio>
 #include <ctime>
-//#include <eigen3/Eigen/Eigen>
+#include <eigen3/Eigen/Eigen>
 
 #include <stdio.h>
 #include <math.h>
@@ -31,7 +31,6 @@ fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_cylindrical(fuelBundle core);
 double nusigf_finder(batch_info batch);
 double siga_finder(batch_info batch);
-double Siga_finder(batch_info batch);
 double kcalc(fuelBundle core);
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double tolerance);
 double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double tolerance);
