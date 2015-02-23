@@ -290,7 +290,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
         NTotal += N[i];
     }
     NC[region] += 1;
-    NTotal += 1;
+    NTotal += 1;/*
     Eigen::MatrixXf A(NTotal, NTotal);
     Eigen::MatrixXf F(NTotal, 1);
     Eigen::MatrixXf phi(NTotal, 1);
@@ -405,17 +405,17 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
     }
 
     //cout << "flux: ";
-    cout << core.fuel_area << " " << delta << " | " << Sigma_a[0] << " " << Sigma_a[1] << " " << Sigma_a[2] << " | "
-    << NuSigma_f[0] << " " << NuSigma_f[1] << " " << NuSigma_f[2] << " | ";
+    //cout << core.fuel_area << " " << delta << " | " << Sigma_a[0] << " " << Sigma_a[1] << " " << Sigma_a[2] << " | "
+    //<< NuSigma_f[0] << " " << NuSigma_f[1] << " " << NuSigma_f[2] << " | ";
     //normalize the fluxes
     for(r = 0; r < region+1; r++){
         flux[r] /= maxflux;
-        cout << flux[r] << " ";
+        //cout << flux[r] << " ";
     }
-    cout << endl;
+    //ĺcout << endl;
 
 
-    }
+
 
     //NO NEED TO normalize phi
     //phi = phi.array()/phi.maxCoeff();
