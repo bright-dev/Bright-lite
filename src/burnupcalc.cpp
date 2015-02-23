@@ -910,7 +910,6 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
     double BU, BU_est, F_est;
-    double y0, y1;
     double kcore_prev;
     bool notsteady = true;
     int ii = 0;
@@ -970,8 +969,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
             }
 
             for(int i = 0; i < N; i++){
-                //!NOTE when updating this, MUST also update interpolation calcs (y0) below
-                double fluence = core.batch[i].rflux * core.base_flux * dt;
+                //!NOTE when updating this, MUST also update interpolation calcs below
                 core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
 
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << " fluence: " << fluence<< endl;
@@ -993,12 +991,10 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 
         //update core fluences
         for(int i = 0; i < N; i++){
-            y0 = core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt);
-            y1 = core.batch[i].Fg;
-            core.batch[i].collapsed_iso.batch_fluence = intpol(y0, y1, kcore_prev, kcore, 1);
+            core.batch[i].collapsed_iso.batch_fluence = intpol(core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt), core.batch[i].Fg, kcore_prev, kcore, 1);
         }
 
-        for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].collapsed_iso.batch_fluence; ii++){}
+        for(ii = ii/2; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].collapsed_iso.batch_fluence; ii++){}
         burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].collapsed_iso.batch_fluence);
         //cout << ii << " intermed burnup: " << burnup << endl;
 
