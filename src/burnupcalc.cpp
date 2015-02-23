@@ -918,11 +918,12 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     int counter = 0;
 
 
+
     batch_info temp_batch;
     temp_batch.collapsed_iso = fuel;
     temp_batch.collapsed_iso.batch_fluence = 0;
     for(int i = 1; i < N; i++){
-        temp_batch.Fg = ss_fluence*(i+1)*0.95; // 0.6
+        temp_batch.Fg = ss_fluence*(i+1)*0.95; // use old cycles youngest batch discharge to guess
         core.batch.push_back(temp_batch);
     }
 
@@ -941,7 +942,6 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 
     while(notsteady){
         double kcore = 3.141592;
-        kcore_prev = kcalc(core);
         int iter = 0;
         BU_prev = burnup;
 
@@ -1012,7 +1012,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
         core.batch[N-1].collapsed_iso.batch_fluence = 0;
         core.batch[N-1].Fg = 0;
 
-        if(abs(burnup - BU_prev)/burnup < 0.01 && counter > 5){
+        if(abs(burnup - BU_prev)/burnup < 0.01 && counter > 3){
             notsteady = false;
         }
         counter++;
