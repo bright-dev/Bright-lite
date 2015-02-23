@@ -232,13 +232,13 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Macroscopic fission cross section of the moderator."}
   double mod_Sig_f;
 
-  #pragma cyclus var {"default": 100, \
+  #pragma cyclus var {"default": 50, \
                       "units": "cm", \
                       "userlevel": 3, \
                       "tooltip": "Radial thickness of the moderator used for cylindrical flux calculation."}
   double mod_thickness;
 
-  #pragma cyclus var {"default": 3.94, \
+  #pragma cyclus var {"default": 0.12, \
                       "units": "cm-1", \
                       "userlevel": 3, \
                       "tooltip": "Macroscopic transport cross section of the fuel."}

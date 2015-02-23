@@ -15,6 +15,16 @@ std::string ReactorFacility::str() {
   return Facility::str();
 }
 
+typedef unsigned long long timestamp_t;
+
+static timestamp_t
+get_timestamp ()
+    {
+      struct timeval now;
+      gettimeofday (&now, NULL);
+      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+    }
+
 void CompOut(cyclus::Material::Ptr mat1){
     cyclus::CompMap comp;
     comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
@@ -100,36 +110,7 @@ void ReactorFacility::Tick() {
           core_[i] = fuel_library_[i];
         }*/
 
-/************************output file*********************************/
-        /*std::ofstream outfile("../output_cyclus_recent.txt");
 
-        outfile << "Fuel library name: " << fuel_library_.name << "\r\n";
-        outfile << "Batches: " << batches << "\r\n";
-        outfile << "libcheck: " << fuel_library_.libcheck << "\r\n";
-        outfile << "Leakage: " << fuel_library_.pnl << "\r\n";
-        outfile << "Burnup calculation timestep: " << burnupcalc_timestep << " [days]\r\n";
-        outfile << "Flux calculation method: " << flux_mode << "\r\n";
-        if(flux_mode == 3){//if the flux calculation is the cylindrical method
-        outfile << "   Fuel area: " << fuel_library_.fuel_area << " [cm2]\r\n";
-        outfile << "   Fuel Sig_tr: " << fuel_library_.fuel_Sig_tr << " [cm-1]\r\n";
-        outfile << "   Delta: " << fuel_library_.cylindrical_delta << " [cm]\r\n";
-        outfile << "   Moderator thickness: " << fuel_library_.mod_thickness << " [cm]\r\n";
-        outfile << "   Moderator Sig_a: " << fuel_library_.mod_Sig_a << " [cm-1]\r\n";
-        outfile << "   Moderator Sig_tr: " << fuel_library_.mod_Sig_tr << " [cm-1]\r\n";
-        outfile << "   Moderator Sig_f: " << fuel_library_.mod_Sig_f << " [cm-1]\r\n";
-        }
-        outfile << "\r\n|Thermal disadvantage calculation:\r\n";
-        outfile << "| Fuel radius: " << fuel_library_.disadv_a << " [cm]\r\n";
-        outfile << "| Moderator radius: " << fuel_library_.disadv_b << " [cm]\r\n";
-        outfile << "| Moderator Sigma_a: " << fuel_library_.disadv_mod_siga << " [cm-1]\r\n";
-        outfile << "| Moderator Sigma_s: " << fuel_library_.disadv_mod_sigs << " [cm-1]\r\n";
-        outfile << "| Fuel Sigma_s: " << fuel_library_.disadv_fuel_sigs << " [cm-1]\r\n\r\n";
-        outfile << "Base flux: " << fuel_library_.base_flux << "\r\n";
-        outfile << "Base power: " << fuel_library_.base_power << "\r\n";
-        outfile << "Base mass: " << fuel_library_.base_mass << "\r\n\r\n\r\n";
-
-        outfile.close();*/
-/************************End of output file*********************************/
 
         //read list of isotopes for conversion ratio calculation
    ///inputed as string, should be able to handle just numbers or letter number descrptn of isos
@@ -664,6 +645,9 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     ss_fraction = fraction;
     SS_enrich = return_amount;
     std::cout << "Blending time  " << t.elapsed() << std::endl;
+
+    double secs = (t1 - t0) / 1000000.0L;
+    std::cout << "blending time: " << secs << std::endl;
     return return_amount;
 }
 
@@ -671,6 +655,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
                                  cyclus::toolkit::ResourceBuff non_fissle,
                                  std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                  std::map<std::string, double> incommods){
+    timestamp_t t0 = get_timestamp();
     double return_amount;
     double mass_frac = 1.;
     //Read the fuelfab inventory
@@ -755,6 +740,10 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     return_amount = fraction * total_mass;
     SS_enrich = return_amount;
     ss_fraction = fraction;
+    timestamp_t t1 = get_timestamp();
+
+    double secs = (t1 - t0) / 1000000.0L;
+    std::cout << "startup time: " << secs << std::endl;
     return return_amount;
 }
 
