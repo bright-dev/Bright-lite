@@ -21,7 +21,8 @@ using namespace std;
 fuelBundle StructReader(fuelBundle core){
 //reads in structural material fractions from input file and adds the total
 //values to core.struct_prod and core.struct_dest
-
+//only needs to be called once to populate core.struct_prod and dest
+//cout << "Struct reader called \n";
     int nucid;
     double fraction;
     double tot_dest = 0;
@@ -118,6 +119,7 @@ isoInformation BurnupBuilder(vector<isoInformation> fuel_values){
 }
 
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
+//takes a vetor of isoinfo and uses .fraction to combine isitopes to create one iso
     isoInformation fuel;
     //boost::timer t;
     for(int mm = 0; mm < fuel_values.size(); mm++){
@@ -241,6 +243,7 @@ vector<nonActinide> NonActinideReader(string file_name){
 
 
 isoInformation BuildIsotope2(ifstream &input, isoInformation &iso, double flux_value){
+// builds the iso vector from isotope library database
     int i = 0;
     string buffer;
     double value;
@@ -292,7 +295,7 @@ double flux_finder(std::string type){
 }
 
 vector<isoInformation> DataReader2(string type, vector<isoInformation> &input_stream){
-//returns iso for this batch with the structural components factored in
+//returns iso for this batch
     //std::cout << type << std::endl;
     type = cyclus::Env::GetInstallPath() + "/share/brightlite/" + type;
     double flux_value = flux_finder(type);

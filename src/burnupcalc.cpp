@@ -696,18 +696,8 @@ timestamp_t t0 = get_timestamp();
     core.batch[0].discharge_BU = burnup;
     //core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
 
-
-
-    //cout << "Discharge burnup: " << burnup << endl;
-
-
-
-
-//cout << "rflux: " << core.batch[1].rflux << endl;
-
 timestamp_t t1 = get_timestamp();
 
-    double secs = (t1 - t0) / 1000000.0L;
     //std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
     return core;
 }
