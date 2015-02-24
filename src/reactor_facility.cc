@@ -49,6 +49,7 @@ void ReactorFacility::Tick() {
         std::string line;
         std::string iso_name;
         fuel_library_.name = libraries[0]; //for now only one entry in here
+        // puts the name of every available iso in all_iso
         while(getline(inf, line)){
             std::istringstream iss(line);
             isoInformation iso; //creates temporary iso
@@ -154,7 +155,7 @@ void ReactorFacility::Tock() {
     }
     //each batch
     for(int i = 0; i < manifest.size(); i++){
-    //build correct isoinfo and fraction for each batch
+    //build correct isoinfo and fraction of every isotope in each batch
     ///put the stuff in comp fraction to fuel_library_. .iso fraction using values in fuel_library_.all_iso
         comp = manifest[i]->comp()->mass(); //store the fractions of i'th batch in comp
         int comp_iso;
@@ -176,12 +177,11 @@ void ReactorFacility::Tock() {
             }
         }
     }
+
+    ///call batch reorder only if all fuel is new, else only do necessary work
+
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     batch_reorder();
-
-    /*for(int i = 0; i < fuel_library_.batch.size(); i++){
-        std::cout << "batch u235 frac: " << fuel_library_.batch[i].comp[922350] << "  " << fuel_library_.batch[i].collapsed_iso.neutron_prod[0] << std::endl;
-    }*/
 
       // pass fuel bundles to burn-up calc
     fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
@@ -737,11 +737,11 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
 }
 
 void ReactorFacility::batch_reorder(){
-//collapses each batch first, thgien orders them
+//collapses each batch first, then orders them
     //std::cout << "Begin batch_reorder" << std::endl;
     double k0, k1;
-    fuel_library_ = StructReader(fuel_library_);
-    fuel_library_ = regionCollapse(fuel_library_);
+    fuel_library_ = StructReader(fuel_library_); //only needs to be called once per reactor start
+    fuel_library_ = regionCollapse(fuel_library_); //
     bool test = false;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         if(fuel_library_.batch[i].batch_fluence != 0){
@@ -750,6 +750,7 @@ void ReactorFacility::batch_reorder(){
     }
     if(test == true){return;}
 
+    //begin ordering the batches
     fuelBundle temp_fuel = fuel_library_;
     fuel_library_.batch.clear();
 

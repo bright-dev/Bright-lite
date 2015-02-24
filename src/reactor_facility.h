@@ -29,9 +29,29 @@ namespace reactor {
 /// agent implementation.
 ///
 /// @section detailed Detailed Behavior
-/// Place a description of the detailed behavior of the agent. Consider
-/// describing the behavior at the tick and tock as well as the behavior
-/// upon sending and receiving materials and messages.
+/// The facility starts by reading the available isotope library databases.
+/// A database is specific to the reactor and fuel type, therefore one reactor
+/// may have more than one database describing it, requiring an interpolation
+/// to calculate a single isotope library database.
+///
+/// During the first tick the reactor perform the database interpolation (if
+/// necessary) and builds the base parameters from the input file to fuel_library_.
+/// All isotope available for input fuel is placed in fuel_library_.all_iso
+/// with correct names and isoinformation. This is independent of batches.
+/// At the end of the first tick fuel_library_ has correct number of batches in
+/// fuel_library_.batch[] all with zero fluence and no other information.
+///
+/// During the first material exchange the reactor receives fuel. The composition
+/// of fuel is stored in resourcebuff inventory. Fuel may be blended, or a
+/// composition may be forced to the reactor. The upstream facilities and
+/// target burnup determines how the reactor will receive fuel.
+///
+/// At the beginning of first tock the reactor inventory is used to update the
+/// composition of each batch in fuel_library_.iso[].fraction.
+
+
+
+
 class ReactorFacility : public cyclus::Facility  {
  public:
   /// Constructor for ReactorFacility Class
@@ -203,7 +223,7 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Thermal to electric conversion rate."}
   double efficiency;
 
-  #pragma cyclus var {"default": 89197, \
+  #pragma cyclus var {"default": 4197, \
                       "units": "cm2", \
                       "userlevel": 3, \
                       "tooltip": "Total area of the fuel in core. Used for cylindrical flux calculation."}
