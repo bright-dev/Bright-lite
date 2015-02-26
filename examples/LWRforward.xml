@@ -1,7 +1,7 @@
 <!-- 
 1 Source, 1 LWR, 1 Sink 
 Reactor database: E5_50
-Fuel: Uranium 4.2% enriched
+Fuel: Uranium 4% enriched
 -->
 
 <simulation>
@@ -107,11 +107,11 @@ Fuel: Uranium 4.2% enriched
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>4.2</comp>
+      <comp>4</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>95.8</comp>
+      <comp>96</comp>
     </nuclide>
   </recipe>
 
