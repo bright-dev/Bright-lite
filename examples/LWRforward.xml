@@ -3,6 +3,9 @@
 Reactor database: standLWR
 Fuel: Uranium 3% enriched
 Batches: 3
+
+"time cyclus examples/LWRforward.xml" = real	0m2.240s (2015/02/26)
+
 -->
 
 <simulation>

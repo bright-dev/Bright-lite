@@ -3,6 +3,9 @@
 Reactor database: PWRMOX
 Fuel: Calculated
 Batches: 5
+
+"time cyclus examples/MOXblending.xml" = real	0m8.302s (2015/02/26)
+
 -->
 
 <simulation>
