@@ -232,14 +232,14 @@ void ReactorFacility::Tock() {
 
 
     shutdown = true;
-    std::cout << "Agent " << id() << " shutdown: " << std::endl;
+    std::cout << "Agent " << id() << " shutdown. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
 
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-        std::cout << " Batch " << i+1 << " BU: " << burnup << "  CR: " << fuel_library_.CR << std::endl;
+        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << "; ";
         //std::cout << "  " << fuel_library_.batch[i].comp[942380]  << "  " << fuel_library_.batch[i].comp[942390]  << "  " << fuel_library_.batch[i].comp[942400]  << "  " << fuel_library_.batch[i].comp[942410]  << "  " << fuel_library_.batch[i].comp[942420] << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
@@ -251,12 +251,13 @@ void ReactorFacility::Tock() {
 
      }
     record = false;
+    std::cout << std::endl;
     //cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
   }
 
 
   if(shutdown != true && record == true){
-      std::cout << "Agent " << id() << "  BU: " << fuel_library_.batch[0].discharge_BU << "  CR: " <<
+      std::cout << "Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  CR: " <<
             fuel_library_.CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
