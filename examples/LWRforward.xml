@@ -1,0 +1,118 @@
+<!-- 
+1 Source, 1 LWR, 1 Sink 
+Reactor database: E5_50
+Fuel: Uranium 4.2% enriched
+-->
+
+<simulation>
+  <control>
+    <duration>480</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Source</name>
+    <config>
+      <Source>
+        <commod>freshFuel</commod>
+        <recipe_name>commod_recipe</recipe_name>
+	<capacity>20000000000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>uf</val>
+        </in_commods>
+        <capacity>100000000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>freshFuel</val>       
+        </in_commods>
+        <out_commod>uf</out_commod>
+        <libraries><val>E5_50</val></libraries>
+        <target_burnup>0.0</target_burnup>
+        <nonleakage>0.95</nonleakage>
+        <core_mass>3.0</core_mass>
+    	<interpol_pairs>
+           <key>BURNUP</key>
+	       <val>42.5</val>
+        </interpol_pairs>
+        <batches>3</batches>
+        <flux_mode>2</flux_mode>
+        <burnupcalc_timestep>50</burnupcalc_timestep>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
+            <val>922350</val>
+            <val>942380</val>
+            <val>942390</val>
+            <val>942400</val>
+            <val>942410</val>
+            <val>942420</val>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
+      </ReactorFacility>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>       
+        <entry>
+          <prototype>Rx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>commod_recipe</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>4.2</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>95.8</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>
