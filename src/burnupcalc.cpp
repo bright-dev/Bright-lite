@@ -919,7 +919,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
-    cout << "SS burnupcalc begin" << endl;
+    //cout << "SS burnupcalc begin" << endl;
     boost::timer t;
 
     isoInformation fuel = core.batch[0].collapsed_iso;
@@ -959,7 +959,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
         double kcore = 3.141592;
         int iter = 0;
         BU_prev = burnup;
-        cout << "  New core" << endl;
+        //cout << "  New core" << endl;
 
         while(kcore > 1){
             kcore_prev = kcore;

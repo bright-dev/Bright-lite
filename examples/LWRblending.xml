@@ -6,7 +6,7 @@ Fuel: Uranium 4.2% enriched
 
 <simulation>
   <control>
-    <duration>600</duration>
+    <duration>60</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
