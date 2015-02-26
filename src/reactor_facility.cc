@@ -40,7 +40,11 @@ void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
     if(fuel_library_.name.size() == 0){
-        std::cout << "New " << libraries[0] << " reactor starting up - target burnup = " << target_burnup << std::endl;
+        if(target_burnup == 0){
+            std::cout << "New " << libraries[0] << " reactor starting up in forward mode." << std::endl;
+        } else {
+            std::cout << "New " << libraries[0] << " reactor starting up - target burnup = " << target_burnup << std::endl;
+        }
         std::string manifest_file = cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt";
         //std::cout << manifest_file << std::endl;

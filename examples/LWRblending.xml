@@ -1,0 +1,168 @@
+<!-- 
+2 Source, 1 FuelFab 1 LWR, 1 Sink 
+Reactor database: extLWR
+Fuel: Uranium 4.2% enriched
+-->
+
+<simulation>
+  <control>
+    <duration>600</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+    <spec><lib>cycamore</lib><name>DeployInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Fissile_Source</name>
+    <config>
+      <Source>
+        <commod>fissile_stream</commod>
+        <recipe_name>U235</recipe_name>
+				<capacity>200000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>NFissile_Source</name>
+    <config>
+      <Source>
+        <commod>nfissile_stream</commod>
+        <recipe_name>U238</recipe_name>
+				<capacity>200000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>uf</val>
+        </in_commods>
+        <capacity>100000000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>UOX</val>       
+        </in_commods>
+        <out_commod>uf</out_commod>
+        <libraries><val>E5_50</val></libraries>
+        <target_burnup>35.0</target_burnup>
+        <nonleakage>0.95</nonleakage>
+        <core_mass>3000.0</core_mass>
+    	  <interpol_pairs>
+           <key>BURNUP</key>
+	       <val>42.5</val>
+        </interpol_pairs>
+        <batches>3</batches>
+        <flux_mode>2</flux_mode>
+        <burnupcalc_timestep>50</burnupcalc_timestep>
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
+            <val>922350</val>
+            <val>942380</val>
+            <val>942390</val>
+            <val>942400</val>
+            <val>942410</val>
+            <val>942420</val>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
+      </ReactorFacility>
+    </config>
+  </facility>
+		
+	<facility>
+		<name>FF_UOX</name>
+		<config>
+			<FuelfabFacility>
+			<fissle_stream>fissile_stream</fissle_stream>
+			<non_fissle_stream>nfissile_stream</non_fissle_stream>
+			<in_commods>
+				<key>blank</key><val>0.0</val>
+			</in_commods>
+			<out_commod>UOX</out_commod>
+		</FuelfabFacility></config>
+	</facility>
+
+  <region>
+  
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>Fissile_Source</prototype>
+          <number>1</number>
+        </entry>     
+        <entry>
+          <prototype>NFissile_Source</prototype>
+          <number>1</number>
+        </entry>   
+        <entry>
+          <prototype>FF_UOX</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+
+		<institution>
+			<name>utility</name>
+			<config>
+			<DeployInst>
+				<buildorder>
+				  <prototype>Rx</prototype>
+				  <number>1</number>
+				  <date>50</date>
+				</buildorder>
+			</DeployInst>
+			</config>
+		</institution>
+		
+  </region>
+
+  <recipe>
+    <name>U235</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>1</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>U238</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U238</id>
+      <comp>1</comp>
+    </nuclide>
+  </recipe>
+  
+</simulation>
