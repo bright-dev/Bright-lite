@@ -125,7 +125,7 @@ class ReactorFacility : public cyclus::Facility  {
   double SS_enrich;
   double ss_fraction;
 
-  #pragma cyclus var {"default": 0.001, \
+  #pragma cyclus var {"default": 0.01, \
                       "userlevel": 3, \
                      "tooltip": "The convergence requirement for the code"}
   double tolerence;

@@ -1,12 +1,13 @@
 <!-- 
 2 Source, 1 FuelFab 1 LWR, 1 Sink 
 Reactor database: extLWR
-Fuel: Uranium 4.2% enriched
+Fuel: Calculated
+Batches: 3
 -->
 
 <simulation>
   <control>
-    <duration>60</duration>
+    <duration>480</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -63,7 +64,7 @@ Fuel: Uranium 4.2% enriched
             <val>UOX</val>       
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>E5_50</val></libraries>
+        <libraries><val>extLWR</val></libraries>
         <target_burnup>35.0</target_burnup>
         <nonleakage>0.95</nonleakage>
         <core_mass>3000.0</core_mass>
@@ -72,6 +73,7 @@ Fuel: Uranium 4.2% enriched
 	       <val>42.5</val>
         </interpol_pairs>
         <batches>3</batches>
+        <tolerence>0.05</tolerence>
         <flux_mode>2</flux_mode>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>

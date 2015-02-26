@@ -41,9 +41,9 @@ void ReactorFacility::Tick() {
     if(shutdown == true){return;}
     if(fuel_library_.name.size() == 0){
         if(target_burnup == 0){
-            std::cout << "New " << libraries[0] << " reactor starting up in forward mode." << std::endl;
+            std::cout << "New " << libraries[0] << " reactor (id:" << id() << ") starting up in forward mode." << std::endl;
         } else {
-            std::cout << "New " << libraries[0] << " reactor starting up - target burnup = " << target_burnup << std::endl;
+            std::cout << "New " << libraries[0] << " reactor (id:" << id() << ") starting up - target burnup = " << target_burnup << std::endl;
         }
         std::string manifest_file = cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt";
@@ -217,6 +217,13 @@ void ReactorFacility::Tock() {
   cycle_end_ = ctx->time() + floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
   //std::cout << "Cycle Months:  " << floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)) << std::endl;
   //std::cout << "Cycle Days: " << fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28) << std::endl;
+
+  // if the cycle length is less than 2 the fluence of batches will build up.
+  if(cycle_end_ - ctx->time() <= 1){
+    std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
+  }
+
+
   refuels += 1;
 
 
@@ -225,15 +232,15 @@ void ReactorFacility::Tock() {
 
 
     shutdown = true;
-
+    std::cout << "Agent " << id() << " shutdown: " << std::endl;
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
 
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-        std::cout << "burnup at shutdown " << burnup << std::endl;
-        std::cout << "  " << fuel_library_.batch[i].comp[942380]  << "  " << fuel_library_.batch[i].comp[942390]  << "  " << fuel_library_.batch[i].comp[942400]  << "  " << fuel_library_.batch[i].comp[942410]  << "  " << fuel_library_.batch[i].comp[942420] << std::endl;
+        std::cout << " Batch " << i+1 << " BU: " << burnup << "  CR: " << fuel_library_.CR << std::endl;
+        //std::cout << "  " << fuel_library_.batch[i].comp[942380]  << "  " << fuel_library_.batch[i].comp[942390]  << "  " << fuel_library_.batch[i].comp[942400]  << "  " << fuel_library_.batch[i].comp[942410]  << "  " << fuel_library_.batch[i].comp[942420] << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
@@ -249,7 +256,8 @@ void ReactorFacility::Tock() {
 
 
   if(shutdown != true && record == true){
-      std::cout << "BURNUP: " << fuel_library_.batch[0].discharge_BU << std::endl;
+      std::cout << "Agent " << id() << "  BU: " << fuel_library_.batch[0].discharge_BU << "  CR: " <<
+            fuel_library_.CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
@@ -613,7 +621,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     double burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.05){
+    while(std::abs((target_burnup - burnup_3)/target_burnup) > tolerence){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
@@ -630,8 +638,10 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         //burnup_3 = burnupcalc_BU(temp_bundle, 2, 1, 40);
         temp_bundle = comp_function(mat1, fuel_library_);
         burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
-        if(inter == 50){
-            continue;
+        if(inter >= 30){
+            std::cout << "  Warning, agent " << id() << " batch fuel calc exceeded max iterations." << std::endl;
+            fraction = (fraction_1 + fraction_2 + fraction)/3.;
+            break;
         }
         inter++;
     }
@@ -710,7 +720,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     double burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((target_burnup - burnup_3)/target_burnup) > 0.0001){
+    while(std::abs((target_burnup - burnup_3)/target_burnup) > tolerence){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
@@ -725,8 +735,10 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         mat1->Absorb(mat_pass);
         temp_bundle = comp_function(mat1, fuel_library_);
         burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
-        if(inter == 50){
-            continue;
+        if(inter == 30){
+            std::cout << "  Warning, agent " << id() << " startup fuel calc exceeded max iterations." << std::endl;
+            fraction = (fraction_1 + fraction_2 + fraction)/3.;
+            break;
         }
         inter++;
     }
@@ -736,7 +748,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     timestamp_t t1 = get_timestamp();
 
     double secs = (t1 - t0) / 1000000.0L;
-    std::cout << "startup time: " << secs << std::endl;
+    //std::cout << "startup time: " << secs << std::endl;
     return return_amount;
 }
 
