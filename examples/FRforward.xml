@@ -1,13 +1,13 @@
 <!-- 
-2 Source, 1 FuelFab 1 LWR, 1 Sink 
-Reactor database: extLWR
-Fuel: Calculated
-Batches: 3
+1 Source, 1 FR, 1 Sink 
+Reactor database: FR50
+Fuel: FR
+Batches: 6
 -->
 
 <simulation>
   <control>
-    <duration>600</duration>
+    <duration>200</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -15,35 +15,22 @@ Batches: 3
   <archetypes>
     <spec><lib>agents</lib><name>Source</name></spec>
     <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
-    <spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec>
     <spec><lib>agents</lib><name>Sink</name></spec>
     <spec><lib>agents</lib><name>NullRegion</name></spec>
     <spec><lib>agents</lib><name>NullInst</name></spec>
-    <spec><lib>cycamore</lib><name>DeployInst</name></spec>
   </archetypes>
 
   <facility>
-    <name>Fissile_Source</name>
+    <name>Source</name>
     <config>
       <Source>
-        <commod>fissile_stream</commod>
-        <recipe_name>U235</recipe_name>
-	<capacity>200000.0</capacity>
+        <commod>FRFuel</commod>
+        <recipe_name>commod_recipe</recipe_name>
+	<capacity>20000000000.0</capacity>
       </Source>
     </config>
   </facility>
   
-  <facility>
-    <name>NFissile_Source</name>
-    <config>
-      <Source>
-        <commod>nfissile_stream</commod>
-        <recipe_name>U238</recipe_name>
-				<capacity>200000.0</capacity>
-      </Source>
-    </config>
-  </facility>
-
   <facility>
     <name>Sink</name>
     <config>
@@ -61,21 +48,21 @@ Batches: 3
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>UOX</val>       
+            <val>FRFuel</val>       
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>extLWR</val></libraries>
-        <target_burnup>35.0</target_burnup>
-        <nonleakage>0.95</nonleakage>
-        <core_mass>3000.0</core_mass>
-    	  <interpol_pairs>
+        <libraries><val>FR50</val></libraries>
+        <target_burnup>0</target_burnup>
+        <nonleakage>0.57</nonleakage>
+        <core_mass>6.0</core_mass>
+    	<interpol_pairs>
            <key>BURNUP</key>
 	       <val>42.5</val>
         </interpol_pairs>
-        <batches>3</batches>
-        <tolerence>0.05</tolerence>
+        <batches>6</batches>
         <flux_mode>2</flux_mode>
-        <burnupcalc_timestep>50</burnupcalc_timestep>
+        <burnupcalc_timestep>40</burnupcalc_timestep>
+	<reactor_life>120</reactor_life>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
@@ -93,37 +80,19 @@ Batches: 3
       </ReactorFacility>
     </config>
   </facility>
-		
-	<facility>
-		<name>FF_UOX</name>
-		<config>
-			<FuelfabFacility>
-			<fissle_stream>fissile_stream</fissle_stream>
-			<non_fissle_stream>nfissile_stream</non_fissle_stream>
-			<in_commods>
-				<key>blank</key><val>0.0</val>
-			</in_commods>
-			<out_commod>UOX</out_commod>
-		</FuelfabFacility></config>
-	</facility>
 
   <region>
-  
     <name>SingleRegion</name>
     <config> <NullRegion/> </config>
     <institution>
       <name>SingleInstitution</name>
       <initialfacilitylist>
         <entry>
-          <prototype>Fissile_Source</prototype>
+          <prototype>Source</prototype>
           <number>1</number>
-        </entry>     
+        </entry>       
         <entry>
-          <prototype>NFissile_Source</prototype>
-          <number>1</number>
-        </entry>   
-        <entry>
-          <prototype>FF_UOX</prototype>
+          <prototype>Rx</prototype>
           <number>1</number>
         </entry>
         <entry>
@@ -133,38 +102,67 @@ Batches: 3
       </initialfacilitylist>
       <config> <NullInst/> </config>
     </institution>
-
-		<institution>
-			<name>utility</name>
-			<config>
-			<DeployInst>
-				<buildorder>
-				  <prototype>Rx</prototype>
-				  <number>1</number>
-				  <date>50</date>
-				</buildorder>
-			</DeployInst>
-			</config>
-		</institution>
-		
   </region>
 
   <recipe>
-    <name>U235</name>
+    <name>commod_recipe</name>
     <basis>mass</basis>
+    <nuclide>
+      <id>U234</id>
+      <comp>0.00003</comp>
+    </nuclide>
     <nuclide>
       <id>U235</id>
-      <comp>1</comp>
+      <comp>0.10861</comp>
     </nuclide>
-  </recipe>
-  
-  <recipe>
-    <name>U238</name>
-    <basis>mass</basis>
+    <nuclide>
+      <id>U236</id>
+      <comp>0.00099</comp>
+    </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>1</comp>
+      <comp>54.36345</comp>
+    </nuclide>
+    <nuclide>
+      <id>NP237</id>
+      <comp>2.15051</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU238</id>
+      <comp>1.0451</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU239</id>
+      <comp>21.74518</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU240</id>
+      <comp>10.26292</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU241</id>
+      <comp>4.84338</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU242</id>
+      <comp>2.99695</comp>
+    </nuclide>
+    <nuclide>
+      <id>AM241</id>
+      <comp>1.53634</comp>
+    </nuclide>
+    <nuclide>
+      <id>AM243</id>
+      <comp>0.68109</comp>
+    </nuclide>
+    <nuclide>
+      <id>CM242</id>
+      <comp>0.00005</comp>
+    </nuclide>
+    <nuclide>
+      <id>CM244</id>
+      <comp>0.23874</comp>
     </nuclide>
   </recipe>
-  
+
 </simulation>
