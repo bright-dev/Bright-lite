@@ -3,6 +3,9 @@
 Reactor database: FR50
 Fuel: FR
 Batches: 6
+
+"time cyclus examples/FRforward.xml" = real	0m14.631s (2015/02/26)
+
 -->
 
 <simulation>

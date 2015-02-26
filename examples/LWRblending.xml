@@ -3,6 +3,9 @@
 Reactor database: extLWR
 Fuel: Calculated
 Batches: 3
+
+"time cyclus examples/LWRblending.xml" = real	0m3.676s (2015/02/26)
+
 -->
 
 <simulation>
