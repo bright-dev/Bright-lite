@@ -68,7 +68,7 @@ Batches: 3
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>35.0</target_burnup>
+        <target_burnup>51.0</target_burnup>
         <nonleakage>0.95</nonleakage>
         <core_mass>3000.0</core_mass>
     	  <interpol_pairs>
