@@ -987,9 +987,9 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << endl;
             }
             //cout << endl;
-            //core.CR = CR_finder(core);
+            core.CR = CR_finder(core);
             kcore = kcalc(core);
-            //std::cout<<"kcore "<<kcore << std::endl;
+            std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 20){
                 //cout << "  iter+20" << endl;
@@ -1001,7 +1001,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                     return burnup;
                 }
             }
-            //std::cout << core.CR << std::endl;
+            std::cout << core.CR << std::endl;
             /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
                 break;
             }*/

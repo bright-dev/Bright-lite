@@ -746,12 +746,11 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     return_amount = fraction * total_mass;
     SS_enrich = return_amount;
     ss_fraction = fraction;
-    timestamp_t t1 = get_timestamp();
-
-    double secs = (t1 - t0) / 1000000.0L;
-    //std::cout << "startup time: " << secs << std::endl;
     return return_amount;
 }
+
+
+
 
 void ReactorFacility::batch_reorder(){
 //collapses each batch first, then orders them
