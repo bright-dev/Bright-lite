@@ -551,13 +551,17 @@ double CR_finder(fuelBundle core){
     double FP = 0, FP0 = 0, FP1 = 0;
     double fissile = 0, fissile0 = 0, fissile1 = 0;
     double ini_fissile = 0;
-    double mass = 0;
     double CR;
     int ii, ZZ;
 
+    //cout << "\nCR_finder starting." << endl << "  Upper: " << core.CR_upper << "  lower: " << core.CR_lower << endl;
 
-    for(int i = 0; i < 1; i++){
+
+    for(int i = 0; i < core.batch.size(); i++){
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
+        if(ii == 0){
+            ii = 1;
+        }
 
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
             //convert name to mass number
@@ -567,6 +571,7 @@ double CR_finder(fuelBundle core){
 
             //add up the FP
             if(ZZ < core.CR_upper && ZZ > core.CR_lower){
+                //cout << "    Batch" << i+1 << " ZZ: " << ZZ << endl;
                 //interpolation will be done at the end
                 FP0 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1];
                 FP1 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii];
@@ -577,43 +582,39 @@ double CR_finder(fuelBundle core){
                 if(core.batch[i].collapsed_iso.iso_vector[j].name == core.CR_fissile[fis]){
                     fissile0 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1];
                     fissile1 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii];
+
+                    ini_fissile += core.batch[i].collapsed_iso.iso_vector[j].mass[0]; //mass at fluence zero
                 }
             }
+
+
         }
 
-        FP += intpol(FP0, FP1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+
+        // recycling variable FP0 here to check greater than zero
+        FP0 = intpol(FP0, FP1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+        if(FP0 > 0){
+            FP += FP0;
+        }
+
         fissile += intpol(fissile0, fissile1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
 
         FP0 = 0;
         FP1 = 0;
         fissile0 = 0;
         fissile1 = 0;
-
-        //find the initial composition of the batch
-        //find total mass
-        mass = 0;
-        for(int jk = 0; jk < core.batch[i].collapsed_iso.iso_vector.size(); jk++){
-            mass += core.batch[i].collapsed_iso.iso_vector[jk].mass[0];
-        }
-
-        //use total mass to add up initial fissile mass
-        for(int jj = 0; jj < core.batch[i].iso.size(); jj++){
-            for(int fis = 0; fis < core.CR_fissile.size(); fis++){
-                if(core.batch[i].iso[jj].name == core.CR_fissile[fis]){
-                    ini_fissile += mass*core.batch[i].iso[jj].fraction;
-                }
-            }
-        }
-
     }
 
-    //cout << "FP: " << FP << "  fissile: " << fissile << "  ini_fissile: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
+    //cout << "  FP: " << FP << "  fiss: " << fissile << "  ini_fiss: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
 
-    CR = (FP+fissile-ini_fissile)/FP;
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        CR  = 0;
+    }
     //std::cout << "CR Calc " << t.elapsed() << std::endl;
     return CR;
 }
-
 
 
 fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
@@ -682,9 +683,9 @@ timestamp_t t0 = get_timestamp();
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
 
         }
-
-        kcore = kcalc(core);
         //core.CR = CR_finder(core);
+        kcore = kcalc(core);
+
         /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
             break;
         }*/
