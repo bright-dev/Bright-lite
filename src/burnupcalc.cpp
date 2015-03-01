@@ -676,14 +676,14 @@ timestamp_t t0 = get_timestamp();
 
         //CR calculation
         //cout << CR_numerator(core, 5)/CR_denominator(core, 5) << " ";
-        core.CR = CR_finder(core);
+
         //update fluences
         for(int i = 0; i < N; i++){
             //cout << "flux: " << core.batch[i].rflux << endl;
             core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
 
         }
-
+        //core.CR = CR_finder(core);
         kcore = kcalc(core);
 
         /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
