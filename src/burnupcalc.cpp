@@ -988,7 +988,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << endl;
             }
             //cout << endl;
-            //core.CR = CR_finder(core);
+            core.CR = CR_finder(core);
             kcore = kcalc(core);
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
