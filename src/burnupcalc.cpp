@@ -592,7 +592,7 @@ double CR_finder(fuelBundle core){
 
 
         // recycling variable FP0 here to check greater than zero
-        FP0 += intpol(FP0, FP1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+        FP0 = intpol(FP0, FP1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
         if(FP0 > 0){
             FP += FP0;
         }
