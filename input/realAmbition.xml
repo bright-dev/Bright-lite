@@ -93,6 +93,10 @@
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
+            <val>952410</val>
+            <val>952430</val>
+            <val>962420</val>
+            <val>942440</val>
         </CR_fissile>
        	</ReactorFacility></config></facility>
 
@@ -102,6 +106,10 @@
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
+            <val>952410</val>
+            <val>952430</val>
+            <val>962420</val>
+            <val>942440</val>
         </CR_fissile>
         <CR_lower>40</CR_lower>
         <CR_target>-1</CR_target>
