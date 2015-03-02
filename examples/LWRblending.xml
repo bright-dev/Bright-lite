@@ -76,7 +76,7 @@ Batches: 3
 	       <val>42.5</val>
         </interpol_pairs>
         <batches>3</batches>
-        <tolerence>0.05</tolerence>
+        <tolerence>0.01</tolerence>
         <flux_mode>2</flux_mode>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>

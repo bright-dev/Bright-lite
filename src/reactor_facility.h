@@ -308,6 +308,12 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Target for conversion ratio."}
   double CR_target;
 
+  #pragma cyclus var {"userlevel": 2, \
+                      "default": 28, \
+                      "tooltip": "The amount of time the reactor is offline to load new fuel and shuffle older fuel", \
+                      "label": "Outage Period"}
+  double outage_time;
+
 
  private:
   bool shutdown;
@@ -317,6 +323,10 @@ class ReactorFacility : public cyclus::Facility  {
   fuelBundle fuel_library_;
   fuelBundle core_;
   double ss_fluence = 0;
+  double p_time = 0;
+  double p_frac = 0;
+  int outage_shutdown = 0;
+
 };
 
 }  // namespace reactor
