@@ -563,6 +563,8 @@ double CR_finder(fuelBundle core){
             ii = 1;
         }
 
+        //cout << " fluence: " << core.batch[i].Fg;
+
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
             //convert name to mass number
             ZZ = core.batch[i].collapsed_iso.iso_vector[j].name;
@@ -603,7 +605,7 @@ double CR_finder(fuelBundle core){
         fissile1 = 0;
     }
 
-    //cout << "  FP: " << FP << "  fiss: " << fissile << "  ini_fiss: " << ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
+    cout << endl << setprecision(4) <<  "  FP: " << FP << "  fiss: " << fissile << "  ini_fiss: " << ini_fissile << "  num: " << FP+fissile-ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
 
     if(FP > 0){
         CR = (FP+fissile-ini_fissile)/FP;
@@ -1077,7 +1079,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
         double kcore = 1.10000;
         int iter = 0;
         CR_prev = CR;
-        //cout << "  New core" << endl;
+        cout << "  New core" << endl << endl << endl;
 
         while(kcore > 1){
             kcore_prev = kcore;
@@ -1108,7 +1110,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
             for(int i = 0; i < N; i++){
                 //!NOTE when updating this, MUST also update interpolation calcs below
                 core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
-                //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << endl;
+                cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << "  base flux: " << core.base_flux << endl;
             }
             //cout << endl;
             kcore = kcalc(core);
@@ -1121,13 +1123,14 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
                 dt *= 2;
                 if(iter > 100){
                     cout << "SS_burnupcalc_cr exceeds 100 iterations with error " << endl;
-                    cout << "  CR: " << CR << "  " << endl;
+                    cout << "  CR: " << std::setprecision(8) <<  CR << "  " << endl;
                     return CR;
                 }
             }
             std::cout << core.CR << std::endl;
             CR = core.CR;
-            if(CR < core.CR_target){
+            if(CR < core.CR_target && iter > 20){
+                cout << "If statement " << endl << endl;
                 break;
             }
         }
