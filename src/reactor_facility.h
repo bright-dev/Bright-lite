@@ -304,7 +304,7 @@ class ReactorFacility : public cyclus::Facility  {
   int CR_upper;
 
   #pragma cyclus var {"userlevel": 3, \
-                      "default": 0, \
+                      "default": -1, \
                       "tooltip": "Target for conversion ratio."}
   double CR_target;
 

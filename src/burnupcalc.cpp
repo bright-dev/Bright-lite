@@ -586,8 +586,6 @@ double CR_finder(fuelBundle core){
                     ini_fissile += core.batch[i].collapsed_iso.iso_vector[j].mass[0]; //mass at fluence zero
                 }
             }
-
-
         }
 
 
@@ -990,7 +988,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
             //cout << endl;
             core.CR = CR_finder(core);
             kcore = kcalc(core);
-            std::cout<<"kcore "<<kcore << std::endl;
+            //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 20){
                 //cout << "  iter+20" << endl;
@@ -1048,6 +1046,126 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 }
 
 
+double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence){
+    //used to find the steady state CR of the given fuel
+    //N:number of batches; delta: time advancement in days; PNL: nonleakage; base_flux: flux of library
+    //THE FINAL BATCH IS THE OLDEST ONE
+    //cout << "SS burnupcalc begin" << endl;
+    boost::timer t;
+
+    isoInformation fuel = core.batch[0].collapsed_iso;
+    double CR = 0;
+    double dt = delta*24*60*60; //days to [s]
+    double BU, BU_est, F_est;
+    double kcore_prev;
+    bool notsteady = true;
+    int ii = 0;
+    double CR_prev = 0;
+    int counter = 0;
+
+
+
+    batch_info temp_batch;
+    temp_batch.collapsed_iso = fuel;
+    temp_batch.collapsed_iso.batch_fluence = 0;
+    for(int i = 1; i < N; i++){
+        temp_batch.Fg = ss_fluence*(i+1)*0.7; // use old cycles youngest batch discharge to guess
+        core.batch.push_back(temp_batch);
+    }
+
+    while(notsteady){
+        double kcore = 1.10000;
+        int iter = 0;
+        CR_prev = CR;
+        //cout << "  New core" << endl;
+
+        while(kcore > 1){
+            kcore_prev = kcore;
+
+            //find the normalized relative flux of each batch
+            if(mode == 1){
+                //simplest case, all batches get the same flux
+                for(int i = 0; i < N; i++){
+                    core.batch[i].rflux = 1;
+                }
+            }else if(mode == 2){
+                //inverse-production flux calculation
+                core = phicalc_simple(core);
+            }else if(mode == 3){
+                core = phicalc_cylindrical(core);
+            }else if(mode == 0){
+                core = phicalc_eqpow(core);
+            } else {
+                cout << endl << "Error in mode input for batch-level flux calculation(SS_burnupcalc)." << endl;
+                return 0;
+            }
+
+            //disadvantage calculation
+            if(DA_mode == 1){
+                core = DA_calc(core);
+            }
+
+            for(int i = 0; i < N; i++){
+                //!NOTE when updating this, MUST also update interpolation calcs below
+                core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
+                //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << endl;
+            }
+            //cout << endl;
+            kcore = kcalc(core);
+            core.CR = CR_finder(core);
+            //std::cout<<"kcore "<<kcore << std::endl;
+            iter++;
+            if(iter > 20){
+                //cout << "  iter+20" << endl;
+                mode = 1;
+                dt *= 2;
+                if(iter > 100){
+                    cout << "SS_burnupcalc_cr exceeds 100 iterations with error " << endl;
+                    cout << "  CR: " << CR << "  " << endl;
+                    return CR;
+                }
+            }
+            std::cout << core.CR << std::endl;
+            CR = core.CR;
+            if(CR < core.CR_target){
+                break;
+            }
+        }
+
+        //update core fluences
+        for(int i = 0; i < N; i++){
+            //cout << "    " << core.batch[i].rflux;
+            core.batch[i].collapsed_iso.batch_fluence = intpol(core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt), core.batch[i].Fg, kcore_prev, kcore, 1);
+
+            if(core.batch[i].collapsed_iso.batch_fluence > core.batch[i].collapsed_iso.fluence.back()){
+                //core.batch[i].collapsed_iso.batch_fluence > core.batch[i].collapsed_iso.fluence.back() + 1;
+            }
+        }
+        //cout << endl;
+        if(abs(CR - CR_prev)/CR < 0.01 && counter > N+1){
+            notsteady = false;
+        }
+        counter++;
+
+        //move each batch one left, now the last and second from last are the same
+        for(int i = 0; i < N-1; i++){
+            core.batch[i].collapsed_iso.batch_fluence = core.batch[i+1].collapsed_iso.batch_fluence;
+            core.batch[i].Fg = core.batch[i].collapsed_iso.batch_fluence;
+        }
+
+        //fix last one
+        core.batch[N-1].collapsed_iso.batch_fluence = 0;
+        core.batch[N-1].Fg = 0;
+
+
+
+    }
+    //cout << "SSrflux: " << core.batch[1].rflux << endl;
+    //std::cout << "SSBurnupCalc " << core.name << " BU: " << burnup << "  Time: " << t.elapsed() << std::endl;
+    if(CR < 0 ){CR=0;}
+    return CR;
+
+}
 
 
 
