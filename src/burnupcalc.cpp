@@ -608,7 +608,7 @@ double CR_finder(fuelBundle core){
         fissile1 = 0;
     }
 
-    cout << endl << setprecision(4) <<  "  FP: " << FP << "  fiss: " << fissile << "  ini_fiss: " << ini_fissile << "  num: " << FP+fissile-ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
+    //cout << endl << setprecision(4) <<  "  FP: " << FP << "  fiss: " << fissile << "  ini_fiss: " << ini_fissile << "  num: " << FP+fissile-ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
 
     if(FP > 0){
         CR = (FP+fissile-ini_fissile)/FP;
