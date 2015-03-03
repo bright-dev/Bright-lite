@@ -544,6 +544,78 @@ double kcalc(fuelBundle core){
     return prod_tot * pnl / dest_tot;
 }
 
+
+double CR_batch(fuelBundle core, int i){
+    //
+    //i is the batch number starting from zero
+    //boost::timer t;
+    double FP = 0, FP0 = 0, FP1 = 0;
+    double fissile = 0, fissile0 = 0, fissile1 = 0;
+    double ini_fissile = 0;
+    double CR;
+    int ii, ZZ;
+
+    //cout << "\nCR_finder starting." << endl << "  Upper: " << core.CR_upper << "  lower: " << core.CR_lower << endl;
+
+
+
+    for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
+    if(ii == 0){
+        ii = 1;
+    } else if (ii > core.batch[i].collapsed_iso.fluence.size()-1){
+        ii = core.batch[i].collapsed_iso.fluence.size()-1;
+    }
+
+    //cout << " fluence: " << core.batch[i].Fg;
+
+    for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
+        //convert name to mass number
+        ZZ = core.batch[i].collapsed_iso.iso_vector[j].name;
+        ZZ = ZZ % 10000;
+        ZZ /= 10;
+
+        //add up the FP
+        if(ZZ < core.CR_upper && ZZ > core.CR_lower){
+            //cout << "    Batch" << i+1 << " ZZ: " << ZZ << endl;
+            //interpolation will be done at the end
+            FP0 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1];
+            FP1 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii];
+            //cout << "ZZ " << ZZ  << " mass " << core.batch[i].collapsed_iso.iso_vector[j].mass[ii]<<endl;
+        }
+
+        //add up fissiles
+        for(int fis = 0; fis < core.CR_fissile.size(); fis++){
+            if(core.batch[i].collapsed_iso.iso_vector[j].name == core.CR_fissile[fis]){
+                fissile0 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii-1];
+                fissile1 += core.batch[i].collapsed_iso.iso_vector[j].mass[ii];
+
+                ini_fissile += core.batch[i].collapsed_iso.iso_vector[j].mass[0]; //mass at fluence zero
+            }
+        }
+    }
+
+
+    // recycling variable FP0 here to check greater than zero
+    FP0 = intpol(FP0, FP1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+    if(FP0 > 0){
+        FP += FP0;
+    }
+    //cout << fissile0 << "  " << fissile1 << "   " << core.batch[i].collapsed_iso.fluence[ii-1] << " " << core.batch[i].collapsed_iso.fluence[ii] << "   " << core.batch[i].Fg << endl;
+    fissile = intpol(fissile0, fissile1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
+
+    //cout << endl << setprecision(4) <<  "  FP: " << FP << "  fiss: " << fissile << "  ini_fiss: " << ini_fissile << "  num: " << FP+fissile-ini_fissile << "      CR: " << (FP+fissile-ini_fissile)/FP << endl;
+
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        cout << " -- CR finder (batch " << i+1 << ") has fission product mass of zero." << endl;
+        CR  = 0;
+    }
+    //std::cout << "CR Calc " << t.elapsed() << std::endl;
+    return CR;
+}
+
+
 double CR_finder(fuelBundle core){
     //
     //i is the batch number starting from zero
@@ -613,6 +685,7 @@ double CR_finder(fuelBundle core){
     if(FP > 0){
         CR = (FP+fissile-ini_fissile)/FP;
     } else {
+        cout << " CR finder has fission product mass of zero." << endl;;
         CR  = 0;
     }
     //std::cout << "CR Calc " << t.elapsed() << std::endl;
@@ -991,7 +1064,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << endl;
             }
             //cout << endl;
-            core.CR = CR_finder(core);
+            //core.CR = CR_finder(core);
             kcore = kcalc(core);
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
@@ -1146,8 +1219,9 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
                 //core.batch[i].collapsed_iso.batch_fluence > core.batch[i].collapsed_iso.fluence.back() + 1;
             }
         }
-        //cout << endl;
-        core.CR = CR_finder(core);
+
+        //calculate CR
+        core.CR = CR_batch(core, 0);
         CR = core.CR;
         if(abs(CR - CR_prev)/CR < 0.01 && counter > N+1){
             notsteady = false;
@@ -1174,110 +1248,6 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
 
 }
 
-
-
-/*
-fuelBundle InputReader(){
-    std::string name, fraction;
-    int region, N, t_res;
-    char type, word[8];
-    int nucid;
-    double pnl, intpol_val, target_BUd, mass;
-    fuelBundle fuel;
-
-    string line;
-    ifstream fin("inputFile2.txt");
-
-    int i=0;
-	while(getline(fin, line))
-	{
-        if(line.find("REACTOR") == 0){
-            istringstream iss(line);
-            iss >> name >> name;
-            fuel.name = name;
-        }
-        if (line.find("BURNUP") == 0){
-            fuel.operation_type = "BURNUP";
-        }
-        if (line.find("BLENDING") == 0){
-            fuel.operation_type = "BLENDING";
-            istringstream iss(line);
-            iss >> name >> target_BUd;
-            fuel.target_BUd = target_BUd;
-        }
-        if(line.find("STREAMS") == 0){
-            istringstream iss(line);
-            iss >> name;
-            while (iss >> fraction){
-                if (fraction == "X"){
-                    fuel.stream_fraction.push_back(-1.);
-                } else {
-                    fuel.stream_fraction.push_back(atof(fraction.c_str()));
-                }
-            }
-        }
-        if(line.find("REGIONS") == 0){
-            while(getline(fin, line)){
-                if(line.find("END") == 0) break;
-                isoInformation temp;
-                istringstream iss(line);
-                iss >> region >> type >> nucid;
-                temp.name = nucid;
-                temp.region = region;
-                temp.type = type;
-                temp.fraction.push_back(0.0);
-                while (iss >> mass){
-                    temp.fraction.push_back(mass);
-                }
-                temp.fuel = false;
-                fuel.all_iso.push_back(temp);
-            }
-        }
-        if(line.find("BATCH") == 0){
-            istringstream iss(line);
-            iss >> word >> N;
-        }
-        if(line.find("FUELRES") == 0){
-            istringstream iss(line);
-            iss >> word >> t_res;
-        }
-        if(line.find("LEAK") == 0){
-            istringstream iss(line);
-            iss >> word >> pnl;
-        }
-        if(line.find("INTERPOLATE") == 0){
-            fuel.libcheck = true;
-            while(getline(fin, line)){
-                if(line.find("INTERPOLEND") == 0) break;
-                if(line.find("INTERPOL") == 0){
-                    istringstream iss(line);
-                    iss >> name;
-                    while (iss >> name >> intpol_val){
-                        interpol_pair lib_pair;
-                        lib_pair.metric = name;
-                        lib_pair.value = intpol_val;
-                        fuel.interpol_pairs.push_back(lib_pair);
-                    }
-                }
-                if(line.find("INTLIBS") == 0){
-                     istringstream iss(line);
-                     iss >> name;
-                     while (iss >> name){
-                        fuel.interpol_libs.push_back(name);
-                     }
-                }
-            }
-
-        }
-	}
-    fuel.batch = N;
-    fuel.pnl = pnl;
-    fuel.tres = t_res;
-    fin.close();
-
-    return fuel;
-}
-*/
 
 fuelBundle lib_interpol(fuelBundle input_fuel){
     vector<fuelBundle> fuel_pairs;
