@@ -71,18 +71,15 @@ Batches: 3
         <target_burnup>51.0</target_burnup>
         <nonleakage>0.95</nonleakage>
         <core_mass>3000.0</core_mass>
-    	  <interpol_pairs>
+	  	<interpol_pairs>
            <key>BURNUP</key>
 	       <val>42.5</val>
         </interpol_pairs>
         <batches>3</batches>
-        <tolerence>0.01</tolerence>
+        <tolerance>0.01</tolerance>
         <flux_mode>2</flux_mode>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>
-            <val>902250</val>
-            <val>902270</val>
-            <val>902290</val>
             <val>922350</val>
             <val>942380</val>
             <val>942390</val>

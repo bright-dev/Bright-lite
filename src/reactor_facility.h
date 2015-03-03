@@ -128,7 +128,7 @@ class ReactorFacility : public cyclus::Facility  {
   #pragma cyclus var {"default": 0.01, \
                       "userlevel": 3, \
                      "tooltip": "The convergence requirement for the code"}
-  double tolerence;
+  double tolerance;
 
   #pragma cyclus var {"default": 0.4095, \
                      "units": "cm", \
