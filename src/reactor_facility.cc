@@ -415,18 +415,6 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
                 compost = it->second->comp();
                 cyclus::CompMap cmap = compost->mass();
                 cyclus::CompMap::iterator cit;
-
-        /************************output file*********************************/
-                /*std::ofstream outfile;
-                outfile.open("../output_cyclus_recent.txt", std::ios::app);
-                outfile << "Composition of fresh batch:\r\n";
-
-                for(cit = cmap.begin(); cit != cmap.end(); ++cit){
-                    outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
-                }
-                outfile << "\r\n\n";
-
-        /************************End of output file**************************/
           }
       } else {
         //Operational reloading
@@ -615,7 +603,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }boost::timer t_2;
     if(std::abs((measure - burnup_1)/target_burnup) < 0.05){
-        std::cout << "YAY" << std::endl;
+        //std::cout << "YAY" << std::endl;
         return_amount = fraction_1 * total_mass;
         return return_amount;
     }
@@ -636,8 +624,8 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     }//Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    std::cout << "fraction " << fraction << std::endl;
+    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    //std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -659,8 +647,8 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        std::cout << "fraction " << fraction << std::endl;
+        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
@@ -758,8 +746,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    std::cout << "fraction " << fraction << std::endl;
+    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    //std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -782,8 +770,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        std::cout << "fraction " << fraction << std::endl;
+        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
@@ -794,7 +782,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         } else {
             burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
         }
-        std::cout << "Burnup " << burnup_3 << std::endl;
+        //std::cout << "Burnup " << burnup_3 << std::endl;
         if(inter == 30){
             std::cout << "  Warning, agent " << id() << " startup fuel calc exceeded max iterations." << std::endl;
             fraction = (fraction_1 + fraction_2 + fraction)/3.;
