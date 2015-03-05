@@ -29,7 +29,7 @@ Batches: 3
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-				<capacity>3000.0</capacity>
+				<capacity>1000</capacity>
       </Source>
     </config>
   </facility>
@@ -51,7 +51,7 @@ Batches: 3
       <Source>
         <commod>freshFuel2</commod>
         <recipe_name>commod_recipe2</recipe_name>
-				<capacity>10000.0</capacity>
+				<capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -62,7 +62,7 @@ Batches: 3
       <Source>
         <commod>freshFuel3</commod>
         <recipe_name>commod_recipe3</recipe_name>
-				<capacity>10000.0</capacity>
+				<capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -74,7 +74,7 @@ Batches: 3
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>100000000.0</capacity>
+        <capacity>100.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -93,7 +93,7 @@ Batches: 3
         <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.98</nonleakage>
-        <core_mass>3000000</core_mass>
+        <core_mass>3000</core_mass>
     		<interpol_pairs>
            <key>BURNUP</key>
 	       <val>30</val>
