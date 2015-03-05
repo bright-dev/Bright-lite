@@ -56,7 +56,7 @@ real	0m3.407s (2015/03/04)
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>10000.0</capacity>
+        <capacity>100.0</capacity>
       </Sink>
     </config>
   </facility>
