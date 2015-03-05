@@ -1,7 +1,7 @@
 <!-- 
 1 Source, 1 LWR, 1 Sink 
 Reactor database: standLWR
-Fuel: Uranium 3% enriched
+Fuel: Uranium, defined startup
 Batches: 3
 
 "time cyclus examples/LWRforward.xml" = real	0m2.240s (2015/02/26)
@@ -29,7 +29,40 @@ Batches: 3
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-	<capacity>20000000000.0</capacity>
+				<capacity>1000</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>freshFuel1</commod>
+        <recipe_name>commod_recipe1</recipe_name>
+				<capacity>1000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source2</name>
+    <config>
+      <Source>
+        <commod>freshFuel2</commod>
+        <recipe_name>commod_recipe2</recipe_name>
+				<capacity>1000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source3</name>
+    <config>
+      <Source>
+        <commod>freshFuel3</commod>
+        <recipe_name>commod_recipe3</recipe_name>
+				<capacity>1000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -41,7 +74,7 @@ Batches: 3
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>100000000.0</capacity>
+        <capacity>100.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -51,13 +84,16 @@ Batches: 3
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>freshFuel</val>       
+            <val>freshFuel</val> 
+            <val>freshFuel1</val>
+            <val>freshFuel2</val>
+            <val>freshFuel3</val>      
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>0.92</nonleakage>
-        <core_mass>3.0</core_mass>
+        <nonleakage>0.98</nonleakage>
+        <core_mass>3000</core_mass>
     		<interpol_pairs>
            <key>BURNUP</key>
 	       <val>30</val>
@@ -92,7 +128,19 @@ Batches: 3
         <entry>
           <prototype>Source</prototype>
           <number>1</number>
-        </entry>       
+        </entry>   
+        <entry>
+          <prototype>Source1</prototype>
+          <number>1</number>
+        </entry> 
+        <entry>
+          <prototype>Source2</prototype>
+          <number>1</number>
+        </entry> 
+        <entry>
+          <prototype>Source3</prototype>
+          <number>1</number>
+        </entry>     
         <entry>
           <prototype>Rx</prototype>
           <number>1</number>
@@ -111,11 +159,50 @@ Batches: 3
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
+      <comp>4.1</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>95.9</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe1</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.8</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.2</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe2</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
       <comp>3</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
       <comp>97</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe3</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.8</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.2</comp>
     </nuclide>
   </recipe>
 

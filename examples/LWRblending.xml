@@ -5,6 +5,8 @@ Fuel: Calculated
 Batches: 3
 
 "time cyclus examples/LWRblending.xml" = real	0m3.676s (2015/02/26)
+real	0m3.407s (2015/03/04)
+
 
 -->
 
@@ -31,7 +33,7 @@ Batches: 3
       <Source>
         <commod>fissile_stream</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>200000.0</capacity>
+				<capacity>200.0</capacity>
       </Source>
     </config>
   </facility>
@@ -42,7 +44,7 @@ Batches: 3
       <Source>
         <commod>nfissile_stream</commod>
         <recipe_name>U238</recipe_name>
-				<capacity>200000.0</capacity>
+				<capacity>200.0</capacity>
       </Source>
     </config>
   </facility>
@@ -54,7 +56,7 @@ Batches: 3
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>100000000.0</capacity>
+        <capacity>10000.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -71,19 +73,18 @@ Batches: 3
         <target_burnup>33.0</target_burnup>
         <nonleakage>0.95</nonleakage>
         <core_mass>3000.0</core_mass>
-    	  <interpol_pairs>
-           <key>BURNUP</key>
+	  		<interpol_pairs>
+       		<key>BURNUP</key>
 	   <val>33</val>
         </interpol_pairs>
         <batches>3</batches>
         <outage_time>30</outage_time>
         <tolerence>0.0001</tolerence>
-        <flux_mode>2</flux_mode>
+        <flux_mode>2</flux_mode>        
+        <tolerance>0.0001</tolerance>
+        <SS_tolerance>0.00001</SS_tolerance>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>
-            <val>902250</val>
-            <val>902270</val>
-            <val>902290</val>
             <val>922350</val>
             <val>942380</val>
             <val>942390</val>

@@ -40,10 +40,11 @@ void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
     if(fuel_library_.name.size() == 0){
+        cyclus::Context* ctx = context();
         if(target_burnup == 0){
-            std::cout << "New " << libraries[0] << " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
+            std::cout << ctx->time()<< " New " << libraries[0] << " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
         } else {
-            std::cout << "New " << libraries[0] << " reactor (ID:" << id() << ") starting up - target burnup = " << target_burnup << std::endl;
+            std::cout << ctx->time() << " New " << libraries[0] << " reactor (ID:" << id() << ") starting up - target burnup = " << target_burnup << std::endl;
         }
         std::string manifest_file = cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt";
@@ -101,6 +102,7 @@ void ReactorFacility::Tick() {
         fuel_library_.CR_lower = CR_lower;
         fuel_library_.CR_upper = CR_upper;
         fuel_library_.CR_target = CR_target;
+        fuel_library_.SS_tolerance = SS_tolerance;
 
 
         batch_info empty_batch;
@@ -136,10 +138,13 @@ void ReactorFacility::Tock() {
     if(shutdown == true){return;}
 
     cyclus::Context* ctx = context();
+    // check the state of the reactor
     if(outage_shutdown > 1){
+    //reactor still in outage
         outage_shutdown--;
         return;
     } else if (outage_shutdown == 1){
+        // reactor on last month of shutdown
         cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac);
         outage_shutdown = 0;
     } else {
@@ -169,6 +174,9 @@ void ReactorFacility::Tock() {
             }
         }
     }
+
+    // Will now burn fuel
+
     // Pop materials out of inventory
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
@@ -201,7 +209,12 @@ void ReactorFacility::Tock() {
                     //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
                     isoInformation temp_iso;
                     temp_iso = fuel_library_.all_iso[j];
-                    temp_iso.fraction = it->second/(core_mass/batches);
+                    if(target_burnup == 0){
+                        temp_iso.fraction = it->second;
+                    } else {
+                        temp_iso.fraction = it->second/(core_mass/batches);
+                    }
+
                     fuel_library_.batch[i].iso.push_back(temp_iso);
                 }
             }
@@ -252,7 +265,7 @@ void ReactorFacility::Tock() {
 
 
     shutdown = true;
-    std::cout << "Agent " << id() << " shutdown. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
+    std::cout << ctx->time() << " Agent " << id() << " shutdown. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
@@ -277,8 +290,8 @@ void ReactorFacility::Tock() {
 
 
   if(shutdown != true && record == true){
-      std::cout << "Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  CR: " <<
-            fuel_library_.CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+      std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  Batch CR: " <<
+            fuel_library_.batch[0].discharge_CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
@@ -383,10 +396,17 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
                 port->AddBid(req, offer, this);
             }
         } else{
+            //std::cout << " placing bid to discharge oldest fuel" << std::endl;
             Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0]->comp());
             port->AddBid(req, offer, this);
-        }
+            CapacityConstraint<Material> cc(core_mass/batches);
+            port->AddConstraint(cc);
 
+            if(manifest[0]->quantity() < core_mass/batches){
+                std::cout << "-- Warning! Reactor " << id() << " is discharging a batch with mass "
+                << core_mass/batches - manifest[0]->quantity() << " lower than input batch mass. Check upstream facility capacity." << std::endl;
+            }
+        }
     }
   }
   inventory.PushAll(manifest);
@@ -406,25 +426,14 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
     if(shutdown != true){
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
-        //Initital core loading setup.
+
         if(target_burnup == 0){
             for (it = responses.begin(); it != responses.end(); ++it) {
+                //std::cout << " incoming mass: " << it->second->quantity() << std::endl;
                 inventory.Push(it->second);
                 compost = it->second->comp();
                 cyclus::CompMap cmap = compost->mass();
                 cyclus::CompMap::iterator cit;
-
-        /************************output file*********************************/
-                /*std::ofstream outfile;
-                outfile.open("../output_cyclus_recent.txt", std::ios::app);
-                outfile << "Composition of fresh batch:\r\n";
-
-                for(cit = cmap.begin(); cit != cmap.end(); ++cit){
-                    outfile << "  Isotope: " << cit->first << "  Fraction: " << cit->second << "\r\n";
-                }
-                outfile << "\r\n\n";
-
-        /************************End of output file**************************/
           }
       } else {
         //Operational reloading
@@ -457,8 +466,10 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     }else{
         //Remove the last batch from the core.
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
+        //std::cout << " Discharge mass: " << discharge->quantity() << std::endl;
         fuel_library_.batch.erase(fuel_library_.batch.begin());
         for (it = trades.begin(); it != trades.end(); ++it) {
+            //std::cout << "   Trades mass: " << *it->quantity() << std::endl;
             responses.push_back(std::make_pair(*it, discharge));
         }
     }
@@ -633,8 +644,8 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     }//Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    std::cout << "fraction " << fraction << std::endl;
+    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    //std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -649,15 +660,15 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((measure - burnup_3)/measure) > tolerence){
+    while(std::abs((measure - burnup_3)/measure) > tolerance){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        std::cout << "fraction " << fraction << std::endl;
+        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
@@ -755,8 +766,8 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    std::cout << "fraction " << fraction << std::endl;
+    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+    //std::cout << "fraction " << fraction << std::endl;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
     mat1->Absorb(mat_pass);
@@ -772,15 +783,15 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     }
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((measure - burnup_3)/measure) > tolerence){
+    while(std::abs((measure - burnup_3)/measure) > tolerance){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        std::cout << "fraction " << fraction << std::endl;
+        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
@@ -791,7 +802,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         } else {
             burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
         }
-        std::cout << "Burnup " << burnup_3 << std::endl;
+        //std::cout << "Burnup " << burnup_3 << std::endl;
         if(inter == 30){
             std::cout << "  Warning, agent " << id() << " startup fuel calc exceeded max iterations." << std::endl;
             fraction = (fraction_1 + fraction_2 + fraction)/3.;

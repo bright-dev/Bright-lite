@@ -35,31 +35,34 @@ namespace reprocess {
              std::cout << "Error! Failed reading reprocessing plant input file." << '\n';
              std::cout << "  Given path: " << repro_input_path << '\n';
              std::cout << "  Please correct the path in cyclus input file for repro_input_path variable." << '\n';
+           } else {
+             std::cout << "Reprocess facility starting (ID:" << id() << ") reading input " << repro_input_path << std::endl;
            }
            //reads the input file and populates out_eff with the read values
-	  while(getline(fin, line)){
-	    if(line.find("BEGIN") == 0){
-	      cyclus::toolkit::ResourceBuff temp_pass;
-	      out_inventory.push_back(temp_pass); //initializes the corresponding inventory
-	      std::map<int, double> tempmap;
-	      while(getline(fin, line)){
-	        std::istringstream iss(line);
-	        if(line.find("END") == 0){break;}
-	        iss >> nucid >> eff;
-	        if(nucid < 10000000 || nucid > 2000000000){
-	          std::cout << "Error reading isotope identifier in reprocess facility." << '\n';
-	          std::cout << "Isotope: " << nucid << " isn't in the form 'zzaaammmm'." << '\n';
-	        }
-	        if(eff < 0 || eff > 1){
-	          std::cout << "Error in isotope removal efficiency in reprocess facility." << '\n';
-	          std::cout << "  Efficiency is set to " << eff << " for " << nucid << "." << '\n';
-	        }
-	        tempmap[nucid] = eff;
-	      }
-	    out_eff.push_back(tempmap);
-	    }
+          while(getline(fin, line)){
+            if(line.find("BEGIN") == 0){
+              cyclus::toolkit::ResourceBuff temp_pass;
+              out_inventory.push_back(temp_pass); //initializes the corresponding inventory
+              std::map<int, double> tempmap;
+              while(getline(fin, line)){
+                std::istringstream iss(line);
+                if(line.find("END") == 0){break;}
+                iss >> nucid >> eff;
+                //std::cout << " read input: " << nucid << "  " << eff << std::endl;
+                if(nucid < 10000000 || nucid > 2000000000){
+                  std::cout << "Error reading isotope identifier in reprocess facility." << '\n';
+                  std::cout << "Isotope: " << nucid << " isn't in the form 'zzaaammmm'." << '\n';
+                }
+                if(eff < 0 || eff > 1){
+                  std::cout << "Error in isotope removal efficiency in reprocess facility." << '\n';
+                  std::cout << "  Efficiency is set to " << eff << " for " << nucid << "." << '\n';
+                }
+                tempmap[nucid] = eff;
+              }
+            out_eff.push_back(tempmap);
+            }
 
-	  }
+          }
          if(out_eff.size() == 0){
            std::cout << "Error populating removal efficiencies in reprocess facility. Efficiencies not read in cyclus." << '\n';
          }
