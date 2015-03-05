@@ -40,10 +40,11 @@ void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
     if(fuel_library_.name.size() == 0){
+        cyclus::Context* ctx = context();
         if(target_burnup == 0){
-            std::cout << "New " << libraries[0] << " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
+            std::cout << ctx->time()<< " New " << libraries[0] << " reactor (ID:" << id() << ") starting up in forward mode." << std::endl;
         } else {
-            std::cout << "New " << libraries[0] << " reactor (ID:" << id() << ") starting up - target burnup = " << target_burnup << std::endl;
+            std::cout << ctx->time() << " New " << libraries[0] << " reactor (ID:" << id() << ") starting up - target burnup = " << target_burnup << std::endl;
         }
         std::string manifest_file = cyclus::Env::GetInstallPath() + "/share/brightlite/" + \
                           libraries[0] + "/manifest.txt";
@@ -254,7 +255,7 @@ void ReactorFacility::Tock() {
 
 
     shutdown = true;
-    std::cout << "Agent " << id() << " shutdown. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
+    std::cout << ctx->time() << " Agent " << id() << " shutdown. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
      for(int i = 0; i < fuel_library_.batch.size(); i++){
         int ii;
         double burnup;
@@ -279,8 +280,8 @@ void ReactorFacility::Tock() {
 
 
   if(shutdown != true && record == true){
-      std::cout << "Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  CR: " <<
-            fuel_library_.CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+      std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  Batch CR: " <<
+            fuel_library_.batch[0].discharge_CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
