@@ -102,6 +102,7 @@ void ReactorFacility::Tick() {
         fuel_library_.CR_lower = CR_lower;
         fuel_library_.CR_upper = CR_upper;
         fuel_library_.CR_target = CR_target;
+        fuel_library_.SS_tolerance = SS_tolerance;
 
 
         batch_info empty_batch;

@@ -1100,7 +1100,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
         burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].collapsed_iso.batch_fluence);
         //cout << ii << " intermed burnup: " << burnup << endl;
 
-        if(abs(burnup - BU_prev)/burnup < 0.01 && counter > N+1){
+        if(abs(burnup - BU_prev)/burnup < core.SS_tolerance && counter > N+1){
             notsteady = false;
         }
         counter++;
