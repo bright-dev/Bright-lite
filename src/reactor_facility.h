@@ -34,9 +34,9 @@ namespace reactor {
 /// may have more than one database describing it, requiring an interpolation
 /// to calculate a single isotope library database.
 ///
-/// During the first tick the reactor perform the database interpolation (if
+/// During the first tick the reactor performs the database interpolation (if
 /// necessary) and builds the base parameters from the input file to fuel_library_.
-/// All isotope available for input fuel is placed in fuel_library_.all_iso
+/// All isotopes available for input fuel is placed in fuel_library_.all_iso
 /// with correct names and isoinformation. This is independent of batches.
 /// At the end of the first tick fuel_library_ has correct number of batches in
 /// fuel_library_.batch[] all with zero fluence and no other information.
@@ -44,7 +44,10 @@ namespace reactor {
 /// During the first material exchange the reactor receives fuel. The composition
 /// of fuel is stored in resourcebuff inventory. Fuel may be blended, or a
 /// composition may be forced to the reactor. The upstream facilities and
-/// target burnup determines how the reactor will receive fuel.
+/// target burnup determines how the reactor will receive fuel. If more than one
+/// in_commods is defined, then in_commods[0] will be used for refueling and
+/// the others will be used for startup. If there are less in_commods than
+/// there are batches to define the startup, in_commods[0] will used as a default.
 ///
 /// At the beginning of first tock the reactor inventory is used to update the
 /// composition of each batch in fuel_library_.iso[].fraction.

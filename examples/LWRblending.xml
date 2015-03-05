@@ -33,7 +33,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>fissile_stream</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>200000.0</capacity>
+				<capacity>200.0</capacity>
       </Source>
     </config>
   </facility>
@@ -44,7 +44,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>nfissile_stream</commod>
         <recipe_name>U238</recipe_name>
-				<capacity>200000.0</capacity>
+				<capacity>200.0</capacity>
       </Source>
     </config>
   </facility>
@@ -56,7 +56,7 @@ real	0m3.407s (2015/03/04)
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>100000000.0</capacity>
+        <capacity>10000.0</capacity>
       </Sink>
     </config>
   </facility>
