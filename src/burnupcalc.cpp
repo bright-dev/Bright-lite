@@ -767,6 +767,7 @@ timestamp_t t0 = get_timestamp();
         }*/
     }
     core.CR = CR_finder(core);
+    core.batch[0].discharge_CR = CR_batch(core, 0);
     //cout << " CR: " << core.CR << endl;
 
 
@@ -1156,7 +1157,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
         burnup_prev = burnup;
         burnup = 0;
         CR_prev = CR;
-        cout << "  New core" << endl << endl << endl;
+        //cout << "  New core" << endl << endl << endl;
 
         while(burnup < target_burnup){
             kcore_prev = kcore;
@@ -1175,7 +1176,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
             }else if(mode == 0){
                 core = phicalc_eqpow(core);
             } else {
-                cout << endl << "Error in mode input for batch-level flux calculation(SS_burnupcalc)." << endl;
+                cout << endl << "Error in mode input for batch-level flux calculation(SS_burnupcalc_CR)." << endl;
                 return 0;
             }
 
@@ -1187,7 +1188,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
             for(int i = 0; i < N; i++){
                 //!NOTE when updating this, MUST also update interpolation calcs below
                 core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
-                cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << "  base flux: " << core.base_flux << endl;
+                //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << "  base flux: " << core.base_flux << endl;
             }
             //cout << endl;
             for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].Fg; ii++){}
@@ -1204,7 +1205,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
                 //dt *= 2;
                 if(iter > 100){
                     cout << "SS_burnupcalc_cr exceeds 100 iterations with error " << endl;
-                    cout << "  CR: " << std::setprecision(8) <<  CR << "  " << endl;
+                    cout << "  CR: " <<  CR << "  " << endl;
                     return CR;
                 }
             }
