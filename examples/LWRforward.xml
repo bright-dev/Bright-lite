@@ -57,7 +57,7 @@ Batches: 3
         <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.92</nonleakage>
-        <core_mass>3.0</core_mass>
+        <core_mass>300.0</core_mass>
     		<interpol_pairs>
            <key>BURNUP</key>
 	       <val>30</val>
