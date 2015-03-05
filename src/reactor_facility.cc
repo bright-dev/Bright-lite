@@ -641,7 +641,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((measure - burnup_3)/measure) > tolerence){
+    while(std::abs((measure - burnup_3)/measure) > tolerance){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
@@ -764,7 +764,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     }
     int inter = 0;
     //Using the iterators to calculate a Newton Method solution
-    while(std::abs((measure - burnup_3)/measure) > tolerence){
+    while(std::abs((measure - burnup_3)/measure) > tolerance){
         mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
         fraction_1 = fraction_2;
         fraction_2 = fraction;
