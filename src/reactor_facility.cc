@@ -398,10 +398,17 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
                 port->AddBid(req, offer, this);
             }
         } else{
+            //std::cout << " placing bid to discharge oldest fuel" << std::endl;
             Material::Ptr offer = Material::CreateUntracked(core_mass/batches, manifest[0]->comp());
             port->AddBid(req, offer, this);
-        }
+            CapacityConstraint<Material> cc(core_mass/batches);
+            port->AddConstraint(cc);
 
+            if(manifest[0]->quantity() < core_mass/batches){
+                std::cout << "-- Warning! Reactor " << id() << " is discharging a batch with mass "
+                << core_mass/batches - manifest[0]->quantity() << " lower than input batch mass. Check upstream facility capacity." << std::endl;
+            }
+        }
     }
   }
   inventory.PushAll(manifest);
@@ -421,9 +428,10 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
     if(shutdown != true){
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
         cyclus::Composition::Ptr compost;
-        //Initital core loading setup.
+
         if(target_burnup == 0){
             for (it = responses.begin(); it != responses.end(); ++it) {
+                //std::cout << " incoming mass: " << it->second->quantity() << std::endl;
                 inventory.Push(it->second);
                 compost = it->second->comp();
                 cyclus::CompMap cmap = compost->mass();
@@ -460,8 +468,10 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     }else{
         //Remove the last batch from the core.
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
+        //std::cout << " Discharge mass: " << discharge->quantity() << std::endl;
         fuel_library_.batch.erase(fuel_library_.batch.begin());
         for (it = trades.begin(); it != trades.end(); ++it) {
+            //std::cout << "   Trades mass: " << *it->quantity() << std::endl;
             responses.push_back(std::make_pair(*it, discharge));
         }
     }
