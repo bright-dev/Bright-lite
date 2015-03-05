@@ -49,6 +49,6 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup);
 std::pair<double, std::pair<double, std::map<int, double> > > blending_calc(fuelBundle fuel, double BU_end, int mode, int da_mode, double time_step);
 double CR_finder(fuelBundle core);
-
+double CR_batch(fuelBundle core, int i);
 #endif // BURNUPCALC_H_INCLUDED
 
