@@ -103,6 +103,7 @@ struct fuelBundle {
     double CR_lower;
     double CR_target; //target CR value
     double CR; //current conversion ratio
+    double SS_tolerance; //convergence tolerance for the code
     std::vector<int> CR_fissile; //list of fissile isotopes that are tracked for CR calc
     std::vector<batch_info> batch;
     std::vector<isoInformation> all_iso; //change to manifest
