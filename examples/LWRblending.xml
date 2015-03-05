@@ -73,15 +73,14 @@ real	0m3.407s (2015/03/04)
         <target_burnup>33.0</target_burnup>
         <nonleakage>0.95</nonleakage>
         <core_mass>3000.0</core_mass>
-	  		<interpol_pairs>
+  		<interpol_pairs>
        		<key>BURNUP</key>
-	   <val>33</val>
+	   		<val>33</val>
         </interpol_pairs>
         <batches>3</batches>
         <outage_time>30</outage_time>
-        <tolerence>0.0001</tolerence>
-        <flux_mode>2</flux_mode>        
         <tolerance>0.0001</tolerance>
+        <flux_mode>2</flux_mode>
         <SS_tolerance>0.00001</SS_tolerance>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>
