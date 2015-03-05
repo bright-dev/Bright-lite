@@ -138,10 +138,13 @@ void ReactorFacility::Tock() {
     if(shutdown == true){return;}
 
     cyclus::Context* ctx = context();
+    // check the state of the reactor
     if(outage_shutdown > 1){
+    //reactor still in outage
         outage_shutdown--;
         return;
     } else if (outage_shutdown == 1){
+        // reactor on last month of shutdown
         cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac);
         outage_shutdown = 0;
     } else {
@@ -173,6 +176,9 @@ void ReactorFacility::Tock() {
             }
         }
     }
+
+    // Will now burn fuel
+
     // Pop materials out of inventory
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
@@ -205,7 +211,12 @@ void ReactorFacility::Tock() {
                     //std::cout << "i: " << i << "  " << fl_iso << "  " << comp_iso << "   "<<  it->second << std::endl;
                     isoInformation temp_iso;
                     temp_iso = fuel_library_.all_iso[j];
-                    temp_iso.fraction = it->second/(core_mass/batches);
+                    if(target_burnup == 0){
+                        temp_iso.fraction = it->second;
+                    } else {
+                        temp_iso.fraction = it->second/(core_mass/batches);
+                    }
+
                     fuel_library_.batch[i].iso.push_back(temp_iso);
                 }
             }
