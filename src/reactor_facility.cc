@@ -157,17 +157,15 @@ void ReactorFacility::Tock() {
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x);
                 outage_shutdown = 1;
                 return;
-                /** TODO ADD TRACKING FOR START UP NEXT MONTH */
             } else {
                 outage_shutdown = 2;
-                while (p_time + outage_time < outage_shutdown*28.) {
+                while (p_time + outage_time > outage_shutdown*28.) {
                     outage_shutdown++;
                 }
                 p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
                 double x = p_time/28.;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x);
                 return;
-                /** TODO ADD TRACKING FOR START UP NEXT MONTH */
             }
         }
     }
@@ -615,7 +613,6 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }boost::timer t_2;
     if(std::abs((measure - burnup_1)/target_burnup) < 0.05){
-        std::cout << "YAY" << std::endl;
         return_amount = fraction_1 * total_mass;
         return return_amount;
     }
