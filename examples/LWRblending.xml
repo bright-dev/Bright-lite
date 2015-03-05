@@ -67,16 +67,17 @@ Batches: 3
             <val>UOX</val>       
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>extLWR</val></libraries>
-        <target_burnup>51.0</target_burnup>
+        <libraries><val>lowLWR</val><val>extLWR</val></libraries>
+        <target_burnup>33.0</target_burnup>
         <nonleakage>0.95</nonleakage>
         <core_mass>3000.0</core_mass>
     	  <interpol_pairs>
            <key>BURNUP</key>
-	       <val>42.5</val>
+	   <val>33</val>
         </interpol_pairs>
         <batches>3</batches>
-        <tolerence>0.01</tolerence>
+        <outage_time>30</outage_time>
+        <tolerence>0.0001</tolerence>
         <flux_mode>2</flux_mode>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>

@@ -5,3 +5,4 @@ build
 *.h5
 *.o
 *~
+*.sqlite
