@@ -79,7 +79,6 @@ real	0m3.407s (2015/03/04)
         </interpol_pairs>
         <batches>3</batches>
         <outage_time>30</outage_time>
-        <tolerence>0.0001</tolerence>
         <flux_mode>2</flux_mode>        
         <tolerance>0.0001</tolerance>
         <SS_tolerance>0.00001</SS_tolerance>
