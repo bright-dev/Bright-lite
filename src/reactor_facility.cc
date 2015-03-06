@@ -389,7 +389,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   std::vector<Request<Material>*>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
     Request<Material>* req = *it;
-    std::cout << " request quant: " << req->quantity() << std::endl;
+    //std::cout << " request quant: " << req->quantity() << std::endl;
     if (req->commodity() == out_commod) {
         if(shutdown == true){
             for(int i = 0; i < manifest.size(); i++){
