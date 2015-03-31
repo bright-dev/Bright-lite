@@ -11,9 +11,6 @@ namespace reactor {
 
 /// @class ReactorFacility
 ///
-/// This Facility is intended
-/// as a skeleton to guide the implementation of new Facility
-/// agents.
 /// The ReactorFacility class inherits from the Facility class and is
 /// dynamically loaded by the Agent class when requested.
 ///
@@ -31,7 +28,8 @@ namespace reactor {
 /// @section detailed Detailed Behavior
 /// The facility starts by reading the available isotope library databases.
 /// A database is specific to the reactor and fuel type, therefore one reactor
-/// may have more than one database describing it, requiring an interpolation
+/// may have more than one database describing it in cases where specific database
+/// is not available, requiring an interpolation
 /// to calculate a single isotope library database.
 ///
 /// During the first tick the reactor performs the database interpolation (if
@@ -50,7 +48,9 @@ namespace reactor {
 /// there are batches to define the startup, in_commods[0] will used as a default.
 ///
 /// At the beginning of first tock the reactor inventory is used to update the
-/// composition of each batch in fuel_library_.iso[].fraction.
+/// composition of each batch in fuel_library_.iso[].fraction. Next, batch_reorder
+/// is called if reactor is in startup. In this case the batcg libraries are built
+/// for all batches the the core ordered.
 
 
 
@@ -123,6 +123,7 @@ class ReactorFacility : public cyclus::Facility  {
                                    std::map<std::string, double> incommods);
   int refuels;
 
+  void CoreBuilder();
   void batch_reorder();
 
   double SS_enrich;

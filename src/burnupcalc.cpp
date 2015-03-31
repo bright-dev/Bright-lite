@@ -21,11 +21,48 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
 }
 
 
+fuelBundle CoreCollapse(fuelBundle fuel){
+    for(int i = 0; i < fuel.batch.size(); i++){
+        fuel.batch[i] = BatchCollapse(fuel.batch[i]);
+    }
 
-fuelBundle regionCollapse(fuelBundle fuel){
+    return fuel;
+}
+
+batch_info BatchCollapse(batch_info batch){
+    //cout << " 1  " << batch.iso.size() << endl;
+    batch.collapsed_iso = FuelBuilder(batch.iso);
+
+    //builds total BU from BUd
+    //cout << " 2" << endl;
+    batch.collapsed_iso.BU.push_back(batch.collapsed_iso.BUd[0]);
+
+    for(int j = 1; j < batch.collapsed_iso.BUd.size(); j++){
+    //cout << "    1.5tst" << i+1 << "  " << j << endl;
+        batch.collapsed_iso.BU.push_back(batch.collapsed_iso.BU[j-1]+batch.collapsed_iso.BUd[j]);
+    }
+    //test to see if the prod/dest vectors are the same length
+    if(batch.collapsed_iso.neutron_prod.size() != batch.collapsed_iso.neutron_dest.size()){
+        cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
+    }
+    if(batch.collapsed_iso.neutron_prod[0] == 0 || batch.collapsed_iso.neutron_dest[0] == 0){
+        batch.collapsed_iso.neutron_prod.erase(batch.collapsed_iso.neutron_prod.begin());
+        batch.collapsed_iso.neutron_dest.erase(batch.collapsed_iso.neutron_dest.begin());
+        batch.collapsed_iso.BUd.erase(batch.collapsed_iso.BUd.begin());
+        batch.collapsed_iso.BU.erase(batch.collapsed_iso.BU.begin());
+        batch.collapsed_iso.fluence.erase(batch.collapsed_iso.fluence.begin());
+        for(int j = 0; j < batch.collapsed_iso.iso_vector.size(); j++){
+            batch.collapsed_iso.iso_vector[j].mass.erase(batch.collapsed_iso.iso_vector[j].mass.begin());
+        }
+    }
+    //cout << " 3" << endl;
+    return batch;
+}
+
+fuelBundle BatchCollapse_old(fuelBundle fuel){
 ///add micro region flux effects
 //struct effects accounted here
-    //cout << "Begin regionCollapse" << endl;
+    cout << "Begin regionCollapse_old" << endl;
     for(int i = 0; i < fuel.batch.size(); i++){
         //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
         fuel.batch[i].collapsed_iso = FuelBuilder(fuel.batch[i].iso);
@@ -718,6 +755,7 @@ timestamp_t t0 = get_timestamp();
     //assign the batch_fluence to Fg
     for(int i = 0; i < N; i++){
         core.batch[i].Fg = core.batch[i].batch_fluence;
+        //cout << core.batch[i].Fg << "  " << core.batch[i].collapsed_iso.neutron_prod[0] << endl;
     }
 
     kcore = 3.141592;
@@ -812,7 +850,7 @@ timestamp_t t0 = get_timestamp();
 
 timestamp_t t1 = get_timestamp();
 
-    //std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
+    //std::cout << " end BURNUPCALC " << std::endl;
     return core;
 }
 
