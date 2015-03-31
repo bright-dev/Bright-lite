@@ -118,6 +118,7 @@ isoInformation BurnupBuilder(vector<isoInformation> fuel_values){
     return fuel;
 }
 
+/// make this take the prod and dest as doubles
 isoInformation FuelBuilder(vector<isoInformation> fuel_values){
 //takes a vetor of isoinfo and uses .fraction to combine isitopes to create one iso
     isoInformation fuel;
