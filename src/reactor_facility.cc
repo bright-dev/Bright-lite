@@ -221,10 +221,8 @@ void ReactorFacility::Tock() {
         }
     }
 
-    ///call batch reorder only if all fuel is new, else only do necessary work
-
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
-    batch_reorder();
+    CoreBuilder();
 
       // pass fuel bundles to burn-up calc
     if(CR_target < 0){
@@ -251,8 +249,10 @@ void ReactorFacility::Tock() {
   }
 
   // cycle end update
-  cycle_end_ = ctx->time() + floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
-  p_time =  fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28) - floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
+  cycle_end_ = ctx->time() + floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence
+    /(86400*fuel_library_.base_flux*28));
+  p_time =  fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)
+    - floor(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28));
 
 
 
@@ -516,7 +516,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
     }
     temp_bundle = StructReader(temp_bundle);
     if(CR_target > 0){
-        temp_bundle = regionCollapse(temp_bundle);
+        temp_bundle = CoreCollapse(temp_bundle);
     } else {
         temp_bundle = fast_region_collapse(temp_bundle);
     }
@@ -530,7 +530,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
 
 fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
     //unlike the comp_function, this function assumes the first entry batch will be discharged
-    //it replaces the last batch with the fraction coming from mat
+    //it replaces the old batch with the fraction coming from mat
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
     comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
@@ -563,7 +563,7 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fu
     }
     temp_bundle = StructReader(temp_bundle);
     //std::cout << temp_bundle.batch.size() << std::endl;
-    temp_bundle = regionCollapse(temp_bundle);
+    temp_bundle.batch[temp_bundle.batch.size()-1] = BatchCollapse(temp_bundle.batch[temp_bundle.batch.size()-1]);
     return temp_bundle;
 }
 
@@ -820,21 +820,37 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
 }
 
 
+void ReactorFacility::CoreBuilder(){
+    //builds the necessary burnup calculation parameters
+    // in fuel_library_
 
 
-void ReactorFacility::batch_reorder(){
-//collapses each batch first, then orders them
-    //std::cout << "Begin batch_reorder" << std::endl;
-    double k0, k1;
-    fuel_library_ = StructReader(fuel_library_); //only needs to be called once per reactor start
-    fuel_library_ = regionCollapse(fuel_library_); //
+    //test to see if all fuel is fresh
     bool test = false;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         if(fuel_library_.batch[i].batch_fluence != 0){
             test = true;
         }
     }
-    if(test == true){return;}
+    // if fuel is not fresh, do not reorder
+    if(test == true){
+        fuel_library_.batch[batches-1] = BatchCollapse(fuel_library_.batch[batches-1]);
+
+        return;
+    }
+
+    fuel_library_ = StructReader(fuel_library_);
+    fuel_library_ = CoreCollapse(fuel_library_);
+
+    batch_reorder();
+
+    return;
+}
+
+
+void ReactorFacility::batch_reorder(){
+//collapses each batch first, then orders them
+//only needs to be called once per reactor start
 
     //begin ordering the batches
     fuelBundle temp_fuel = fuel_library_;
@@ -842,6 +858,7 @@ void ReactorFacility::batch_reorder(){
 
     //goes through all the batches and orders them from lowest k to highest
     //uses temp_fuel to store the unordered batches
+    double k0, k1;
     while(temp_fuel.batch.size() != 0){
         int lowest = 0;
         for(int i = 1; i < temp_fuel.batch.size(); i++){

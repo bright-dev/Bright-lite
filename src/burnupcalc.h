@@ -31,8 +31,10 @@
 //#include <armadillo>
 
 double intpol(double y0, double y1, double x0, double x1, double x);
-fuelBundle regionCollapse(fuelBundle fuel);
+batch_info BatchCollapse(batch_info batch);
+fuelBundle CoreCollapse(fuelBundle fuel);
 fuelBundle fast_region_collapse(fuelBundle fuel);
+fuelBundle BatchCollapse_old(fuelBundle fuel);
 std::map<int, double> tomass (int ti, double time, isoInformation isoinfo);
 fuelBundle phicalc_simple(fuelBundle core);
 fuelBundle phicalc_eqpow(fuelBundle core);
