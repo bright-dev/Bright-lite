@@ -227,7 +227,12 @@ void ReactorFacility::Tock() {
     batch_reorder();
 
       // pass fuel bundles to burn-up calc
-    fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+    if(CR_target < 0){
+        fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+    } else {
+        fuel_library_ = burnupcalc_CR(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+    }
+
 
     ss_fluence = fuel_library_.batch[batches-1].batch_fluence;
 
@@ -389,7 +394,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   std::vector<Request<Material>*>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
     Request<Material>* req = *it;
-    std::cout << " request quant: " << req->quantity() << std::endl;
+    //std::cout << " request quant: " << req->quantity() << std::endl;
     if (req->commodity() == out_commod) {
         if(shutdown == true){
             for(int i = 0; i < manifest.size(); i++){
@@ -403,7 +408,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
             CapacityConstraint<Material> cc(core_mass/batches);
             port->AddConstraint(cc);
 
-            if(manifest[0]->quantity() < core_mass/batches){
+            if(std::abs(manifest[0]->quantity() - core_mass/batches) > 0.003){
                 std::cout << "-- Warning! Reactor " << id() << " is discharging a batch with mass "
                 << core_mass/batches - manifest[0]->quantity() << " lower than input batch mass. Check upstream facility capacity." << std::endl;
             }
@@ -620,11 +625,11 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_1;
     if(CR_target > 0){
-        burnup_1 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+        burnup_1 = SS_burnupcalc_CR(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
     } else {
-        burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
+        burnup_1 = SS_burnupcalc(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }boost::timer t_2;
-    if(std::abs((measure - burnup_1)/target_burnup) < 0.05){
+    if(std::abs((measure - burnup_1)/measure) < 0.05){
         return_amount = fraction_1 * total_mass;
         return return_amount;
     }
@@ -639,9 +644,9 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_2;
     if(CR_target > 0){
-        burnup_2 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+        burnup_2 = SS_burnupcalc_CR(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
     } else {
-        burnup_2 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
+        burnup_2 = SS_burnupcalc(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }//Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
@@ -656,7 +661,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
     temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_3;
     if(CR_target > 0){
-        burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+        burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
     } else {
         burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }int inter = 0;
@@ -678,7 +683,7 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         //burnup_3 = burnupcalc_BU(temp_bundle, 2, 1, 40);
         temp_bundle = comp_function(mat1, fuel_library_);
         if(CR_target > 0){
-            burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+            burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
         } else {
             burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
         }if(inter >= 30){
@@ -688,11 +693,9 @@ double ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
         }
         inter++;
     }
-    //std::cout << "FRACTION " << fraction << std::endl;
     return_amount = fraction * total_mass;
     ss_fraction = fraction;
     SS_enrich = return_amount;
-    //std::cout << "Blending time  " << t.elapsed() << std::endl;
 
     return return_amount;
 }
@@ -701,7 +704,6 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
                                  cyclus::toolkit::ResourceBuff non_fissle,
                                  std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                  std::map<std::string, double> incommods){
-    timestamp_t t0 = get_timestamp();
     double measure;
     if(CR_target > 0){
         measure = CR_target;
@@ -748,9 +750,9 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_1;
     if(CR_target > 0){
-        burnup_1 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+        burnup_1 = SS_burnupcalc_CR(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
     } else {
-        burnup_1 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
+        burnup_1 = SS_burnupcalc(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
     //Finding the second burnup iterator
     double fraction_2 = 0;
@@ -760,9 +762,9 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_2;
     if(CR_target > 0){
-        burnup_2 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+        burnup_2 = SS_burnupcalc_CR(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
     } else {
-        burnup_2 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
+        burnup_2 = SS_burnupcalc(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
@@ -778,7 +780,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
     temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_3;
     if(CR_target > 0){
-        burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+        burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
     } else {
         burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
@@ -791,7 +793,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
+        //std::cout << "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
         //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mani[0]->comp());
         mat2 = cyclus::Material::CreateUntracked(mass_frac-fraction, non_fissile_mani[0]->comp());
@@ -799,7 +801,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         mat1->Absorb(mat_pass);
         temp_bundle = comp_function(mat1, fuel_library_);
         if(CR_target > 0){
-            burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
+            burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
         } else {
             burnup_3 = SS_burnupcalc(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
         }

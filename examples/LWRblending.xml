@@ -33,7 +33,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>fissile_stream</commod>
         <recipe_name>U235</recipe_name>
-				<capacity>200.0</capacity>
+	<capacity>200.0</capacity>
       </Source>
     </config>
   </facility>
@@ -44,7 +44,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>nfissile_stream</commod>
         <recipe_name>U238</recipe_name>
-	<capacity>200.0</capacity>
+	<capacity>2000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -69,13 +69,15 @@ real	0m3.407s (2015/03/04)
             <val>UOX</val>       
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>lowLWR</val><val>extLWR</val></libraries>
+        <libraries><val>extLWR</val></libraries>
         <target_burnup>33.0</target_burnup>
-        <nonleakage>0.95</nonleakage>
+        <nonleakage>0.883</nonleakage>
         <core_mass>3000.0</core_mass>
-	  		<interpol_pairs>
-       		<key>BURNUP</key>
+        <interpol_pairs>
+       	   <key>BURNUP</key>
 	   <val>33</val>
+	   <key>ENRICHMENT</key>
+	   <val>3</val>
         </interpol_pairs>
         <batches>3</batches>
         <outage_time>30</outage_time>
@@ -137,20 +139,18 @@ real	0m3.407s (2015/03/04)
       </initialfacilitylist>
       <config> <NullInst/> </config>
     </institution>
-
-		<institution>
-			<name>utility</name>
-			<config>
-			<DeployInst>
-				<buildorder>
-				  <prototype>Rx</prototype>
-				  <number>1</number>
-				  <date>50</date>
-				</buildorder>
-			</DeployInst>
-			</config>
-		</institution>
-		
+	<institution>
+		<name>utility</name>
+		<config>
+		<DeployInst>
+			<buildorder>
+			  <prototype>Rx</prototype>
+			  <number>1</number>
+			  <date>50</date>
+			</buildorder>
+		</DeployInst>
+		</config>
+	</institution>
   </region>
 
   <recipe>
