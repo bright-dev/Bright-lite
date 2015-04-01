@@ -1136,7 +1136,7 @@ fuelBundle DA_calc(fuelBundle fuel){
 }
 
 
-double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence){
+double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -1144,6 +1144,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     boost::timer t;
 
     isoInformation fuel = core.batch[0].collapsed_iso;
+    double burnup_prev;
     double burnup = 0;
     double dt = delta*24*60*60; //days to [s]
     double BU, BU_est, F_est;
@@ -1152,6 +1153,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     int ii = 0;
     double BU_prev = 0;
     int counter = 0;
+    double kcore = 1.10;
 
 
 
@@ -1159,20 +1161,18 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     temp_batch.collapsed_iso = fuel;
     temp_batch.collapsed_iso.batch_fluence = 0;
     for(int i = 1; i < N; i++){
-        temp_batch.Fg = ss_fluence*(i+1)*0.7; // use old cycles youngest batch discharge to guess
+        temp_batch.Fg = ss_fluence/i; // use old cycles youngest batch discharge to guess
         core.batch.push_back(temp_batch);
     }
 
     while(notsteady){
-        double kcore = 1.10000;
         int iter = 0;
-        burnup_prev = burnup;
         burnup = 0;
-        CR_prev = CR;
+        kcore_prev = kcore;
         //cout << "  New core" << endl << endl << endl;
 
         while(burnup < target_burnup){
-            kcore_prev = kcore;
+
 
             //find the normalized relative flux of each batch
             if(mode == 1){
@@ -1202,18 +1202,13 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << endl;
             }
-            //cout << endl;
             for(ii = 0; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].Fg; ii++){}
             //cout << core.batch[0].collapsed_iso.BU[ii-1] << "  " << core.batch[0].collapsed_iso.BU[ii] << "  " <<  core.batch[0].collapsed_iso.fluence[ii-1];
             //cout << " " << core.batch[0].collapsed_iso.fluence[ii] << "  " <<  core.batch[0].Fg << endl;
             burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].Fg);
             kcore = kcalc(core);
-            std::cout << "kcore " << kcore << std::endl;
-            if(kcore < 1){
-                return 1.7;
-            }*/
-            //std::cout << "BURNUP " << burnup << std::endl;
-            //std::cout<<"kcore "<<kcore << std::endl;
+            //std::cout << "Burnup " << burnup << std::endl;
+            //std::cout << "kcore " << kcore << std::endl;
             iter++;
             if(iter > 20){
                 //cout << "  iter+20" << endl;
@@ -1221,8 +1216,8 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 //dt *= 2;
                 if(iter > 100){
                     cout << "SS_burnupcalc_cr exceeds 100 iterations with error " << endl;
-                    cout << "  CR: " <<  CR << "  " << endl;
-                    return CR;
+                    cout << "  k: " <<  kcore << "  " << endl;
+                    return kcore;
                 }
             }
         }
@@ -1232,15 +1227,17 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
             //cout << "    " << core.batch[i].rflux;
             core.batch[i].collapsed_iso.batch_fluence = intpol(core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt), core.batch[i].Fg, burnup_prev, burnup, target_burnup);
             if(core.batch[i].collapsed_iso.batch_fluence > core.batch[i].collapsed_iso.fluence.back()){
-                //core.batch[i].collapsed_iso.batch_fluence > core.batch[i].collapsed_iso.fluence.back() + 1;
             }
         }
 
-        //calculate C
         if(abs(kcore - kcore_prev)/kcore < 0.01 && counter > N+1){
             notsteady = false;
         }
         counter++;
+        if(counter > 50){
+            cout << "Interations exceeded in SS_Burnupcalc core may not reach equalibrium" << endl;
+            return kcore;
+        }
 
         //move each batch one left, now the last and second from last are the same
         for(int i = 0; i < N-1; i++){
@@ -1261,12 +1258,11 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
         std::cout << "OH YOU DONE MESSED UP, FLUENCE OVER 5E23 at " << core.batch[0].collapsed_iso.batch_fluence << std::endl;
         //CR = CR+.1;
     }
-    if(CR < 0 ){CR=0;}
-    return CR;
-
+    return kcore;
 }
 
-/*double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence){
+
+double SS_burnupcalc_depricated(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -1292,19 +1288,6 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
         temp_batch.Fg = ss_fluence*(i+1)*0.7; // use old cycles youngest batch discharge to guess
         core.batch.push_back(temp_batch);
     }
-
-/*
-    cout << "SS_burnupcalc start neutron prod: " << core.batch[0].collapsed_iso.neutron_prod[0] << " " << core.batch[1].collapsed_iso.neutron_prod[0] << " " << core.batch[2].collapsed_iso.neutron_prod[0] << endl;
-
-    cout << "   " << core.batch[0].collapsed_iso.BU[1] << " " << core.batch[1].collapsed_iso.BU[1] << " " << core.batch[2].collapsed_iso.BU[1]  << endl;
-    cout << "   " << core.batch[0].collapsed_iso.fluence[1] << " " << core.batch[1].collapsed_iso.fluence[1] << " " << core.batch[2].collapsed_iso.fluence[1]  << endl;
-    cout << "     " << dt << endl;
-    //cout << core.batch.size() << endl;
-
-    for(int jj = 0; jj <core.batch[0].collapsed_iso.BU.size(); jj++){
-        cout <<  core.batch[0].collapsed_iso.fluence[jj] << ": "<< core.batch[0].collapsed_iso.BU[jj] << endl;
-    }
-
 
     while(notsteady){
         double kcore = 1.10000;
@@ -1343,8 +1326,6 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                 core.batch[i].Fg += core.batch[i].rflux * core.base_flux * dt;
                 //cout << "  Fg: " << core.batch[i].Fg << "  rflux: " << core.batch[i].rflux << "  k: " << kcore << endl;
             }
-            //cout << endl;
-            //core.CR = CR_finder(core);
             kcore = kcalc(core);
             //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
@@ -1358,11 +1339,6 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
                     return burnup;
                 }
             }
-            //std::cout << core.CR << std::endl;
-            /*if(core.CR_target != 0 && std::abs(core.CR - core.CR_target)/core.CR < 0.1){
-                break;
-            }
-
         }
 
         //update core fluences
@@ -1398,7 +1374,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
     //cout << "SSrflux: " << core.batch[1].rflux << endl;
     //std::cout << "SSBurnupCalc " << core.name << " BU: " << burnup << "  Time: " << t.elapsed() << std::endl;
     return burnup;
-}*/
+}
 
 
 double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
@@ -1439,7 +1415,6 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
         //cout << "  New core" << endl << endl << endl;
 
         while(burnup < target_burnup){
-            kcore_prev = kcore;
 
             //find the normalized relative flux of each batch
             if(mode == 1){
@@ -1479,8 +1454,6 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
             if(kcore < 1){
                 return 1.7;
             }*/
-            //std::cout << "BURNUP " << burnup << std::endl;
-            //std::cout<<"kcore "<<kcore << std::endl;
             iter++;
             if(iter > 20){
                 //cout << "  iter+20" << endl;
