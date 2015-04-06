@@ -226,9 +226,9 @@ void ReactorFacility::Tock() {
 
       // pass fuel bundles to burn-up calc
     if(CR_target < 0){
-        fuel_library_ = burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+        burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     } else {
-        fuel_library_ = burnupcalc_CR(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
+        burnupcalc_CR(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     }
 
 
@@ -483,7 +483,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
 
 }
 
-fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
+fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_){
 
     cyclus::CompMap comp;
     cyclus::CompMap::iterator it;
@@ -528,7 +528,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
     return temp_bundle;
 }
 
-fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_){
+fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_){
     //unlike the comp_function, this function assumes the first entry batch will be discharged
     //it replaces the old batch with the fraction coming from mat
     cyclus::CompMap comp;
@@ -775,6 +775,17 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         //burnup_1 = SS_burnupcalc(temp_bundle, 1, DA_mode, burnupcalc_timestep, batches, ss_fluence, target_burnup);
         burnup_1 = SS_burnupcalc_depricated(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
+    double CR_temp = CR_target;
+    CR_target = 1;
+    for(double frac1 = 0.10; frac1 < 0.2; frac1+=0.01){
+        cyclus::Material::Ptr temp_mat1 = cyclus::Material::CreateUntracked(frac1, fissile_mani[0]->comp());
+        cyclus::Material::Ptr temp_mat2 = cyclus::Material::CreateUntracked(mass_frac-frac1, non_fissile_mani[0]->comp());
+        temp_mat1->Absorb(temp_mat2);
+        temp_mat1->Absorb(mat_pass);
+        temp_bundle = comp_function(temp_mat1, fuel_library_);
+        print_library(std::to_string(frac1), temp_bundle);
+    }
+    CR_target = CR_temp;
     //Finding the second burnup iterator
     double fraction_2 = 0;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
@@ -901,7 +912,7 @@ void ReactorFacility::batch_reorder(){
 
 ///TODO Make this better.
 
-void CompOutMat(cyclus::Material mat1){
+void CompOutMat(cyclus::Material &mat1){
     cyclus::CompMap comp;
     comp = mat1.comp()->mass(); //store the fractions of i'th batch in comp
     int comp_iso;

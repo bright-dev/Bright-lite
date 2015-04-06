@@ -282,7 +282,7 @@ namespace fuelfab {
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
                             limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
-                            std::cout << "Blending fraction " << limit << std::endl;
+                            //std::cout << "Blending fraction " << limit << std::endl;
                             //std::cout << "Blendlimit " << limit << std::endl;
                             manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(limit));
                             Material::Ptr offer = manifest[0]->ExtractComp(0., manifest[0]->comp());

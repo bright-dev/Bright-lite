@@ -21,7 +21,7 @@ double intpol(double y0, double y1, double x0, double x1, double x) {
 }
 
 
-fuelBundle CoreCollapse(fuelBundle fuel){
+fuelBundle CoreCollapse(fuelBundle &fuel){
     for(int i = 0; i < fuel.batch.size(); i++){
         fuel.batch[i] = BatchCollapse(fuel.batch[i]);
     }
@@ -29,7 +29,7 @@ fuelBundle CoreCollapse(fuelBundle fuel){
     return fuel;
 }
 
-batch_info BatchCollapse(batch_info batch){
+batch_info BatchCollapse(batch_info &batch){
     //cout << " 1  " << batch.iso.size() << endl;
     batch.collapsed_iso = FuelBuilder(batch.iso);
 
@@ -59,7 +59,7 @@ batch_info BatchCollapse(batch_info batch){
     return batch;
 }
 
-fuelBundle BatchCollapse_old(fuelBundle fuel){
+fuelBundle BatchCollapse_old(fuelBundle &fuel){
 ///add micro region flux effects
 //struct effects accounted here
     cout << "Begin regionCollapse_old" << endl;
@@ -93,7 +93,7 @@ fuelBundle BatchCollapse_old(fuelBundle fuel){
 };
 
 
-fuelBundle fast_region_collapse(fuelBundle fuel){
+fuelBundle fast_region_collapse(fuelBundle &fuel){
 ///add micro region flux effects
 //struct effects accounted here
     //cout << "Begin regionCollapse" << endl;
@@ -124,7 +124,7 @@ fuelBundle fast_region_collapse(fuelBundle fuel){
 };
 
 
-map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
+map<int, double> tomass (int ti, double fluence, isoInformation &isoinfo) {
     map<int, double> out = map<int, double>();
     double mass_i;
     int name_i;
@@ -143,7 +143,7 @@ map<int, double> tomass (int ti, double fluence, isoInformation isoinfo) {
 }
 
 
-fuelBundle phicalc_simple(fuelBundle core){
+fuelBundle phicalc_simple(fuelBundle &core){
 //updates the rflux of each batch in core.batch
 //assumes the flux of a batch is proportional to the inverse neutron prod rate
     double maxphi = 0;
@@ -183,7 +183,7 @@ fuelBundle phicalc_simple(fuelBundle core){
     return core;
 }
 
-fuelBundle phicalc_eqpow(fuelBundle core){
+fuelBundle phicalc_eqpow(fuelBundle &core){
     //updates the rflux of each batch in core.batch
     //assumes the flux of a batch is proportional to the inverse neutron prod rate
     double maxphi = 0;
@@ -232,7 +232,7 @@ fuelBundle phicalc_eqpow(fuelBundle core){
     return core;
 }
 
-double nusigf_finder(batch_info batch){
+double nusigf_finder(batch_info &batch){
     double Nusig_f;
     int ii;
     double prod = 0;
@@ -258,7 +258,7 @@ double nusigf_finder(batch_info batch){
     return Nusig_f;
 }
 
-double siga_finder(batch_info batch){
+double siga_finder(batch_info &batch){
 //returns the macroscopic cross section at fluence Fg
     double sig_a;
     int ii;
@@ -287,7 +287,7 @@ double siga_finder(batch_info batch){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-fuelBundle phicalc_cylindrical(fuelBundle core){
+fuelBundle phicalc_cylindrical(fuelBundle &core){
 //cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
 
 //the word 'region' is interchanged with the word 'batch' in comments, water layer is the outermost region
@@ -536,7 +536,7 @@ fuelBundle phicalc_cylindrical(fuelBundle core){
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-double kcalc(fuelBundle core){
+double kcalc(fuelBundle &core){
     //uses the fluence values in core.batch.Fg to calculate the core criticality
     //boost::timer t;
     int N = core.batch.size();
@@ -582,7 +582,7 @@ double kcalc(fuelBundle core){
 }
 
 
-double CR_batch(fuelBundle core, int i){
+double CR_batch(fuelBundle &core, int i){
     //
     //i is the batch number starting from zero
     //boost::timer t;
@@ -653,7 +653,7 @@ double CR_batch(fuelBundle core, int i){
 }
 
 
-double CR_finder(fuelBundle core){
+double CR_finder(fuelBundle &core){
     //
     //i is the batch number starting from zero
     //boost::timer t;
@@ -730,7 +730,7 @@ double CR_finder(fuelBundle core){
 }
 
 
-fuelBundle burnupcalc(fuelBundle core, int mode, int DA_mode, double delta) {
+void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
 timestamp_t t0 = get_timestamp();
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
@@ -780,7 +780,7 @@ timestamp_t t0 = get_timestamp();
             core = phicalc_eqpow(core);
         }else{
             cout << endl << "Error in mode input for batch-level flux calculation." << endl;
-            return core;
+            return;
         }
 
         //disadvantage calculation
@@ -849,12 +849,9 @@ timestamp_t t0 = get_timestamp();
     //core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
 
 timestamp_t t1 = get_timestamp();
-
-    //std::cout << " end BURNUPCALC " << std::endl;
-    return core;
 }
 
-fuelBundle burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta) {
+void burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta) {
 timestamp_t t0 = get_timestamp();
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
@@ -895,7 +892,7 @@ timestamp_t t0 = get_timestamp();
             core = phicalc_eqpow(core);
         }else{
             cout << endl << "Error in mode input for batch-level flux calculation." << endl;
-            return core;
+            return;
         }
 
         //disadvantage calculation
@@ -962,10 +959,9 @@ timestamp_t t0 = get_timestamp();
 
     //std::cout << "TIME BURNUPCALC " << t.elapsed() << std::endl;
     //std::cout << "K of core at discharge "<< kcalc(core) << std::endl;
-    return core;
 }
 
-double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
+double burnupcalc_BU(fuelBundle &core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
@@ -1056,7 +1052,7 @@ double burnupcalc_BU(fuelBundle core, int mode, int DA_mode, double delta) {
     return burnup;
 }
 
-fuelBundle DA_calc(fuelBundle fuel){
+fuelBundle DA_calc(fuelBundle &fuel){
 // calculates the flux within each batch in fuelBundle
 // DA = phi_thermal_Mod / phi_thermal_Fuel
 
@@ -1136,7 +1132,7 @@ fuelBundle DA_calc(fuelBundle fuel){
 }
 
 
-double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
+double SS_burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -1262,7 +1258,7 @@ double SS_burnupcalc(fuelBundle core, int mode, int DA_mode, double delta, int N
 }
 
 
-double SS_burnupcalc_depricated(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence){
+double SS_burnupcalc_depricated(fuelBundle &core, int mode, int DA_mode, double delta, int N, double ss_fluence){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -1377,7 +1373,7 @@ double SS_burnupcalc_depricated(fuelBundle core, int mode, int DA_mode, double d
 }
 
 
-double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
+double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
     //used to find the steady state CR of the given fuel
     //N:number of batches; delta: time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE
@@ -1510,7 +1506,7 @@ double SS_burnupcalc_CR(fuelBundle core, int mode, int DA_mode, double delta, in
 }
 
 
-fuelBundle lib_interpol(fuelBundle input_fuel){
+fuelBundle lib_interpol(fuelBundle &input_fuel){
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < input_fuel.interpol_libs.size(); i++){
         fuelBundle lib_bundle;
@@ -1702,7 +1698,7 @@ fuelBundle lib_interpol(fuelBundle input_fuel){
     return new_fuel;
 }
 
-void mass_check(fuelBundle fuel){
+void mass_check(fuelBundle &fuel){
     for(int i = 0; i < fuel.all_iso.size(); i++){
         for(int k = 0; k < fuel.all_iso[i].fluence.size(); k++){
             double mass = 0;
@@ -1713,4 +1709,71 @@ void mass_check(fuelBundle fuel){
         }
     }
 }
+
+double CR_finder_temp(fuelBundle &core, int ii){
+    double FP = 0;
+    double fissile = 0;
+    double ini_fissile = 0;
+    double CR;
+    int ZZ;
+    for(int j = 0; j < core.batch[0].collapsed_iso.iso_vector.size(); j++){
+        //convert name to mass number
+        ZZ = core.batch[0].collapsed_iso.iso_vector[j].name;
+        ZZ = ZZ % 10000;
+        ZZ /= 10;
+
+        //add up the FP
+        if(ZZ < 160 && ZZ > 40){
+            //interpolation will be done at the end
+            FP += core.batch[0].collapsed_iso.iso_vector[j].mass[ii];
+            //cout << "ZZ " << ZZ  << " mass " << core.batch[i].collapsed_iso.iso_vector[j].mass[ii]<<endl;
+        }
+
+        //add up fissiles
+        for(int fis = 0; fis < core.CR_fissile.size(); fis++){
+            if(core.batch[0].collapsed_iso.iso_vector[j].name == core.CR_fissile[fis]){
+                fissile += core.batch[0].collapsed_iso.iso_vector[j].mass[ii];
+                ini_fissile += core.batch[0].collapsed_iso.iso_vector[j].mass[0]; //mass at fluence zero
+            }
+        }
+    }
+
+    if(FP > 0){
+        CR = (FP+fissile-ini_fissile)/FP;
+    } else {
+        cout << " CR finder has fission product mass of zero." << endl;;
+        CR  = 0;
+    }
+    //std::cout << "CR Calc " << t.elapsed() << std::endl;
+    return CR;
+}
+
+
+void print_library(std::string name, fuelBundle &core){
+    isoInformation iso = core.batch[0].collapsed_iso;
+    name += ".txt";
+    ofstream ofs(name);
+    ofs << "Fluence";
+    for(int i = 0; i < iso.neutron_prod.size(); i++){
+        ofs << " " << iso.fluence[i];
+    }
+    ofs << std::endl << "k";
+    for(int i = 0; i < iso.neutron_prod.size(); i++){
+        ofs << " " << iso.neutron_prod[i]/iso.neutron_dest[i];
+    }
+    ofs << std::endl << "BUd";
+    for(int i = 0; i < iso.BUd.size(); i++){
+        ofs << " " << iso.BUd[i];
+    }
+    ofs << std::endl << "CR";
+    for(int i = 0; i < iso.BUd.size(); i++){
+        double CR_test = CR_finder_temp(core, i);
+        ofs << " " << CR_test;
+    }
+    ofs << std::endl << std::endl;
+    ofs.close();
+}
+
+
+
 

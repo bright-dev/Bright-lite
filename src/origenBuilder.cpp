@@ -18,7 +18,7 @@
 
 using namespace std;
 
-fuelBundle StructReader(fuelBundle core){
+fuelBundle StructReader(fuelBundle &core){
 //reads in structural material fractions from input file and adds the total
 //values to core.struct_prod and core.struct_dest
 //only needs to be called once to populate core.struct_prod and dest
@@ -65,7 +65,7 @@ fuelBundle StructReader(fuelBundle core){
 }
 
 
-isoInformation BurnupBuilder(vector<isoInformation> fuel_values){
+isoInformation BurnupBuilder(vector<isoInformation> &fuel_values){
     isoInformation fuel;
     //boost::timer t;
     for(int mm = 0; mm < fuel_values.size(); mm++){
@@ -119,7 +119,7 @@ isoInformation BurnupBuilder(vector<isoInformation> fuel_values){
 }
 
 /// make this take the prod and dest as doubles
-isoInformation FuelBuilder(vector<isoInformation> fuel_values){
+isoInformation FuelBuilder(vector<isoInformation> &fuel_values){
 //takes a vetor of isoinfo and uses .fraction to combine isitopes to create one iso
     isoInformation fuel;
     //boost::timer t;
@@ -199,6 +199,8 @@ isoInformation FuelBuilder(vector<isoInformation> fuel_values){
     //std::cout << "fuelBlending " << t.elapsed() << std::endl;
     return fuel;
 }
+
+
 
 vector<nonActinide> NonActinideReader(string file_name){
     vector<nonActinide> structural_comps;

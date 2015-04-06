@@ -108,9 +108,9 @@ class ReactorFacility : public cyclus::Facility  {
 
   double burnup_test(cyclus::Material::Ptr new_batch);
 
-  fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
+  fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_);
 
-  fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
+  fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_);
 
   double blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
