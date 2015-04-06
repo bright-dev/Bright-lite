@@ -776,7 +776,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         burnup_1 = SS_burnupcalc_depricated(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
     double CR_temp = CR_target;
-    CR_target = 1;
+    /*CR_target = 1;
     for(double frac1 = 0.10; frac1 < 0.2; frac1+=0.01){
         cyclus::Material::Ptr temp_mat1 = cyclus::Material::CreateUntracked(frac1, fissile_mani[0]->comp());
         cyclus::Material::Ptr temp_mat2 = cyclus::Material::CreateUntracked(mass_frac-frac1, non_fissile_mani[0]->comp());
@@ -785,7 +785,7 @@ double ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
         temp_bundle = comp_function(temp_mat1, fuel_library_);
         print_library(std::to_string(frac1), temp_bundle);
     }
-    CR_target = CR_temp;
+    CR_target = CR_temp;*/
     //Finding the second burnup iterator
     double fraction_2 = 0;
     mat_pass = cyclus::ResCast<cyclus::Material>(mat->Clone());
