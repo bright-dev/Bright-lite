@@ -40,7 +40,7 @@
 			<Source>
 				<commod>U235</commod>
 				<recipe_name>U235</recipe_name>
-				<capacity>400000</capacity>
+				<capacity>4000000</capacity>
 			</Source>
 		</config>
 	</facility>
@@ -51,7 +51,7 @@
 			<Source>
 				<commod>U238</commod>
 				<recipe_name>Uranium 238</recipe_name>
-				<capacity>20000</capacity>
+				<capacity>4000000</capacity>
 			</Source>
 		</config>
 	</facility>
@@ -95,8 +95,8 @@
 			</commod_out>
 			<repro_input_path>examples/reprocess_input.txt</repro_input_path>
 			<max_inv_size>1.000000000000000E+299</max_inv_size>
-			<input_capacity>200000</input_capacity>
-			<output_capacity>200000</output_capacity>
+			<input_capacity>250000</input_capacity>
+			<output_capacity>250000</output_capacity>
 		</ReprocessFacility></config>
 	</facility>
 
@@ -111,11 +111,11 @@
 				<batches>3</batches>
 				<nonleakage>0.960</nonleakage>
 				<target_burnup>41</target_burnup>
-				<generated_power>1000.0</generated_power>
-				<core_mass>3000</core_mass>
+				<generated_power>2000.0</generated_power>
+				<core_mass>70000</core_mass>
 				<burnupcalc_timestep>10</burnupcalc_timestep>
 				<flux_mode>1</flux_mode>
-        <SS_tolerance>0.00001</SS_tolerance>
+        			<SS_tolerance>0.00001</SS_tolerance>
 				<reactor_life>250</reactor_life>        
 				<CR_fissile>
 		      <val>922350</val>
@@ -144,11 +144,11 @@
 				<batches>6</batches>
 				<nonleakage>0.92</nonleakage>
 				<target_burnup>50</target_burnup>
-				<generated_power>1000.0</generated_power>
-				<core_mass>10</core_mass>
+				<generated_power>400.0</generated_power>
+				<core_mass>8000</core_mass>
 				<efficiency>0.330</efficiency>
 				<burnupcalc_timestep>50</burnupcalc_timestep>
-				<flux_mode>1</flux_mode>
+				<flux_mode>2</flux_mode>
 				<reactor_life>250</reactor_life>        	 
 				<CR_fissile>  
 		      <val>942380</val>
@@ -264,6 +264,9 @@
 		<name>utility2</name>
 		<config>
 			<DeployInst>
+				<buildorder>
+					<prototype>LWR</prototype><number>5</number><date>25</date>
+				</buildorder>
 				<buildorder>
 					<prototype>LWR</prototype><number>5</number><date>50</date>
 				</buildorder>

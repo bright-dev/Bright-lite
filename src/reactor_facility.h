@@ -112,15 +112,16 @@ class ReactorFacility : public cyclus::Facility  {
 
   fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_);
 
-  double blend_next(cyclus::toolkit::ResourceBuff fissle,
+  std::vector<double> blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                    std::map<std::string, double> incommods);
 
-  double start_up(cyclus::toolkit::ResourceBuff fissle,
+  std::vector<double> start_up(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                    std::map<std::string, double> incommods);
+
   int refuels;
 
   void CoreBuilder();
@@ -128,6 +129,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   double SS_enrich;
   double ss_fraction;
+  cyclus::Material::Ptr previous_mat;
 
   #pragma cyclus var {"default": 0.01, \
                       "userlevel": 3, \

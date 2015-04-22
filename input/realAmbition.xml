@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><simulation><control><duration>700</duration><startmonth>1</startmonth><startyear>0</startyear></control>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><simulation><control><duration>6000</duration><startmonth>1</startmonth><startyear>0</startyear></control>
 
 <archetypes><spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec><spec><lib>agents</lib><name>Source</name></spec><spec><lib>agents</lib><name>Source</name></spec><spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec><spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec><spec><lib>Brightlite</lib><name>ReactorFacility</name></spec><spec><lib>Brightlite</lib><name>ReactorFacility</name></spec><spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec><spec><lib>agents</lib><name>Sink</name></spec><spec><lib>agents</lib><name>NullRegion</name></spec><spec><lib>agents</lib><name>NullInst</name></spec><spec><lib>cycamore</lib><name>DeployInst</name></spec></archetypes>
 
@@ -12,7 +12,7 @@
 			<fissle_stream>LWR Reprocessed</fissle_stream>
 			<non_fissle_stream>DU2</non_fissle_stream>
 			<in_commods>
-				<key>FR Reprocessed</key><val>0.00</val>
+				<key>FR Reprocessed</key><val>1.0</val>
 			</in_commods>
 			<out_commod>FR Fuel</out_commod>
 		</FuelfabFacility>
@@ -25,7 +25,7 @@
 		<Source>
 			<commod>U235</commod>
 			<recipe_name>U235</recipe_name>
-			<capacity>4000</capacity>
+			<capacity>40000</capacity>
 		</Source>
 	</config>
 </facility>
@@ -36,7 +36,7 @@
 		<Source>
 			<commod>U238</commod>
 			<recipe_name>Uranium 238</recipe_name>
-			<capacity>20000</capacity>
+			<capacity>200000</capacity>
 		</Source>
 	</config>
 </facility>
@@ -80,8 +80,8 @@
 		</commod_out>
 		<repro_input_path>input/FR_reprocess.txt</repro_input_path>
 		<max_inv_size>1.000000000000000E+299</max_inv_size>
-		<input_capacity>2000</input_capacity>
-		<output_capacity>2000</output_capacity>
+		<input_capacity>400000</input_capacity>
+		<output_capacity>400000</output_capacity>
 	</ReprocessFacility></config>
 </facility>
 
@@ -96,7 +96,8 @@
         <libraries><val>extLWR</val></libraries>
         <target_burnup>50.0</target_burnup>
         <nonleakage>0.883</nonleakage>
-        <core_mass>1000.0</core_mass>
+        <core_mass>127000.0</core_mass>
+        <generated_power>4000.0</generated_power>
         <batches>3</batches>
         <outage_time>30</outage_time>
         <flux_mode>2</flux_mode>        
@@ -118,7 +119,7 @@
     </config>
   </facility>
 
-<facility><name>FRx</name><config><ReactorFacility><tolerance>0.0010</tolerance><disadv_a>0.40950</disadv_a><disadv_b>0.707490</disadv_b><disadv_mod_siga>0.2220</disadv_mod_siga><disadv_mod_sigs>3.440</disadv_mod_sigs><disadv_fuel_sigs>0.430</disadv_fuel_sigs><out_commod>FR Spent Fuel</out_commod><libraries><val>FR50</val></libraries><interpol_pairs><key>BURNUP</key><val>42</val></interpol_pairs><batches>6</batches><nonleakage>0.57</nonleakage><max_inv_size>1.000000000000000E+299</max_inv_size><target_burnup>200</target_burnup><generated_power>1000.0</generated_power><core_mass>10</core_mass><efficiency>0.330</efficiency><fuel_area>89197</fuel_area><cylindrical_delta>5</cylindrical_delta><mod_Sig_a>0.02220</mod_Sig_a><mod_Sig_tr>3.460</mod_Sig_tr><mod_Sig_f>0.0</mod_Sig_f><mod_thickness>100</mod_thickness><fuel_Sig_tr>3.940</fuel_Sig_tr><burnupcalc_timestep>50</burnupcalc_timestep><flux_mode>2</flux_mode><DA_mode>0</DA_mode><reactor_life>960</reactor_life>        	 <CR_fissile>  
+<facility><name>FRx</name><config><ReactorFacility><tolerance>0.0010</tolerance><disadv_a>0.40950</disadv_a><disadv_b>0.707490</disadv_b><disadv_mod_siga>0.2220</disadv_mod_siga><disadv_mod_sigs>3.440</disadv_mod_sigs><disadv_fuel_sigs>0.430</disadv_fuel_sigs><out_commod>FR Spent Fuel</out_commod><libraries><val>FR50</val></libraries><interpol_pairs><key>BURNUP</key><val>42</val></interpol_pairs><batches>6</batches><nonleakage>0.8</nonleakage><max_inv_size>1.000000000000000E+299</max_inv_size><target_burnup>200</target_burnup><generated_power>400.0</generated_power><core_mass>3000</core_mass><efficiency>0.330</efficiency><fuel_area>89197</fuel_area><cylindrical_delta>5</cylindrical_delta><mod_Sig_a>0.02220</mod_Sig_a><mod_Sig_tr>3.460</mod_Sig_tr><mod_Sig_f>0.0</mod_Sig_f><mod_thickness>100</mod_thickness><fuel_Sig_tr>3.940</fuel_Sig_tr><burnupcalc_timestep>50</burnupcalc_timestep><flux_mode>2</flux_mode><DA_mode>0</DA_mode><reactor_life>2060</reactor_life>        	 <CR_fissile>  
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>
@@ -129,7 +130,7 @@
             <val>962420</val>
             <val>942440</val>
         </CR_fissile>
-        <CR_target>-1</CR_target>
+        <CR_target>1.2</CR_target>
         <in_commods>
             <val>FR Fuel</val>       
         </in_commods>

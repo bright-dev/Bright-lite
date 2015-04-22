@@ -50,6 +50,8 @@ namespace fuelfab {
                 inventory[i].PushAll(manifest);
             }*/
         }
+        //std::cout << "Fissile Inv: " << fissle_inv.quantity() <<std::endl;
+        //std::cout << "BONUS INVENTORY " << inventory[0].quantity() << std::endl;
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -234,6 +236,7 @@ namespace fuelfab {
         std::map<cyclus::Trader*, int>::iterator id;
         //iterate through requests
         for(id = facility_request.begin(); id != facility_request.end(); ++id){
+            std::vector<double> mass_fracs;
             double limit, nlimit;
             //cast requester as reactor
             reactor::ReactorFacility* reactor = dynamic_cast<reactor::ReactorFacility*>(id->first);
@@ -242,31 +245,38 @@ namespace fuelfab {
             } else {
                 //start up
                 if (reactor->inventory.count() == 0){
-                    limit = reactor->start_up(fissle_inv, non_fissle_inv, inventory, in_commods);
-                    double temp_limit = limit;
+                    mass_fracs = reactor->start_up(fissle_inv, non_fissle_inv, inventory, in_commods);
+                    double temp_limit = mass_fracs[mass_fracs.size()-1]/reactor->batches;
                     double k = 0.;
                     for(it = trades.begin(); it!=trades.end(); ++it){
+                        cyclus::Material::Ptr offer;
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
                             limit = temp_limit/2.*(1.+(k/(reactor->batches)));
-                            manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(limit));
-                            Material::Ptr offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
-                            for(int i = 0; i < manifest.size(); i++){
-                                offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                            //std::cout << "LIMIT " << limit << std::endl;
+                            if(limit == 0){
+                                manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(10));
+                                offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
+                            } else {
+                                manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(limit));
+                                offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
+                                for(int i = 0; i < manifest.size(); i++){
+                                    offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                                }
                             }
                             std::map<std::string, double>::iterator md;
                             int j = 0;
                             for(md = in_commods.begin(); md != in_commods.end(); ++md){
-                                if(inventory[j].quantity() > reactor->core_mass/reactor->batches * md->second){
-                                    manifest = cyclus::ResCast<Material>(inventory[j].PopQty(reactor->core_mass/reactor->batches * md->second));
+                                if(inventory[j].quantity() > mass_fracs[j]){
+                                    manifest = cyclus::ResCast<Material>(inventory[j].PopQty(mass_fracs[j]));
                                     for(int i = 0; i < manifest.size(); i++){
+                                        //std::cout << "Offer ";
                                         offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                                         //std::cout << offer->quantity() << std::endl;
                                     }
                                 }
                                 j++;
                             }
-
                             nlimit = reactor->core_mass/reactor->batches-offer->quantity();
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
@@ -279,22 +289,29 @@ namespace fuelfab {
                 } else{
                     //non-start up refueling
                     for(it = trades.begin(); it!=trades.end(); ++it){
+                        cyclus::Material::Ptr offer;
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
-                            limit = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
+                            mass_fracs = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
+                            limit = mass_fracs[mass_fracs.size()-1];
                             //std::cout << "Blending fraction " << limit << std::endl;
-                            //std::cout << "Blendlimit " << limit << std::endl;
-                            manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(limit));
-                            Material::Ptr offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
-                            for(int i = 0; i < manifest.size(); i++){
-                                offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                            if(limit == 0){
+                                manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(10));
+                                offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
+                            } else {
+                                manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(limit));
+                                offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
+                                for(int i = 0; i < manifest.size(); i++){
+                                    offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
+                                }
                             }
                             std::map<std::string, double>::iterator md;
                             int j = 0;
                             for(md = in_commods.begin(); md != in_commods.end(); ++md){
-                                if(inventory[j].quantity() > reactor->core_mass/reactor->batches * md->second){
-                                    manifest = cyclus::ResCast<Material>(inventory[j].PopQty(reactor->core_mass/reactor->batches * md->second));
+                                if(inventory[j].quantity() > mass_fracs[j]){
+                                    manifest = cyclus::ResCast<Material>(inventory[j].PopQty(mass_fracs[j]));
                                     for(int i = 0; i < manifest.size(); i++){
+                                        //std::cout << "Offer ";
                                         offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                                         //std::cout << offer->quantity() << std::endl;
                                     }
@@ -302,10 +319,12 @@ namespace fuelfab {
                                 j++;
                             }
                             nlimit = reactor->core_mass/reactor->batches-offer->quantity();
+                            //std::cout << " NLIMIT "<< nlimit << std::endl;
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
+                            //CompOut(offer);
                             responses.push_back(std::make_pair(*it, offer));
                         }
                     }

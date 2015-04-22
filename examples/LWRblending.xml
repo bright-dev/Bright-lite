@@ -33,7 +33,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>fissile_stream</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>200.0</capacity>
+	<capacity>40000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -44,7 +44,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>nfissile_stream</commod>
         <recipe_name>U238</recipe_name>
-	<capacity>2000.0</capacity>
+	<capacity>200000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -72,7 +72,8 @@ real	0m3.407s (2015/03/04)
         <libraries><val>extLWR</val></libraries>
         <target_burnup>33.0</target_burnup>
         <nonleakage>0.883</nonleakage>
-        <core_mass>3000.0</core_mass>
+        <core_mass>127000.0</core_mass>
+        <generated_power>4000.0</generated_power>
         <interpol_pairs>
        	   <key>BURNUP</key>
 	   <val>33</val>

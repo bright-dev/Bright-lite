@@ -31,7 +31,7 @@ Batches: 5
       <Source>
         <commod>fissile_stream</commod>
         <recipe_name>PU</recipe_name>
-				<capacity>200000.0</capacity>
+	<capacity>200000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -42,7 +42,7 @@ Batches: 5
       <Source>
         <commod>nfissile_stream</commod>
         <recipe_name>DU</recipe_name>
-				<capacity>200000.0</capacity>
+	<capacity>200000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -70,10 +70,11 @@ Batches: 5
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>50.0</target_burnup>
         <nonleakage>0.91</nonleakage>
-        <core_mass>6.0</core_mass>
-    		<interpol_pairs>
-           <key>BURNUP</key>
-	       <val>42.5</val>
+        <core_mass>120000</core_mass>
+        <generated_power>3000.0</generated_power>
+    	<interpol_pairs>
+            <key>BURNUP</key>
+	    <val>42.5</val>
         </interpol_pairs>
         <batches>5</batches>
         <flux_mode>1</flux_mode>

@@ -66,6 +66,7 @@ struct batch_info {
     double rflux; //relative flux of batch
     double DA; //thermal disadvantage, phi_M/phi_F
     double discharge_BU; //the discharge burnup of the batch
+    double delta_BU; // used to calculate the cycle length change in BU between cycles
     double discharge_CR; //the discharge conversion ratio
     std::map<int, double> comp; //current composition of batch at this batch_fluence
 };
