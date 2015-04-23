@@ -29,7 +29,7 @@ To install Bright-lite please follow these instructions.
    command. 
    	cd Bright-lite
 3) Use the following command inside the Bright-lite directory
-   	./install.py
+   	python install.py
 
 ------------
 Something something results
