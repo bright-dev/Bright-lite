@@ -1,5 +1,5 @@
 .. _hello_world:
-.. _Cyclus: fuelcycle.org
+.. _Cyclus: www.fuelcycle.org/
 
 Welcome New Bright-lite User!
 =============================
