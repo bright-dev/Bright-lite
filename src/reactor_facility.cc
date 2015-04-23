@@ -18,7 +18,32 @@ std::string ReactorFacility::str() {
 typedef unsigned long long timestamp_t;
 
 bool stream_check(cyclus::Material::Ptr &mat1){
-
+    std::vector<double> diffs;
+    bool check1;
+    bool diff_check;
+    comp_new = mat1->comp()->mass();
+    comp_old = previous_mat->comp()->mass();
+    cyclus::CompMap::iterator it;
+    cyclus::CompMap::iterator id;
+    for(it = comp_new.begin(); it != comp_new.end(); ++it){
+        check1 = false;
+        for(id = comp_previous.begin(); id != comp_previous.end(); ++id){
+            if(it->first == id->first){
+                diffs.push_back(std::pow(it->second - id->first, 2));
+                check1 = true;
+            }
+        }
+        if(check1 == false){diffs.push_back(std::pow(it-second, 2));}
+    }
+    double sum = 0;
+    for(int i = 0; i < diffs.size(); i++){
+        sum += diffs[i];
+    }
+    double rms = std::sqrt(sum/diffs.size());
+    if (rms >= 0.05){return false}{
+    } else {
+        return true;
+    }
 }
 
 void CompOutMat(cyclus::Material &mat1){
@@ -459,8 +484,8 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         //Operational reloading
         for (it = responses.begin(); it != responses.end(); ++it) {
             if(it->first.request->commodity() == in_commods[0]){
-                //CompOutMat(it->second);
                 inventory.Push(it->second);
+                previous_mat = it->second;
             }
         }
       }
@@ -598,22 +623,17 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     std::vector<double> return_amount;
     double return_prev = SS_enrich;
     double mass_frac = 0.;
-    /*if(steady_state > 5){
-        return_amount.push_back(ss_fraction * total_mass);
-        return ss_fraction * total_mass;
-    }*/
-    //turn inventory to materials
 
+    //turn inventories to vectors of materials
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
-
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
     for(int i = 0; i < inventory.size(); i++){
         std::vector<cyclus::Material::Ptr> manifest;
         manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));
         materials.push_back(manifest);
     }
-
+    //create mass stream from non incommodities inventories
     cyclus::Material::Ptr mat = cyclus::Material::CreateUntracked(0, non_fissile_mani[0]->comp());
     int i = 0;
     std::map<std::string, double>::iterator it;
@@ -631,26 +651,27 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
                 mat->Absorb(mat_temp);
                 mass_frac += frac;
                 return_amount.push_back(frac);
-                //std::cout << "Mass Frac " << mass_frac << std::endl;
             } else {
                 return_amount.push_back(0.0);
             }
         }
         i++;
     }
-
     cyclus::Material::Ptr fissile_mat = cyclus::Material::CreateUntracked(1-mass_frac, fissile_mani[0]->comp());
     fissile_mat->Absorb(mat);
 
     // Starting blending of materials
-
     double fraction_1 = ss_fraction;
     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(ss_fraction, fissile_mat->comp());
     cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1-ss_fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
-    //CompOut(mat1);
-    //fuelBundle temp_bundle = comp_trans(mat1, fuel_library_);
-    //double burnup_1 = burnupcalc_BU(temp_bundle, 2, 1, 40);
+    if(stream_check(mat1) == true){
+        return_amount.push_back(fraction_1 * total_mass * (1-mass_frac));
+        for(int i = 0; i < return_amount.size()-1; i++){
+            return_amount[i] *= (fraction_1 * total_mass);
+        }
+        return return_amount;
+    }
     fuelBundle temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_1;
     if(CR_target > 0){
@@ -660,14 +681,11 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
         burnup_1 = SS_burnupcalc_depricated(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
     if(std::abs((measure - burnup_1)/measure) < 0.01){
-        steady_state += 1;
         return_amount.push_back(fraction_1 * total_mass * (1-mass_frac));
         for(int i = 0; i < return_amount.size()-1; i++){
             return_amount[i] *= (fraction_1 * total_mass);
         }
         return return_amount;
-    } else {
-        steady_state = 0;
     }
     //Finding the second burnup iterator
     double fraction_2 = 0;

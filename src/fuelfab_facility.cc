@@ -10,7 +10,7 @@ namespace fuelfab {
     std::string FuelfabFacility::str() {
       return Facility::str();
     }
-
+    /** CompOut prints out the ID and mass of each isotope in a cyclue material. */
     void CompOut(cyclus::Material::Ptr mat1){
         cyclus::CompMap comp;
         comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
@@ -24,6 +24,9 @@ namespace fuelfab {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void FuelfabFacility::Tick() {
+        /** On the first tick the fuel fabrication facility will set up its inventories
+        and give those inventories a capacity. Additionally there is some debugging code
+        to check the size of each inventory inside of the fuel fabrication plant.*/
         if(inventory.size() == 0){
             cyclus::toolkit::ResourceBuff resource;
             for(int i = 0; i < in_commods.size(); i++){
@@ -51,16 +54,17 @@ namespace fuelfab {
             }*/
         }
         //std::cout << "Fissile Inv: " << fissle_inv.quantity() <<std::endl;
-        //std::cout << "BONUS INVENTORY " << inventory[0].quantity() << std::endl;
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     void FuelfabFacility::Tock() {
-
+        /** The fuel fabrication plant performs no functions on the tock */
     }
 
     std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> FuelfabFacility::GetMatlRequests() {
-
+        /** During material requests the fuel fabrication plant  first requests new fuel from the fissile
+        stream, then new fuel from the non-fissile stream, finally it requests fuel from the additional streams
+        in incommods*/
         //std::cout << "ff GetMatreq" << std::endl;
         using cyclus::RequestPortfolio;
         using cyclus::Material;
@@ -101,7 +105,9 @@ namespace fuelfab {
         return ports;
     }
 
-    // MatlBids //
+    /** During get material bids the fuel fabrication plant recieves bid from all facilities requesting material from it.
+    All Bright-lite reactors tell the fuel fabrication plant what type of fuel they need and how many batches of fuel,
+    all other types of facilities are rejected*/
     std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr>FuelfabFacility::GetMatlBids(cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
     using cyclus::BidPortfolio;
     using cyclus::CapacityConstraint;
@@ -149,7 +155,7 @@ namespace fuelfab {
         if (!reactor){
            throw cyclus::CastError("No reactor for fuelfab facility.");
         } else {
-            // Check for reactor start up
+            // Check for reactor start up because it will require more than one batch
             if (reactor->inventory.count() == 0){
                 double temp_limit = limit;
                 int k = 1;
@@ -171,7 +177,7 @@ namespace fuelfab {
                         k++;
                     }
                 }
-                //Same for refueling
+            //during refueling only one batch is needed
             } else{
                 for(it = requests.begin(); it!=requests.end(); ++it){
                     Request<Material>* req = *it;
@@ -196,6 +202,7 @@ namespace fuelfab {
         return ports;
     }
 
+    /** During accept material trades cyclus materials are added ot the fuel fabrication plants inventories*/
     void FuelfabFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
         //std::cout << "ff TRADE start" << std::endl;
         std::vector<std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >::const_iterator it;
@@ -219,15 +226,17 @@ namespace fuelfab {
         //std::cout << "ff TRADE end" << std::endl;
     }
 
+    /** Get material trades uses the steady state enrichment determined by the reactor to discover
+    the build new batches of material to send to the reactor.*/
     void FuelfabFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
                                         std::vector<std::pair<cyclus::Trade<cyclus::Material>,
                                         cyclus::Material::Ptr> >& responses) {
         using cyclus::Material;
         using cyclus::Trade;
+        //std::cout << "ffgetTRADE start" << std::endl;
         std::map<cyclus::Trader*, int> facility_request;
         std::vector< cyclus::Trade<cyclus::Material> >::const_iterator it;
         std::vector<cyclus::Material::Ptr> manifest;
-        //std::cout << "ffgetTRADE start" << std::endl;
         //Setting up comp map of requesters to number of requests
         for(it = trades.begin(); it != trades.end(); ++it){
             cyclus::Request<Material> req = *it->request;
@@ -253,7 +262,6 @@ namespace fuelfab {
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
                             limit = temp_limit/2.*(1.+(k/(reactor->batches)));
-                            //std::cout << "LIMIT " << limit << std::endl;
                             if(limit == 0){
                                 manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(10));
                                 offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
@@ -270,9 +278,7 @@ namespace fuelfab {
                                 if(inventory[j].quantity() > mass_fracs[j]){
                                     manifest = cyclus::ResCast<Material>(inventory[j].PopQty(mass_fracs[j]));
                                     for(int i = 0; i < manifest.size(); i++){
-                                        //std::cout << "Offer ";
                                         offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
-                                        //std::cout << offer->quantity() << std::endl;
                                     }
                                 }
                                 j++;
@@ -293,8 +299,7 @@ namespace fuelfab {
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
                             mass_fracs = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
-                            limit = mass_fracs[mass_fracs.size()-1];
-                            //std::cout << "Blending fraction " << limit << std::endl;
+                            limit = mass_fracs[mass_fracs.size()-1;
                             if(limit == 0){
                                 manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(10));
                                 offer = manifest[0]->ExtractComp(0., manifest[0]->comp());
@@ -311,20 +316,16 @@ namespace fuelfab {
                                 if(inventory[j].quantity() > mass_fracs[j]){
                                     manifest = cyclus::ResCast<Material>(inventory[j].PopQty(mass_fracs[j]));
                                     for(int i = 0; i < manifest.size(); i++){
-                                        //std::cout << "Offer ";
                                         offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
-                                        //std::cout << offer->quantity() << std::endl;
                                     }
                                 }
                                 j++;
                             }
                             nlimit = reactor->core_mass/reactor->batches-offer->quantity();
-                            //std::cout << " NLIMIT "<< nlimit << std::endl;
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
                             }
-                            //CompOut(offer);
                             responses.push_back(std::make_pair(*it, offer));
                         }
                     }

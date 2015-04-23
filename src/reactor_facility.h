@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <cmath>
 
 #include "cyclus.h"
 #include "burnupcalc.h"
