@@ -17,6 +17,8 @@ std::string ReactorFacility::str() {
 
 typedef unsigned long long timestamp_t;
 
+/** This function is used to measure the difference between the fuel being generated
+for steady state calculations and the last fuel used in the reactor*/
 bool stream_check(cyclus::Material::Ptr &mat1){
     std::vector<double> diffs;
     bool check1;
@@ -46,6 +48,7 @@ bool stream_check(cyclus::Material::Ptr &mat1){
     }
 }
 
+/** A function to output the isotopic composition of a cyclus material*/
 void CompOutMat(cyclus::Material &mat1){
     cyclus::CompMap comp;
     comp = mat1.comp()->mass(); //store the fractions of i'th batch in comp
@@ -57,6 +60,7 @@ void CompOutMat(cyclus::Material &mat1){
     }
 }
 
+/** A function to output the isotopic composition of a cyclus material pointer*/
 void CompOut(cyclus::Material::Ptr &mat1){
     cyclus::CompMap comp;
     comp = mat1->comp()->mass(); //store the fractions of i'th batch in comp
@@ -68,6 +72,9 @@ void CompOut(cyclus::Material::Ptr &mat1){
     }
 }
 
+/** During the first tick for the facilities the reactor libraries are set up and the
+path of all important files is set up. This is general information for the reactor model
+to operate.*/
 void ReactorFacility::Tick() {
     //std::cout << "reactorfacility inventory size: " << inventory.count() << std::endl;
     if(shutdown == true){return;}
@@ -156,23 +163,21 @@ void ReactorFacility::Tick() {
         for(int i = 0; i < CR_fissile.size(); i++){
             fuel_library_.CR_fissile.push_back(std::stoi(CR_fissile[i]));
         }
-
-
     }
-
-
-
     //std::cout << "end tick" << std::endl;
 }
 
+/** During the tock the reactor performs the burnup calculation and determines the availability
+of the reactor for measure both power and outage periods. Additionally Bright-lite specific
+cyclus tables are generated in this timestep. */
 void ReactorFacility::Tock() {
     if(inventory.count() == 0){return;}
     if(shutdown == true){return;}
 
     cyclus::Context* ctx = context();
-    // check the state of the reactor
+    // check the state of the reactor and sets up the power output of the reactor for the timestep
     if(outage_shutdown > 1){
-    //reactor still in outage
+        //reactor still in outage
         outage_shutdown--;
         return;
     } else if (outage_shutdown == 1){
@@ -182,7 +187,6 @@ void ReactorFacility::Tock() {
     } else {
         if (ctx->time() != cycle_end_) {
             cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
-            //std::cout << "time: "<< ctx->time()<< "  not end of cycle.  End of cycle: " << cycle_end_ << std::endl;/// <--------
             return;
         } else {
             if(p_time + outage_time < 28.){
@@ -207,9 +211,7 @@ void ReactorFacility::Tock() {
         }
     }
 
-    // Will now burn fuel
-
-    // Pop materials out of inventory
+    // Pop materials out of inventory to create new Bright-lite batches
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
 
@@ -223,7 +225,7 @@ void ReactorFacility::Tock() {
             fuel_library_.batch.push_back(temp_batch);
         }
     }
-    //each batch
+    //Put new isotope libraries into the bright-lite libraries for the new batch
     for(int i = 0; i < manifest.size(); i++){
     //build correct isoinfo and fraction of every isotope in each batch
     ///put the stuff in comp fraction to fuel_library_. .iso fraction using values in fuel_library_.all_iso
@@ -232,8 +234,6 @@ void ReactorFacility::Tock() {
         //each iso in comp
         for (it = comp.begin(); it != comp.end(); ++it){
             comp_iso = pyne::nucname::zzaaam(it->first);
-
-            //std::cout << "Isotope " << it->first << " amount " << it->second << std::endl;
             //each iso in all_iso
             for(int j = 0; j < fuel_library_.all_iso.size(); j++){
                 int fl_iso = fuel_library_.all_iso[j].name;
@@ -256,7 +256,7 @@ void ReactorFacility::Tock() {
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     CoreBuilder();
 
-      // pass fuel bundles to burn-up calc
+    //pass fuel bundles to burn-up calc
     if(CR_target < 0){
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     } else if (target_burnup > 0){
@@ -273,7 +273,7 @@ void ReactorFacility::Tock() {
 
     ss_fluence = fuel_library_.batch[batches-1].batch_fluence;
 
-  // convert fuel bundle into materials
+    //convert fuel bundle into materials
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         cyclus::CompMap out_comp;
         for(std::map<int, double>::iterator c = fuel_library_.batch[i].comp.begin(); c != fuel_library_.batch[i].comp.end(); ++c){
@@ -287,27 +287,23 @@ void ReactorFacility::Tock() {
     inventory.Push(manifest[i]);
   }
 
-  // cycle end update
+  //cycle end update
   //std::cout << " DELTA BU   "<< fuel_library_.batch[0].delta_BU << std::endl;
   cycle_end_ = ctx->time() + floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
   p_time =  (fuel_library_.batch[0].delta_BU*core_mass/generated_power/28)-floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
-  //std::cout << "p_time "<<p_time << std::endl;
 
 
 
-  // if the cycle length is less than 2 the fluence of batches will build up.
+  //if the cycle length is less than 2 the fluence of batches will build up.
   if(cycle_end_ - ctx->time() <= 1){
     std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
   }
 
-
+  //increments the number of times the reactor has been refueled.
   refuels += 1;
 
-
+  //shutdown check
   if(ctx->time() > start_time_ + reactor_life && record == true){
-    //its time to shut down
-
-
     shutdown = true;
     std::cout << ctx->time() << " Agent " << id() << " shutdown. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
      for(int i = 0; i < fuel_library_.batch.size(); i++){
@@ -317,7 +313,6 @@ void ReactorFacility::Tock() {
         for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
         burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
         std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << "; ";
-        //std::cout << "  " << fuel_library_.batch[i].comp[942380]  << "  " << fuel_library_.batch[i].comp[942390]  << "  " << fuel_library_.batch[i].comp[942400]  << "  " << fuel_library_.batch[i].comp[942410]  << "  " << fuel_library_.batch[i].comp[942420] << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
@@ -329,7 +324,6 @@ void ReactorFacility::Tock() {
      }
     record = false;
     std::cout << std::endl;
-    //cycle_end_ = 9999;//ctx->cyclus::SimInfo::duration;
   }
 
 
@@ -344,19 +338,11 @@ void ReactorFacility::Tock() {
                ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
                ->AddVal("Batch_No", std::to_string(refuels))
                ->AddVal("CR", fuel_library_.batch[0].discharge_CR)
-               //->AddVal("Discharge_Fluence", fuel_library_.batch[0].batch_fluence)
-               /*->AddVal("Next Cycle Length", ceil(fuel_library_.batch[fuel_library_.batch.size()-1].batch_fluence/(86400*fuel_library_.base_flux*28)))
-               ->AddVal("Discharge_U", fuel_library_.batch[0].comp[922340000]+fuel_library_.batch[0].comp[922350000]+fuel_library_.batch[0].comp[922360]+fuel_library_.batch[0].comp[922370]+fuel_library_.batch[0].comp[922380])
-               ->AddVal("Discharge_U235", fuel_library_.batch[0].comp[922350])
-               ->AddVal("Discharge_U238", fuel_library_.batch[0].comp[922380])
-               ->AddVal("Discharge_PU", fuel_library_.batch[0].comp[942380]+fuel_library_.batch[0].comp[942390]+fuel_library_.batch[0].comp[942400]+fuel_library_.batch[0].comp[942410]+fuel_library_.batch[0].comp[942420])
-               ->AddVal("Discharge_PU239", fuel_library_.batch[0].comp[942390])
-               ->AddVal("Discharge_PU241", fuel_library_.batch[0].comp[942410])*/
                ->Record();
    }
 }
 
-
+/** The reactor requests the amount of batches it needs*/
 std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlRequests() {
     //std::cout << "Getmatlrequests begin" << std::endl;
     using cyclus::RequestPortfolio;
@@ -395,7 +381,6 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
         port->AddRequest(target, this, in_commods[0]);
         qty = core_mass/batches;
     }
-    //std::cout << "RX Request " << qty << std::endl;
     CapacityConstraint<Material> cc(qty);
 
     port->AddConstraint(cc);
@@ -404,7 +389,8 @@ std::set<cyclus::RequestPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMa
     return ports;
 }
 
-// MatlBids //
+/** The reactor will offer either a single batch for a full core load depending on shut down
+condition.*/
 std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBids(
     cyclus::CommodMap<cyclus::Material>::type& commod_requests) {
   //std::cout << "RX GetMatBid" << std::endl;
@@ -418,7 +404,6 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
 
   //if its not the end of a cycle dont get rid of your fuel
   if (ctx->time() != cycle_end_){
-      //std::cout << ctx->time() << " " << cycle_end_ << std::endl;
     return ports;
   }
 
@@ -466,6 +451,7 @@ std::set<cyclus::BidPortfolio<cyclus::Material>::Ptr> ReactorFacility::GetMatlBi
   return ports;
 }
 
+/** Accepts fuel offered to it*/
 void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trade<cyclus::Material>, cyclus::Material::Ptr> >& responses) {
     //std::cout << "RX TRADE START" << std::endl;
     if(shutdown != true){
@@ -493,6 +479,7 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
   //std::cout << "RX TRADE END" << std::endl;
 }
 
+/** Discharging fuel from the reactor*/
 void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Material> >& trades,
     std::vector<std::pair<cyclus::Trade<cyclus::Material>,cyclus::Material::Ptr> >& responses) {
     using cyclus::Material;
@@ -511,12 +498,8 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
     }else{
         //Remove the last batch from the core.
         cyclus::Material::Ptr discharge = cyclus::ResCast<Material>(inventory.Pop());
-        //std::cout << libraries[0] << std::endl;
-        //CompOut(discharge);
-        //std::cout << " Discharge mass: " << discharge->quantity() << std::endl;
         fuel_library_.batch.erase(fuel_library_.batch.begin());
         for (it = trades.begin(); it != trades.end(); ++it) {
-            //std::cout << "   Trades mass: " << *it->quantity() << std::endl;
             responses.push_back(std::make_pair(*it, discharge));
         }
     }
@@ -524,6 +507,7 @@ void ReactorFacility::GetMatlTrades(const std::vector< cyclus::Trade<cyclus::Mat
 
 }
 
+/** This function converts a cyclus material point into a Bright-lite batch object. */
 fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_){
     //std::cout << "COMP FUNCTION" <<std::endl;
     cyclus::CompMap comp;
@@ -569,6 +553,7 @@ fuelBundle ReactorFacility::comp_function(cyclus::Material::Ptr mat1, fuelBundle
     return temp_bundle;
 }
 
+/** Depricated */
 fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_){
     //unlike the comp_function, this function assumes the first entry batch will be discharged
     //it replaces the old batch with the fraction coming from mat
@@ -608,6 +593,8 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle &f
     return temp_bundle;
 }
 
+/** Determines the blending fraction for all possible input fuel composition. Works with the
+Bright-lite fuel fabrication facility. This function works for non startup batches.*/
 std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
@@ -751,6 +738,8 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     return return_amount;
 }
 
+/** Determines the blending fraction for all possible input fuel composition. Works with the
+Bright-lite fuel fabrication facility. This function works for startup batches.*/
 std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
                                  cyclus::toolkit::ResourceBuff non_fissle,
                                  std::vector<cyclus::toolkit::ResourceBuff> inventory,
@@ -891,7 +880,8 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     return return_amount;
 }
 
-
+/** Builds a Bright-lite core from the batches existing on the reactor in the fuel
+library.*/
 void ReactorFacility::CoreBuilder(){
     //builds the necessary burnup calculation parameters
     // in fuel_library_
@@ -919,7 +909,9 @@ void ReactorFacility::CoreBuilder(){
     return;
 }
 
-
+/** This functions orders the batches on the first tock. It is done to ensure that the
+incoming batches are ordered by criticality to ensure that the batch with the lowest
+k is discharged first */
 void ReactorFacility::batch_reorder(){
 //collapses each batch first, then orders them
 //only needs to be called once per reactor start
