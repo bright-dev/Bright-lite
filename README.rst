@@ -12,7 +12,6 @@ Bright-lite is currently only being actively supported for Ubuntu.
 
 ------------
 Something here about how it works.
-
 ------------
 To use Bright-lite first you need to install it. Currently Bright-lite has
 the following dependencies. 
@@ -38,7 +37,6 @@ you to use Bright-lite in Cyclus simulations.
 
 ------------
 Something something results
-
 ------------
 Yay!
 ------------
