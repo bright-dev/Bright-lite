@@ -118,6 +118,7 @@ void ReactorFacility::Tick() {
             }
             fuel_library_ = lib_interpol(fuel_library_);
         }
+        generated_power *= efficiency;
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
         fuel_library_.name = libraries[0];

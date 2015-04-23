@@ -49,10 +49,10 @@ To install Bright-lite please follow these instructions.
 1) Clone the Bright-lite repository from github.
 2) Change directory into the Bright-lite directory using the following
    command. 
-   	cd Bright-lite
+    cd Bright-lite
    	
 3) Use the following command inside the Bright-lite directory.
-   	python install.py
+    python install.py
    	
 This will add the Bright-lite module to the cyclus environment, and allow
 you to use Bright-lite in Cyclus simulations. 
@@ -66,9 +66,27 @@ these other inputs come with a default value.
 
 The six required inputs are
 
- - in_commods: This field is a one or more than indicates that possible sources of 
-   fuel for the reactor. The values in this field should be commodities that exist 
-   inside of the simulation.  
+- in_commods: This field is a one or more than indicates that possible sources of 
+  fuel for the reactor. The values in this field should be commodities that exist 
+  inside of the simulation.  
+- out_commod: This field should be filled out with the cyclus commodity that will
+  connect the reactor facility to the facility that will be directly handling the 
+  waste.
+- libraries: This is a one or more field that indicates the Bright-lite library 
+  the reactor will be using. Note: Adding additionally libraries to this list
+  will enable the library interpolation capabilities in Bright-lite but also
+  requires that the user input parameters and values to be interpolated upon. The
+  interpolation feature is intended for advanced users. 
+- target_burnup: This field indicates to the reactor what the target burnup for the 
+  reactor will be. If this is set to 0, the reactor will operate in forward mode. If 
+  this value is not set to zero the Bright-lite reactor must be connected to a
+  Bright-lite fuel fabrication facility.
+- core_mass: This field indicates the total mass of fuel inside of the core. This mass
+  does not include structural components, it is only the mass of fuel to be burned.
+- generated_power: This indicates the total thermal generating power of the core. 
+  The electrical generated_power will be this value times the effiency of the reactor
+  (a input set to default at 33% but is user adjustable).
+  
 ------------
 Something something results
 ------------
