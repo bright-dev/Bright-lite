@@ -27,9 +27,9 @@ To install Bright-lite please follow these instructions.
 1) Clone the Bright-lite repository from github.
 2) Change directory into the Bright-lite directory using the following
    command. 
-   	cd Bright-lite
+   		cd Bright-lite
 3) Use the following command inside the Bright-lite directory.
-   	python install.py
+   		python install.py
 
 ------------
 Something something results
