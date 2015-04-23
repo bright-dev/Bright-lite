@@ -46,5 +46,6 @@ std::pair<double, std::pair<double, std::map<int, double> > > blending_calc(fuel
 double CR_finder(fuelBundle &core);
 double CR_batch(fuelBundle &core, int i);
 void print_library(std::string name, fuelBundle &core);
+
 #endif // BURNUPCALC_H_INCLUDED
 

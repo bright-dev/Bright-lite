@@ -219,9 +219,8 @@ class ReactorFacility : public cyclus::Facility  {
                       "units": "MWd/kgIHM"}
   double target_burnup;
 
-  #pragma cyclus var {"default": 1000.0, \
-                      "units": "MWe", \
-                      "userlevel": 2, \
+  #pragma cyclus var {"units": "MWe", \
+                      "userlevel": 0, \
                       "tooltip": "Electrical production."}
   double generated_power;
 
