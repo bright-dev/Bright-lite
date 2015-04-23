@@ -9,6 +9,7 @@ transmutations matrix curves to determine input and output isotopic compositions
 Bright-lite works in conjuction with the Cyclus_ Fuel Cycle Simulator. 
 
 Bright-lite is currently only being actively supported for Ubuntu.
+
 ------------
 Something here about how it works.
 ------------
