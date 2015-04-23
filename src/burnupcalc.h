@@ -13,7 +13,6 @@
 #include "cyclus.h"
 
 #include <ctime>
-//#include <eigen3/Eigen/Eigen>
 
 #include <sys/time.h>
 #include <ctime>
@@ -21,14 +20,6 @@
 
 #include <stdio.h>
 #include <math.h>
-//#include <cblas.h>
-
-//#include <gsl/gsl_math.h>
-//#include <gsl/gsl_eigen.h>
-
-//#include "lapacke.h"
-
-//#include <armadillo>
 
 double intpol(double y0, double y1, double x0, double x1, double x);
 batch_info BatchCollapse(batch_info &batch);
