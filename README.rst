@@ -28,7 +28,7 @@ To install Bright-lite please follow these instructions.
 2) Change directory into the Bright-lite directory using the following
    command. 
    	cd Bright-lite
-3) Use the following command inside the Bright-lite directory
+3) Use the following command inside the Bright-lite directory.
    	python install.py
 
 ------------
