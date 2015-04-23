@@ -41,6 +41,5 @@ Something something results
 
 ------------
 Yay!
-
 ------------
 
