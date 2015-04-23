@@ -4,7 +4,6 @@
 
 Welcome New Bright-lite User!
 =============================
-
 Bright-lite is a reactor modeling software that uses burnup, criticality, and 
 transmutations matrix curves to determine input and output isotopic compositions.
 
@@ -12,7 +11,6 @@ Bright-lite works in conjuction with the Cyclus_ Fuel Cycle Simulator.
 
 Bright-lite is currently only being actively supported for Ubuntu.
 ------------
-
 Something here about how it works.
 
 ------------
@@ -38,12 +36,9 @@ This will add the Bright-lite module to the cyclus environment, and allow
 you to use Bright-lite in Cyclus simulations. 
 
 ------------
-
 Something something results
 
 ------------
-
 Yay!
 
-------------
 
