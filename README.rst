@@ -1,4 +1,3 @@
-.. _hello_world:
 .. _Cyclus: http://www.fuelcycle.org/
 .. _Eigen: http://eigen.tuxfamily.org/index.php?title=Main_Page
 
