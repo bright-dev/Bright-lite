@@ -95,16 +95,16 @@ Format of Reprocessing Plant Text File
 .. _here:
  
 	BEGIN
-	isotope1n fraction1n
-	isotope2n fraction2n
-	...
-	isotopeN fractionN
+	 isotope1n fraction1n
+	 isotope2n fraction2n
+	 ...
+	 isotopeN fractionN
 	END
 	BEGIN
-	isotope1k fraction1k
-	isotope2k fraction2k
-	...
-	isotopeK fractionK
+	 isotope1k fraction1k
+	 isotope2k fraction2k
+	 ...
+	 isotopeK fractionK
 	END
 
 ------------
