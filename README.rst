@@ -92,7 +92,8 @@ Something something results
 ------------
 Format of Reprocessing Plant Text File
 ------------
-.. _here: 
+.. _here:
+ 
 	BEGIN
 	isotope1n fraction1n
 	isotope2n fraction2n
