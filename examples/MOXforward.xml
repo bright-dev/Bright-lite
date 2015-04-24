@@ -57,10 +57,11 @@ Batches: 5
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.91</nonleakage>
-        <core_mass>3.0</core_mass>
-    		<interpol_pairs>
+        <core_mass>3200</core_mass>
+        <generated_power>1200</generated_power>
+    	<interpol_pairs>
            <key>BURNUP</key>
-	       <val>42.5</val>
+	   <val>42.5</val>
         </interpol_pairs>
         <batches>5</batches>
         <flux_mode>2</flux_mode>

@@ -57,7 +57,8 @@ Batches: 6
         <libraries><val>FR50</val></libraries>
         <target_burnup>0</target_burnup>
         <nonleakage>0.57</nonleakage>
-        <core_mass>6.0</core_mass>
+        <core_mass>3200.0</core_mass>
+        <generated_power>1200</generated_power>
     	<interpol_pairs>
            <key>BURNUP</key>
 	       <val>42.5</val>

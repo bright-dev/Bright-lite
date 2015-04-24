@@ -93,7 +93,8 @@ Batches: 3
         <libraries><val>extLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.883</nonleakage>
-        <core_mass>3000</core_mass>
+        <core_mass>3500</core_mass>
+        <generated_power>1000</generated_power>
     	<interpol_pairs>
 	   <key>BURNUP</key>
 	   <val>33</val>
