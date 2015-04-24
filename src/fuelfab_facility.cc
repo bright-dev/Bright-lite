@@ -299,7 +299,7 @@ namespace fuelfab {
                         cyclus::Request<Material> req = *it->request;
                         if(req.requester() == id->first){
                             mass_fracs = reactor->blend_next(fissle_inv, non_fissle_inv, inventory, in_commods);
-                            limit = mass_fracs[mass_fracs.size()-1;
+                            limit = mass_fracs[mass_fracs.size()-1];
                             if(limit == 0){
                                 manifest = cyclus::ResCast<Material>(fissle_inv.PopQty(10));
                                 offer = manifest[0]->ExtractComp(0., manifest[0]->comp());

@@ -19,33 +19,31 @@ typedef unsigned long long timestamp_t;
 
 /** This function is used to measure the difference between the fuel being generated
 for steady state calculations and the last fuel used in the reactor*/
-bool stream_check(cyclus::Material::Ptr &mat1){
+bool stream_check(cyclus::Material::Ptr &mat1, cyclus::Material::Ptr &previous_mat){
     std::vector<double> diffs;
     bool check1;
     bool diff_check;
-    comp_new = mat1->comp()->mass();
-    comp_old = previous_mat->comp()->mass();
+    std::map<int, double> comp_new = mat1->comp()->mass();
+    std::map<int, double> comp_old = previous_mat->comp()->mass();
     cyclus::CompMap::iterator it;
     cyclus::CompMap::iterator id;
     for(it = comp_new.begin(); it != comp_new.end(); ++it){
         check1 = false;
-        for(id = comp_previous.begin(); id != comp_previous.end(); ++id){
+        for(id = comp_old.begin(); id != comp_old.end(); ++id){
             if(it->first == id->first){
                 diffs.push_back(std::pow(it->second - id->first, 2));
                 check1 = true;
             }
         }
-        if(check1 == false){diffs.push_back(std::pow(it-second, 2));}
+        if(check1 == false){diffs.push_back(std::pow(it->second, 2));}
     }
     double sum = 0;
     for(int i = 0; i < diffs.size(); i++){
         sum += diffs[i];
     }
     double rms = std::sqrt(sum/diffs.size());
-    if (rms >= 0.05){return false}{
-    } else {
-        return true;
-    }
+    if (rms >= 0.05){return false;}
+    else {return true;}
 }
 
 /** A function to output the isotopic composition of a cyclus material*/
@@ -653,7 +651,7 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(ss_fraction, fissile_mat->comp());
     cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1-ss_fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
-    if(stream_check(mat1) == true){
+    if(stream_check(mat1, previous_mat) == true){
         return_amount.push_back(fraction_1 * total_mass * (1-mass_frac));
         for(int i = 0; i < return_amount.size()-1; i++){
             return_amount[i] *= (fraction_1 * total_mass);
