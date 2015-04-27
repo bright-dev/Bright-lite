@@ -92,8 +92,9 @@ Something something results
 ------------
 
 ------------
-Library Interpolation .. _interpolation:
+Library Interpolation
 ------------
+.. _interpolation:
 
 The libraries used in Bright-lite are often associated with several parameters. For example
 an LWR reactor library might have parameters for burnup, and enrichment. If as a user, you
@@ -124,9 +125,9 @@ If a new library with the following parameters is desired
 
 
 ------------
-Format of Reprocessing Plant Text File .. _here:
+Format of Reprocessing Plant Text File
 ------------
-
+.. _here:
  
 	BEGIN
 	 isotope1n fraction1n
