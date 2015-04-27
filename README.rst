@@ -131,11 +131,13 @@ Format of Reprocessing Plant Text File
  
 	BEGIN
 	 isotope1n fraction1n
+	 
 	 isotope2n fraction2n
+	 
 	 ...
+	 
 	 isotopeN fractionN
 	END
-	
 	BEGIN
 	 isotope1k fraction1k
 	 
