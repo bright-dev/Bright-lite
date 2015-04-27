@@ -90,6 +90,36 @@ The six required inputs are
 ------------
 Something something results
 ------------
+How to use the interpolation tool
+.. _interpolation
+
+The libraries used in Bright-lite are often associated with several parameters. For example
+an LWR reactor library might have parameters for burnup, and enrichment. If as a user, you
+require a different value for these parameters there are two possible methods for obtaining it
+First, a new library can be generated externally from Bright-lite using tools available (XSGEN
+for example). It is also possible to create a dynamic library that matches your desired parameters
+using Bright-lite's built in library interpolation tool.
+
+This tool is used using two key components in the Bright-lite input schema.
+- **libraries** 
+- **interpolation_pairs**
+
+For example, there may be two LWR libraries that fit into an LWR library suite. 
+
+- Reactor 1
+ - Burnup: 50 MWd/kgIHM
+ - Enrichment: 5% U235
+- Reactor 2
+ - Burnup: 30 MWd/kgIHM
+ - Enrichment: 3.3% U235
+ 
+If a new library with the following parameters is desired
+
+- Burnup: 40 MWd/kgIHM
+- Enrichment: 4% U235
+
+
+------------
 Format of Reprocessing Plant Text File
 ------------
 .. _here:
