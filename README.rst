@@ -89,9 +89,11 @@ The six required inputs are
   
 ------------
 Something something results
+------------
 
 ------------
 How to use the interpolation tool
+------------
 .. _interpolation
 
 The libraries used in Bright-lite are often associated with several parameters. For example
