@@ -101,6 +101,7 @@ for example). It is also possible to create a dynamic library that matches your 
 using Bright-lite's built in library interpolation tool.
 
 This tool is used using two key components in the Bright-lite input schema.
+
 - **libraries** 
 - **interpolation_pairs**
 
@@ -115,8 +116,9 @@ For example, there may be two LWR libraries that fit into an LWR library suite.
  
 If a new library with the following parameters is desired
 
-- Burnup: 40 MWd/kgIHM
-- Enrichment: 4% U235
+- Dynamic Reactor
+ - Burnup: 40 MWd/kgIHM
+ - Enrichment: 4% U235
 
 
 ------------
