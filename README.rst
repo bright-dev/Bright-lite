@@ -89,7 +89,7 @@ The six required inputs are
   
 ------------
 Something something results
-------------
+
 ------------
 How to use the interpolation tool
 .. _interpolation
