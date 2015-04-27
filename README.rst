@@ -74,7 +74,7 @@ The six required inputs are
   waste.
 - **libraries**: This is a one or more field that indicates the Bright-lite library 
   the reactor will be using. Note: Adding additionally libraries to this list
-  will enable the 'library interpolation'_ capabilities in Bright-lite but also
+  will enable the 'library interpolation'__ capabilities in Bright-lite but also
   requires that the user input parameters and values to be interpolated upon. The
   interpolation feature is intended for advanced users. 
 - **target_burnup**: This field indicates to the reactor what the target burnup for the 
@@ -94,7 +94,7 @@ Something something results
 ------------
 Library Interpolation
 ------------
-.. _'library interpolation'
+.. __'library interpolation'
 
 The libraries used in Bright-lite are often associated with several parameters. For example
 an LWR reactor library might have parameters for burnup, and enrichment. If as a user, you
