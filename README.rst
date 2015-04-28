@@ -135,7 +135,90 @@ If a new library with the following parameters is desired
  - Burnup: 40 MWd/kgIHM
  - Enrichment: 4% U235
 
+------------
+Available Libraries
+------------
+Recommended Libraries
 
+- lowLWR - A standard PWR library.
+ - Enrichment: 
+ - Burnup: 20 MWd/kgIHM
+ - PNL: 
+ - Batches: 3
+
+- standLWR
+ - Enrichment:
+ - Burnup: 33 MWd/kgIHM
+ - PNL:
+ - Batches: 3
+
+- extLWR
+ - Enrichment: 5% U235
+ - Burnup: 50 MWd/kgIHM
+ - PNL:
+ - Batches: 3
+
+- BWRMOX
+ - Burnup:
+ - PNL:
+ - Batches: 
+ 
+- PWRMOX
+ - Burnup
+ - PNL
+ - Batches
+
+- DUPIC
+ - Burnup
+ - PNL
+ - Batches
+ 
+- FR25
+ - Burnup
+ - PNL
+ - Batches
+ 
+- FR25MOX
+ - Burnup
+ - PNL
+ - Batches
+ 
+- FR50
+ - Burnup
+ - PNL
+ - Batches
+ 
+- MOXMA
+ - Burnup
+ - PNL
+ - Batches
+ 
+Additional Libraries
+
+- E5_50
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+- E5_60
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+- E7_100
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+- E9_100
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
 ------------
 Format of Reprocessing Plant Text File
 ------------
