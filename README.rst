@@ -72,7 +72,7 @@ The six required inputs are
 - **out_commod**: This field should be filled out with the cyclus commodity that will
   connect the reactor facility to the facility that will be directly handling the 
   waste.
-- **libraries**: This is a one or more field that indicates the Bright-lite library 
+- **_libraries**: This is a one or more field that indicates the Bright-lite library 
   the reactor will be using. Note: Adding additionally libraries to this list
   will enable the library interpolation_ capabilities in Bright-lite but also
   requires that the user input parameters and values to be interpolated upon. The
@@ -105,7 +105,7 @@ using Bright-lite's built in library interpolation tool.
 
 This tool is used using two key components in the Bright-lite input schema.
 
-- **libraries** 
+- **_libraries** 
  - To enable library interpolation here simple add more than one library to the field. This is done
    simply by adding another val to the input field. That is...::
    
@@ -117,8 +117,10 @@ This tool is used using two key components in the Bright-lite input schema.
    Bright-lite will make a new library based on the interpolation pairs and the values inside of 
    these two libraries. 
 - **interpolation_pairs**
-
-
+ - Once two or more libraries have been selected at least one interpolation pair will need to be added. 
+   An interpolation pair is a <"Parameter", Value> pair. The parameter represents a common parameter 
+   shared by the libraries, and the value is the target value for the new dynamic library in that 
+   parameter. 
 
 For example, there may be two LWR libraries that fit into an LWR library suite. 
 
@@ -135,9 +137,24 @@ If a new library with the following parameters is desired
  - Burnup: 40 MWd/kgIHM
  - Enrichment: 4% U235
 
+The following xml should be added to the reactor archetype.
+::
+
+ <libraries>
+  <val>Reactor 1</val>
+  <val>Reactor 2</val>
+ </libraries>
+ <interpolation_pairs>
+  <key>BURNUP</key>
+  <val>40</val>
+  <key>ENRICHMENT</key>
+  <val>4</val>
+ </interpolation_pairs>
+
 ------------
 Available Libraries
 ------------
+.. _libraries:
 Recommended Libraries
 
 - lowLWR - A standard PWR library.

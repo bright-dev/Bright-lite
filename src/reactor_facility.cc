@@ -42,7 +42,7 @@ bool stream_check(cyclus::Material::Ptr &mat1, cyclus::Material::Ptr &previous_m
         sum += diffs[i];
     }
     double rms = std::sqrt(sum/diffs.size());
-    if (rms >= 0.05){return false;}
+    if (rms >= 0.2){return false;}
     else {return true;}
 }
 
