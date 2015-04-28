@@ -107,7 +107,7 @@ This tool is used using two key components in the Bright-lite input schema.
 
 - **_libraries** 
  - To enable library interpolation here simple add more than one library to the field. This is done
-  simply by adding another val to the input field. That is...::
+   simply by adding another val to the input field. That is...::
    
    <val>extLWR</val>
   represents a reactor library using just the *extLWR* library. However by adding another library::
