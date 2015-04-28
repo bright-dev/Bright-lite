@@ -155,6 +155,7 @@ The following xml should be added to the reactor archetype.
 Available Libraries
 ------------
 .. _libraries:
+
 Recommended Libraries
 
 - lowLWR - A standard PWR library.
