@@ -116,7 +116,6 @@ void ReactorFacility::Tick() {
             }
             fuel_library_ = lib_interpol(fuel_library_);
         }
-        generated_power *= efficiency;
         //adds general info about the fuel in fuel_library_
         ///if theres value, dont update field
         fuel_library_.name = libraries[0];
@@ -181,20 +180,20 @@ void ReactorFacility::Tock() {
         return;
     } else if (outage_shutdown == 1){
         // reactor on last month of shutdown
-        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac);
+        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac*efficiency);
         outage_shutdown = 0;
     } else {
         if (ctx->time() != cycle_end_) {
-            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
+            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*efficiency);
             return;
         } else {
             if(p_time + outage_time < 28.){
                 p_frac = 1. - outage_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac);
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac*efficiency);
             } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
                 p_frac = -1. + (p_time + outage_time)/28.;
                 double x = p_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x);
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
                 outage_shutdown = 1;
                 return;
             } else {
@@ -204,7 +203,7 @@ void ReactorFacility::Tock() {
                 }
                 p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
                 double x = p_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x);
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
                 return;
             }
         }
@@ -470,7 +469,6 @@ void ReactorFacility::AcceptMatlTrades(const std::vector< std::pair<cyclus::Trad
         for (it = responses.begin(); it != responses.end(); ++it) {
             if(it->first.request->commodity() == in_commods[0]){
                 inventory.Push(it->second);
-                previous_mat = it->second;
             }
         }
       }
@@ -686,8 +684,11 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     }//Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    //std::cout <<  "P_fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    //std::cout << "P_fraction " << fraction << std::endl;
+    if(fraction < 0){
+        std::cout << "WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+    } else if (fraction > 1){
+        std::cout << "REFUEL WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+    }
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
     mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
@@ -707,11 +708,17 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
+        if(fraction < 0){
+            std::cout << "WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+        } else if (fraction > 1){
+            std::cout << "REFUEL WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+        }
         //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
         //std::cout << "fraction " << fraction << std::endl;
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
         mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
+        previous_mat = mat1;
         //temp_bundle = comp_trans(mat1, fuel_library_);
         //burnup_3 = burnupcalc_BU(temp_bundle, 2, 1, 40);
         temp_bundle = comp_function(mat1, fuel_library_);
@@ -827,8 +834,11 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-    //std::cout << "fraction " << fraction << std::endl;
+    if(fraction < 0){
+        std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+    } else if (fraction > 1){
+        std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+    }
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
     mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
@@ -849,11 +859,15 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        //std::cout << "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
-        //std::cout << "fraction " << fraction << std::endl;
+        if(fraction < 0){
+            std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+        } else if (fraction > 1){
+            std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+        }
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
         mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
         mat1->Absorb(mat2);
+        previous_mat = mat1;
         temp_bundle = comp_function(mat1, fuel_library_);
         if(CR_target > 0){
             burnup_3 = SS_burnupcalc_CR(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, 1E22, target_burnup);
