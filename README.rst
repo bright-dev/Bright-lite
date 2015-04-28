@@ -30,9 +30,6 @@ Bright-lite works in conjuction with the Cyclus_ Fuel Cycle Simulator.
 Bright-lite is currently only being actively supported for Ubuntu.
 
 ------------
-Something here about how it works.
-------------
-
 Installation
 ------------
 To use Bright-lite first you need to install it. Currently Bright-lite has
@@ -64,7 +61,9 @@ Bright-lite requires at least 6 inputs from the users to operate fully. While
 there are several other inputs associated with the Bright-lite module all of 
 these other inputs come with a default value. 
 
+^^^^^^^^^^^
 The six required inputs are
+^^^^^^^^^^^
 
 - **in_commods**: This field is a one or more than indicates that possible sources of 
   fuel for the reactor. The values in this field should be commodities that exist 
@@ -72,7 +71,7 @@ The six required inputs are
 - **out_commod**: This field should be filled out with the cyclus commodity that will
   connect the reactor facility to the facility that will be directly handling the 
   waste.
-- **libraries**_: This is a one or more field that indicates the Bright-lite library 
+- **libraries**: This is a one or more field that indicates the Bright-lite library 
   the reactor will be using. Note: Adding additionally libraries to this list
   will enable the library interpolation_ capabilities in Bright-lite but also
   requires that the user input parameters and values to be interpolated upon. The
@@ -86,6 +85,10 @@ The six required inputs are
 - **generated_power**: This indicates the total thermal generating power of the core. 
   The electrical generated_power will be this value times the effiency of the reactor
   (a input set to default at 33% but is user adjustable).
+
+^^^^^^^^^^^
+Operational Modes
+^^^^^^^^^^^
   
 ------------
 Something something results
@@ -105,7 +108,7 @@ using Bright-lite's built in library interpolation tool.
 
 This tool is used using two key components in the Bright-lite input schema.
 
-- **'libraries_'** 
+- **libraries** 
  - To enable library interpolation here simple add more than one library to the field. This is done
    simply by adding another val to the input field. That is...::
    
