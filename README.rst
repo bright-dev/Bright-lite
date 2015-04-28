@@ -72,7 +72,7 @@ The six required inputs are
 - **out_commod**: This field should be filled out with the cyclus commodity that will
   connect the reactor facility to the facility that will be directly handling the 
   waste.
-- **libraries_**: This is a one or more field that indicates the Bright-lite library 
+- **'libraries'_**: This is a one or more field that indicates the Bright-lite library 
   the reactor will be using. Note: Adding additionally libraries to this list
   will enable the library interpolation_ capabilities in Bright-lite but also
   requires that the user input parameters and values to be interpolated upon. The
@@ -105,7 +105,7 @@ using Bright-lite's built in library interpolation tool.
 
 This tool is used using two key components in the Bright-lite input schema.
 
-- **libraries_** 
+- **'libraries_'** 
  - To enable library interpolation here simple add more than one library to the field. This is done
    simply by adding another val to the input field. That is...::
    
