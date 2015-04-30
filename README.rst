@@ -147,7 +147,8 @@ represents a reactor library using just the *extLWR* library. However by adding 
   <val>lowLWR</val>
   
 Bright-lite will make a new library based on the interpolation pairs and the values inside of 
-these two libraries. 
+these two libraries.
+ 
 **interpolation_pairs**
 Once two or more libraries have been selected at least one interpolation pair will need to be added. 
 An interpolation pair is a <"Parameter", Value> pair. The parameter represents a common parameter 
