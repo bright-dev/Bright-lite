@@ -136,22 +136,22 @@ using Bright-lite's built in library interpolation tool.
 
 This tool is used using two key components in the Bright-lite input schema.
 
-- **libraries** 
- - To enable library interpolation here simple add more than one library to the field. This is done
-   simply by adding another val to the input field. That is...::
-   
-   <val>extLWR</val>
-   represents a reactor library using just the *extLWR* library. However by adding another library::
-   
-   <val>extLWR</val>
-   <val>lowLWR</val>
-   Bright-lite will make a new library based on the interpolation pairs and the values inside of 
-   these two libraries. 
-- **interpolation_pairs**
- - Once two or more libraries have been selected at least one interpolation pair will need to be added. 
-   An interpolation pair is a <"Parameter", Value> pair. The parameter represents a common parameter 
-   shared by the libraries, and the value is the target value for the new dynamic library in that 
-   parameter. 
+**libraries** 
+- To enable library interpolation here simple add more than one library to the field. This is done
+  simply by adding another val to the input field. That is...::
+  
+  <val>extLWR</val>
+  represents a reactor library using just the *extLWR* library. However by adding another library::
+  
+  <val>extLWR</val>
+  <val>lowLWR</val>
+  Bright-lite will make a new library based on the interpolation pairs and the values inside of 
+  these two libraries. 
+**interpolation_pairs**
+- Once two or more libraries have been selected at least one interpolation pair will need to be added. 
+  An interpolation pair is a <"Parameter", Value> pair. The parameter represents a common parameter 
+  shared by the libraries, and the value is the target value for the new dynamic library in that 
+  parameter. 
 
 For example, there may be two LWR libraries that fit into an LWR library suite. 
 
