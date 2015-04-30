@@ -95,12 +95,6 @@ Bright-lite reactor module. Forward mode is chosen by setting the reactor *targe
 mode to be equal to 0. Blending mode requires the *target_burnup* field to be a non negative
 value. Additionally, blending mode requires the Bright-lite ReactorFacility to be connected to a
 Bright-lite FuelfabFacility. 
-
-Currently there are only two blending modes available in Bright-lite. These modes are described by
-a target-constraint pairing. The two available pairs currently are:
- 
-1) Burnup - Criticality: The blender will create a fuel that meets a target burnup when criticality is equal to the given constraint.
-2) Burnup - Conversion Ratio: The blender will create a fuel that meets a target burnup when conversion ratio is equal to the given constraint. 
  
 ^^^^^^^^^^^^
 Forward Mode
@@ -113,7 +107,16 @@ Currently forward mode works only with *criticality* and *burnup* targets
 ^^^^^^^^^^^^
 Blending Mode
 ^^^^^^^^^^^^
-In blending mode, Bright-lite couples with the B
+As stated above using the blending function in Bright-lite requires connecting a Bright-lite
+ReactorFacility to a Bright-lite FuelfabFacility. The *in_commods* field of the Bright-lite
+reactor should include all of the fuel fabrication facilities that the reactor can be connected to. 
+
+Currently there are only two blending modes available in Bright-lite. These modes are described by
+a target-constraint pairing. The two available pairs currently are:
+ 
+1) Burnup - Criticality: The blender will create a fuel that meets a target burnup when criticality is equal to the given constraint. This set of constraints only requires a non negative number to be entered into the *target_burnup* field. 
+2) Burnup - Conversion Ratio: The blender will create a fuel that meets a target burnup when conversion ratio is equal to the given constraint. This is achieved by setting the *CR_target* input field of the reactor to 
+be equal to a number greater than 0 (note that there is no upper bound limit in the code for this this but physically it should not exceed 2). Additionally the *target_burnup* field must be a non negative value for this to work. 
 
 ------------
 Something something results
@@ -187,21 +190,21 @@ Available Libraries
 Recommended Libraries
 
 - lowLWR - A standard PWR library.
- - Enrichment: 
+ - Enrichment: 2.2 %U235
  - Burnup: 20 MWd/kgIHM
- - PNL: 
+ - PNL: 0.903
  - Batches: 3
 
 - standLWR
- - Enrichment:
+ - Enrichment: 3.3 %U235
  - Burnup: 33 MWd/kgIHM
- - PNL:
+ - PNL:0.911 
  - Batches: 3
 
 - extLWR
  - Enrichment: 5% U235
  - Burnup: 50 MWd/kgIHM
- - PNL:
+ - PNL: 0.883
  - Batches: 3
 
 - BWRMOX
@@ -210,34 +213,37 @@ Recommended Libraries
  - Batches: 
  
 - PWRMOX
- - Burnup
- - PNL
- - Batches
+ - Burnup:
+ - PNL:
+ - Batches:
 
 - DUPIC
- - Burnup
- - PNL
- - Batches
+ - Burnup:
+ - PNL:
+ - Batches:
  
 - FR25
- - Burnup
- - PNL
- - Batches
+ - Burnup:
+ - Conversion Ratio: 0.25
+ - PNL:
+ - Batches:
  
 - FR25MOX
- - Burnup
- - PNL
- - Batches
+ - Burnup:
+ - Conversion Ratio: 0.25:
+ - PNL:
+ - Batches:
  
 - FR50
- - Burnup
- - PNL
- - Batches
+ - Burnup:
+ - Conversion Ratio: 0.5:
+ - PNL:
+ - Batches:
  
 - MOXMA
- - Burnup
- - PNL
- - Batches
+ - Burnup:
+ - PNL:
+ - Batches:
  
 Additional Libraries
 
