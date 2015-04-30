@@ -100,8 +100,7 @@ Currently there are only two blending modes available in Bright-lite. These mode
 a target-constraint pairing. The two available pairs currently are:
  
 1) Burnup - Criticality: The blender will create a fuel that meets a target burnup when criticality is equal to the given constraint.
-2) Burnup - Conversaion Ratio: The blender will create a fuel that meets a target burnup when conversion ratio
-    is equal to the given constraint. 
+2) Burnup - Conversion Ratio: The blender will create a fuel that meets a target burnup when conversion ratio is equal to the given constraint. 
  
 ^^^^^^^^^^^^
 Forward Mode
