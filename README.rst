@@ -1,8 +1,9 @@
 .. _Cyclus: http://www.fuelcycle.org/
 .. _Eigen: http://eigen.tuxfamily.org/index.php?title=Main_Page
 
+*****************************
 Welcome New Bright-lite User!
-=============================
+*****************************
 Bright-lite is a collection of modules for the Cyclus_ Fuel Cycle Simulator 
 that allow for medium fidelity reactor modeling. There are currently 
 three modules in the Bright-lite suite. 
@@ -29,9 +30,9 @@ Bright-lite works in conjuction with the Cyclus_ Fuel Cycle Simulator.
 
 Bright-lite is currently only being actively supported for Ubuntu.
 
-------------
+============
 Installation
-------------
+============
 To use Bright-lite first you need to install it. Currently Bright-lite has
 the following dependencies. 
 
@@ -54,16 +55,16 @@ To install Bright-lite please follow these instructions.
 This will add the Bright-lite module to the cyclus environment, and allow
 you to use Bright-lite in Cyclus simulations. 
 
-------------
+============
 Using Bright-lite
-------------
+============
 Bright-lite requires at least 6 inputs from the users to operate fully. While
 there are several other inputs associated with the Bright-lite module all of 
 these other inputs come with a default value. 
 
-^^^^^^^^^^^
+-----------
 The six required inputs are
-^^^^^^^^^^^
+-----------
 
 - **in_commods**: This field is a one or more than indicates that possible sources of 
   fuel for the reactor. The values in this field should be commodities that exist 
@@ -86,10 +87,36 @@ The six required inputs are
   The electrical generated_power will be this value times the effiency of the reactor
   (a input set to default at 33% but is user adjustable).
 
-^^^^^^^^^^^
+-----------
 Operational Modes
-^^^^^^^^^^^
-  
+-----------
+Bright-lite has two operational modes. The mode is indicated using inputs to the 
+Bright-lite reactor module. Forward mode is chosen by setting the reactor *target_burnup*
+mode to be equal to 0. Blending mode requires the *target_burnup* field to be a non negative
+value. Additionally, blending mode requires the Bright-lite ReactorFacility to be connected to a
+Bright-lite FuelfabFacility. 
+
+Currently there are only two blending modes available in Bright-lite. These modes are described by
+a target-constraint pairing. The two available pairs currently are:
+ 
+ 1) Burnup - Criticality: The blender will create a fuel that meets a target burnup when criticality is equal
+   to the given constraint.
+ 2) Burnup - Conversaion Ratio: The blender will create a fuel that meets a target burnup when conversion ratio
+    is equal to the given constraint. 
+ 
+^^^^^^^^^^^^
+Forward Mode
+^^^^^^^^^^^^
+In forward mode Bright-lite accepts a fuel composition and burns it foward in time to match
+a target. It does this by advancing the fluence of each batch in the core until the target is met.
+
+Currently forward mode works only with *criticality* and *burnup* targets
+
+^^^^^^^^^^^^
+Blending Mode
+^^^^^^^^^^^^
+In blending mode, Bright-lite couples with the B
+
 ------------
 Something something results
 ------------
