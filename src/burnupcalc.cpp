@@ -258,7 +258,7 @@ double siga_finder(batch_info &batch){
 
 /**
 UNDER DEVELOPMENT
-**/
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 fuelBundle phicalc_cylindrical(fuelBundle &core){
 //cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
@@ -291,13 +291,13 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     R[region] = R[region-1] + core.mod_thickness; //this is the moderator region
 
 
-/*
-    Sigma_a[0] = 0.0230;
-    Sigma_a[1] = 0.0246;
-    Sigma_a[2] = 0.0324;
-    NuSigma_f[0] = 0.0184;
-    NuSigma_f[1] = 0.0217;
-    NuSigma_f[2] = 0.0382;*/
+//
+//    Sigma_a[0] = 0.0230;
+//    Sigma_a[1] = 0.0246;
+//    Sigma_a[2] = 0.0324;
+//    NuSigma_f[0] = 0.0184;
+//    NuSigma_f[1] = 0.0217;
+//    NuSigma_f[2] = 0.0382;
     //assign fuel cross sections
     for(int i = 0; i < region; i++){
 
@@ -323,11 +323,11 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
         dd2[i] = D[i]/delta/delta;
     }
 
-    /*
-    cout << "Cross sections in cylindrical calc: " << endl << "Sig_a      Sig_f      R" << endl;
-    for(int r = 0; r < region+1; r++){
-        cout << Sigma_a[r] << "  " << NuSigma_f[r] << "  " << R[r] << endl;
-    }*/
+
+//    cout << "Cross sections in cylindrical calc: " << endl << "Sig_a      Sig_f      R" << endl;
+//    for(int r = 0; r < region+1; r++){
+//        cout << Sigma_a[r] << "  " << NuSigma_f[r] << "  " << R[r] << endl;
+//    }
 
     //populate N, number of mesh points in each region
     N[0] = R[0]/delta;
@@ -340,7 +340,7 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
         NTotal += N[i];
     }
     NC[region] += 1;
-    NTotal += 1;/*
+    NTotal += 1;
     Eigen::MatrixXf A(NTotal, NTotal);
     Eigen::MatrixXf F(NTotal, 1);
     Eigen::MatrixXf phi(NTotal, 1);
@@ -504,10 +504,12 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux = flux[i];
     }
-*/
+
     return core;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+**/
 
 /**
 Finds the criticality of the core using neutron production and destruction rates
