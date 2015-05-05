@@ -1,26 +1,23 @@
 #include "burnupcalc.h"
 #include <boost/math/special_functions/bessel.hpp>
 
-
 using namespace std;
 
-typedef unsigned long long timestamp_t;
 
-static timestamp_t
-get_timestamp ()
-    {
-      struct timeval now;
-      gettimeofday (&now, NULL);
-      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
-    }
-
+/**
+Used to find continuously defined values between discrete variables.
+**/
 double intpol(double y0, double y1, double x0, double x1, double x) {
     // linear interpolation function
+//    (x, y) is between (x0, y0) and (x1, y1)
     double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
     return y;
 }
 
 
+/**
+Collapses every batch in the core. Used during startup.
+**/
 fuelBundle CoreCollapse(fuelBundle &fuel){
     for(int i = 0; i < fuel.batch.size(); i++){
         fuel.batch[i] = BatchCollapse(fuel.batch[i]);
@@ -29,22 +26,25 @@ fuelBundle CoreCollapse(fuelBundle &fuel){
     return fuel;
 }
 
+/**
+Builds the collapsed_iso structure using the information in iso.fraction
+**/
 batch_info BatchCollapse(batch_info &batch){
-    //cout << " 1  " << batch.iso.size() << endl;
+
+    // reads batch.iso.fraction to collapse all the fuel libraries into one
     batch.collapsed_iso = FuelBuilder(batch.iso);
 
     //builds total BU from BUd
-    //cout << " 2" << endl;
     batch.collapsed_iso.BU.push_back(batch.collapsed_iso.BUd[0]);
 
     for(int j = 1; j < batch.collapsed_iso.BUd.size(); j++){
-    //cout << "    1.5tst" << i+1 << "  " << j << endl;
         batch.collapsed_iso.BU.push_back(batch.collapsed_iso.BU[j-1]+batch.collapsed_iso.BUd[j]);
     }
     //test to see if the prod/dest vectors are the same length
     if(batch.collapsed_iso.neutron_prod.size() != batch.collapsed_iso.neutron_dest.size()){
         cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
     }
+    // erases zero beginnings since these zero-zero points affect interpolation
     if(batch.collapsed_iso.neutron_prod[0] == 0 || batch.collapsed_iso.neutron_dest[0] == 0){
         batch.collapsed_iso.neutron_prod.erase(batch.collapsed_iso.neutron_prod.begin());
         batch.collapsed_iso.neutron_dest.erase(batch.collapsed_iso.neutron_dest.begin());
@@ -55,57 +55,21 @@ batch_info BatchCollapse(batch_info &batch){
             batch.collapsed_iso.iso_vector[j].mass.erase(batch.collapsed_iso.iso_vector[j].mass.begin());
         }
     }
-    //cout << " 3" << endl;
+
     return batch;
 }
 
-fuelBundle BatchCollapse_old(fuelBundle &fuel){
-///add micro region flux effects
-//struct effects accounted here
-    cout << "Begin regionCollapse_old" << endl;
-    for(int i = 0; i < fuel.batch.size(); i++){
-        //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
-        fuel.batch[i].collapsed_iso = FuelBuilder(fuel.batch[i].iso);
-        //}
-        //builds total BU from BUd
-        fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BUd[0]);
-
-        for(int j = 1; j < fuel.batch[i].collapsed_iso.BUd.size(); j++){
-        //cout << "    1.5tst" << i+1 << "  " << j << endl;
-            fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BU[j-1]+fuel.batch[i].collapsed_iso.BUd[j]);
-        }
-        //test to see if the prod/dest vectors are the same length
-        if(fuel.batch[i].collapsed_iso.neutron_prod.size() != fuel.batch[i].collapsed_iso.neutron_dest.size()){
-            cout << "Error. Neutron production/destruction rate vector length mismatch." << endl;
-        }
-        if(fuel.batch[i].collapsed_iso.neutron_prod[0] == 0 || fuel.batch[i].collapsed_iso.neutron_dest[0] == 0){
-            fuel.batch[i].collapsed_iso.neutron_prod.erase(fuel.batch[i].collapsed_iso.neutron_prod.begin());
-            fuel.batch[i].collapsed_iso.neutron_dest.erase(fuel.batch[i].collapsed_iso.neutron_dest.begin());
-            fuel.batch[i].collapsed_iso.BUd.erase(fuel.batch[i].collapsed_iso.BUd.begin());
-            fuel.batch[i].collapsed_iso.BU.erase(fuel.batch[i].collapsed_iso.BU.begin());
-            fuel.batch[i].collapsed_iso.fluence.erase(fuel.batch[i].collapsed_iso.fluence.begin());
-            for(int j = 0; j < fuel.batch[i].collapsed_iso.iso_vector.size(); j++){
-                fuel.batch[i].collapsed_iso.iso_vector[j].mass.erase(fuel.batch[i].collapsed_iso.iso_vector[j].mass.begin());
-            }
-        }
-    }
-    return fuel;
-};
-
 
 fuelBundle fast_region_collapse(fuelBundle &fuel){
-///add micro region flux effects
 //struct effects accounted here
-    //cout << "Begin regionCollapse" << endl;
+
     for(int i = 0; i < fuel.batch.size(); i++){
-        //for(int j = 0; j < fuel.batch[i].iso.size(); j ++){
         fuel.batch[i].collapsed_iso = BurnupBuilder(fuel.batch[i].iso);
-        //}
+
         //builds total BU from BUd
         fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BUd[0]);
 
         for(int j = 1; j < fuel.batch[i].collapsed_iso.BUd.size(); j++){
-        //cout << "    1.5tst" << i+1 << "  " << j << endl;
             fuel.batch[i].collapsed_iso.BU.push_back(fuel.batch[i].collapsed_iso.BU[j-1]+fuel.batch[i].collapsed_iso.BUd[j]);
         }
         //test to see if the prod/dest vectors are the same length
@@ -142,20 +106,21 @@ map<int, double> tomass (int ti, double fluence, isoInformation &isoinfo) {
     return out;
 }
 
-
+/**
+Uses a simple method to determine the relative flux of each batch and
+assigns the value.
+**/
 fuelBundle phicalc_simple(fuelBundle &core){
 //updates the rflux of each batch in core.batch
 //assumes the flux of a batch is proportional to the inverse neutron prod rate
     double maxphi = 0;
     //finds the inverse of neutron production at the batch_fluence
     //stores it in core.batch.rflux
-
-
     for(int i = 0; i < core.batch.size(); i++){
         int ii;
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (method2)" << endl;
-            //cout << " Values on max fluence will be used. Do not trust results." << endl;
+            // if the maximum fluence in the library is less than current fluence,
+            // then assign the same flux to all batches
             for(int j = 0; j < core.batch.size(); j++){
                 core.batch[j].rflux = 1;
             }
@@ -186,9 +151,11 @@ fuelBundle phicalc_simple(fuelBundle &core){
     return core;
 }
 
+
+/**
+Uses the equal power sharing assumption to find the relative flux of each batch
+**/
 fuelBundle phicalc_eqpow(fuelBundle &core){
-    //updates the rflux of each batch in core.batch
-    //assumes the flux of a batch is proportional to the inverse neutron prod rate
     double maxphi = 0;
     //finds the inverse of neutron production at the batch_fluence
     //stores it in core.batch.rflux
@@ -197,8 +164,6 @@ fuelBundle phicalc_eqpow(fuelBundle &core){
 
 
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
-            //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (method2)" << endl;
-            //cout << "  Values on max fluence will be used. Do not trust results." << endl;
             for(int j = 0; j < core.batch.size(); j++){
                 core.batch[j].rflux = 1;
             }
@@ -209,12 +174,10 @@ fuelBundle phicalc_eqpow(fuelBundle &core){
         }
 
         if(ii == 0){
-            //core.batch[i].rflux = 1/core.batch[i].collapsed_iso.neutron_prod[0];
             core.batch[i].rflux = (core.batch[i].collapsed_iso.fluence[ii+1]-core.batch[i].collapsed_iso.fluence[ii])
                 /(core.batch[i].collapsed_iso.BU[ii+1]-core.batch[i].collapsed_iso.BU[ii]);
 
         } else{
-
             core.batch[i].rflux = (core.batch[i].collapsed_iso.fluence[ii]-core.batch[i].collapsed_iso.fluence[ii-1])
                 /(core.batch[i].collapsed_iso.BU[ii]-core.batch[i].collapsed_iso.BU[ii-1]);
         }
@@ -235,6 +198,10 @@ fuelBundle phicalc_eqpow(fuelBundle &core){
     return core;
 }
 
+
+/**
+Finds the macroscopic fission cross-section times nu from the neutron production rate
+**/
 double nusigf_finder(batch_info &batch){
     double Nusig_f;
     int ii;
@@ -254,13 +221,15 @@ double nusigf_finder(batch_info &batch){
         prod = batch.collapsed_iso.neutron_prod[0];
     }
 
-    //Nusig_f[cm-1] = prod rate / Avagadros number * mass * barn
-    //Nusig_f = prod/(6.0221413E+23)*A*1E24/1000;
+    //Nusig_f[cm-1] = prod rate * smear density
     Nusig_f = prod*0.01097;
 
     return Nusig_f;
 }
 
+/**
+Finds the mascroscopic absorbtion cross-section from the neutron destruction rate
+**/
 double siga_finder(batch_info &batch){
 //returns the macroscopic cross section at fluence Fg
     double sig_a;
@@ -281,14 +250,15 @@ double siga_finder(batch_info &batch){
 
     dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
 
-    //sig_a[barn] = dest rate [cm2/kg] / Avagadros number * mass * barn
-    //sig_a = dest/(6.0221413E+23)*A*1E24/1000;
+    //Sig_a[cm-1] = dest rate * density
     sig_a = dest*0.01097;
 
     return sig_a;
 }
 
-
+/**
+UNDER DEVELOPMENT
+**/
 ////////////////////////////////////////////////////////////////////////////////////////////
 fuelBundle phicalc_cylindrical(fuelBundle &core){
 //cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
@@ -539,9 +509,11 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+Finds the criticality of the core using neutron production and destruction rates
+**/
 double kcalc(fuelBundle &core){
     //uses the fluence values in core.batch.Fg to calculate the core criticality
-    //boost::timer t;
     int N = core.batch.size();
     double prod_tot = 0;
     double dest_tot = 0;
@@ -570,17 +542,8 @@ double kcalc(fuelBundle &core){
 
         //add the destruction rate of batch i to total destruction
         dest_tot += intpol(core.batch[i].collapsed_iso.neutron_dest[j-1], core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
-
-        //add structural material destruction of this batch, scaled up using disadvantage factor
-        //dest_tot += core.struct_dest * core.batch[i].DA;
-        //cout << "diff: " << prod_tot - dest_tot << endl;
     }
-    if(pnl < 0 || pnl > 1.5){
-        cout << endl << "Error in core nonleakage! Assumed new value: 1.000" << endl;
-        pnl = 1.000;
-        }
 
-    //std::cout << "k calc time " << t.elapsed() << std::endl;
     return prod_tot * pnl / dest_tot;
 }
 
@@ -734,7 +697,6 @@ double CR_finder(fuelBundle &core){
 
 
 void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
-timestamp_t t0 = get_timestamp();
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
     //      before calling this function
@@ -855,7 +817,6 @@ timestamp_t t0 = get_timestamp();
     core.batch[0].discharge_BU = burnup;
     //core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
 
-timestamp_t t1 = get_timestamp();
 }
 
 void burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta) {
