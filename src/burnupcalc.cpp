@@ -164,6 +164,8 @@ fuelBundle phicalc_eqpow(fuelBundle &core, double dt){
     double bu_old, bu_next, delta_bu, batch_bu;
     double batch_fluence;
     int N = core.batch.size();
+    double max_flux = -1;
+    double min_flux = 10;
 
     core.batch[0].rflux = 1;
 
@@ -180,43 +182,29 @@ fuelBundle phicalc_eqpow(fuelBundle &core, double dt){
     delta_bu = bu_next - bu_old;
 
     for(int i = 0; i < N; i++){
-        // find current bu of n
-        for(jk = 0; core.batch[i].collapsed_iso.fluence[jk] < core.batch[i].Fg; jk++){}
-        batch_bu = intpol(core.batch[i].collapsed_iso.BU[jk-1], core.batch[i].collapsed_iso.BU[jk],
-            core.batch[i].collapsed_iso.fluence[jk-1], core.batch[i].collapsed_iso.fluence[jk], core.batch[i].Fg);
-
+        batch_bu = core.batch[i].return_BU();
         // find the discrete points before and after batch bu
         for(jk = 0; core.batch[i].collapsed_iso.BU[jk] < batch_bu + delta_bu; jk++){}
         batch_fluence = intpol(core.batch[i].collapsed_iso.fluence[jk-1], core.batch[i].collapsed_iso.fluence[jk],
             core.batch[i].collapsed_iso.BU[jk-1], core.batch[i].collapsed_iso.BU[jk], batch_bu + delta_bu);
 
         core.batch[i].rflux = (batch_fluence - core.batch[i].Fg)/(dt*core.base_flux);
+
+        if(core.batch[i].rflux > max_flux){max_flux = core.batch[i].rflux;}
+        if(core.batch[i].rflux < 0){core.batch[i].rflux = 0;}
+        if(core.batch[i].rflux < min_flux){min_flux = core.batch[i].rflux;}
     }
 
-    cout << "delta BU: " << delta_bu << endl;
     cout << "--Fluxes: ";
     for(int i = 0; i < N; i++){
+        if(core.batch[i].rflux == 0){
+            core.batch[i].rflux = min_flux/max_flux;
+        } else {
+            core.batch[i].rflux = core.batch[i].rflux / max_flux;
+        }
         cout << core.batch[i].rflux << "  ";
     }
     cout << endl;
-
-    for(int i = 0; i < N; i++){
-        // find current bu of n
-        for(jk = 0; core.batch[i].collapsed_iso.fluence[jk] < core.batch[i].Fg; jk++){}
-        batch_bu = intpol(core.batch[i].collapsed_iso.BU[jk-1], core.batch[i].collapsed_iso.BU[jk],
-            core.batch[i].collapsed_iso.fluence[jk-1], core.batch[i].collapsed_iso.fluence[jk], core.batch[i].Fg);
-
-        for(jk = 0; core.batch[i].Fg + (core.batch[i].rflux * core.base_flux * dt) > core.batch[i].collapsed_iso.fluence[jk]; jk++){}
-        double BU =  intpol(core.batch[i].collapsed_iso.BU[jk-1], core.batch[i].collapsed_iso.BU[jk],
-            core.batch[i].collapsed_iso.fluence[jk-1], core.batch[i].collapsed_iso.fluence[jk],
-            core.batch[i].Fg + (core.batch[i].rflux * core.base_flux * dt));
-
-        cout << BU - batch_bu << "  ";
-
-    }
-    cout << endl;
-
-
 
     return core;
 }
