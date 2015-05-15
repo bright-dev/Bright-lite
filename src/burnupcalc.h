@@ -22,7 +22,7 @@ fuelBundle CoreCollapse(fuelBundle &fuel);
 fuelBundle fast_region_collapse(fuelBundle &fuel);
 std::map<int, double> tomass (int ti, double time, isoInformation &isoinfo);
 fuelBundle phicalc_simple(fuelBundle &core);
-fuelBundle phicalc_eqpow(fuelBundle &core);
+fuelBundle phicalc_eqpow(fuelBundle &core, double dt);
 double nusigf_finder(batch_info &batch);
 double siga_finder(batch_info &batch);
 double kcalc(fuelBundle &core);
