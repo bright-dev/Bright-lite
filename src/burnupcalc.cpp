@@ -195,16 +195,13 @@ fuelBundle phicalc_eqpow(fuelBundle &core, double dt){
         if(core.batch[i].rflux < min_flux){min_flux = core.batch[i].rflux;}
     }
 
-    cout << "--Fluxes: ";
     for(int i = 0; i < N; i++){
         if(core.batch[i].rflux == 0){
             core.batch[i].rflux = min_flux/max_flux;
         } else {
             core.batch[i].rflux = core.batch[i].rflux / max_flux;
         }
-        cout << core.batch[i].rflux << "  ";
     }
-    cout << endl;
 
     return core;
 }

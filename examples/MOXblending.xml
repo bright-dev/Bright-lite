@@ -77,7 +77,7 @@ Batches: 5
 	    <val>42.5</val>
         </interpol_pairs>
         <batches>5</batches>
-        <flux_mode>1</flux_mode>
+        <flux_mode>0</flux_mode>
         <reactor_life>180</reactor_life>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>

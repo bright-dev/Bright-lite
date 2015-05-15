@@ -10,7 +10,7 @@ Batches: 3
 
 <simulation>
   <control>
-    <duration>48</duration>
+    <duration>482</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -84,10 +84,10 @@ Batches: 3
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>freshFuel</val> <!--
+            <val>freshFuel</val> 
             <val>freshFuel1</val>
             <val>freshFuel2</val>
-            <val>freshFuel3</val>      -->
+            <val>freshFuel3</val> 
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
@@ -103,6 +103,7 @@ Batches: 3
         </interpol_pairs>
         <batches>3</batches>
         <flux_mode>0</flux_mode>
+        <reactor_life>470</reactor_life>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>
             <val>902250</val>

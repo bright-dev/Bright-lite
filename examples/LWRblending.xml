@@ -82,7 +82,7 @@ real	0m3.407s (2015/03/04)
         </interpol_pairs>
         <batches>3</batches>
         <outage_time>30</outage_time>
-        <flux_mode>2</flux_mode>        
+        <flux_mode>0</flux_mode>        
         <tolerance>0.0001</tolerance>
         <SS_tolerance>0.0001</SS_tolerance>
         <burnupcalc_timestep>60</burnupcalc_timestep>
