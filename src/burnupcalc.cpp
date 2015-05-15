@@ -195,13 +195,16 @@ fuelBundle phicalc_eqpow(fuelBundle &core, double dt){
         if(core.batch[i].rflux < min_flux){min_flux = core.batch[i].rflux;}
     }
 
+    //cout << "-flux: ";
     for(int i = 0; i < N; i++){
         if(core.batch[i].rflux == 0){
             core.batch[i].rflux = min_flux/max_flux;
         } else {
             core.batch[i].rflux = core.batch[i].rflux / max_flux;
         }
+        //cout << core.batch[i].rflux << "  ";
     }
+    //cout << endl;
 
     return core;
 }
@@ -546,6 +549,9 @@ double kcalc(fuelBundle &core){
 
         //add the production rate of batch i to total production
         prod_tot += intpol(core.batch[i].collapsed_iso.neutron_prod[j-1], core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+
+        // flux weigh
+        prod_tot *= core.batch[i].rflux;
 
         //add structural material production of this batch, scaled up using disadvantage factor
         //prod_tot += core.struct_prod * core.batch[i].DA;
