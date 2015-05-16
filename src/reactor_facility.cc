@@ -254,6 +254,13 @@ void ReactorFacility::Tock() {
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     CoreBuilder();
 
+    double BU_prev = 0;
+    double BU_next = 0;
+    double delta_BU;
+    for(int i = 0; i < fuel_library_.batch.size(); i++){
+        BU_prev += fuel_library_.batch[i].return_BU();
+    }
+
     //pass fuel bundles to burn-up calc
     if(CR_target < 0){
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
@@ -285,16 +292,22 @@ void ReactorFacility::Tock() {
     inventory.Push(manifest[i]);
   }
 
+    for(int i = 0; i < fuel_library_.batch.size(); i++){
+        BU_next += fuel_library_.batch[i].return_BU();
+    }
+    delta_BU = BU_next - BU_prev;
+
   //cycle end update
-  //std::cout << " DELTA BU   "<< fuel_library_.batch[0].delta_BU << std::endl;
-  cycle_end_ = ctx->time() + floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28.);
-  p_time =  (fuel_library_.batch[0].delta_BU*core_mass/generated_power/28)-floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
+  std::cout << " DELTA BU "<<  delta_BU << std::endl;
+  cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
+  p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
 
 
 
   //if the cycle length is less than 2 the fluence of batches will build up.
   if(cycle_end_ - ctx->time() <= 1){
     std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
+    std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
     cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
   }
 

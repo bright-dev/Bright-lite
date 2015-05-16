@@ -10,7 +10,7 @@ Batches: 3
 
 <simulation>
   <control>
-    <duration>482</duration>
+    <duration>4820</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -29,7 +29,7 @@ Batches: 3
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-				<capacity>30000</capacity>
+				<capacity>500000</capacity>
       </Source>
     </config>
   </facility>
@@ -40,7 +40,7 @@ Batches: 3
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>commod_recipe1</recipe_name>
-				<capacity>30000.0</capacity>
+				<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -51,7 +51,7 @@ Batches: 3
       <Source>
         <commod>freshFuel2</commod>
         <recipe_name>commod_recipe2</recipe_name>
-				<capacity>30000.0</capacity>
+				<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -62,7 +62,7 @@ Batches: 3
       <Source>
         <commod>freshFuel3</commod>
         <recipe_name>commod_recipe3</recipe_name>
-				<capacity>30000.0</capacity>
+				<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -90,11 +90,11 @@ Batches: 3
             <val>freshFuel3</val> 
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>extLWR</val></libraries>
+        <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>0.90</nonleakage>
-        <core_mass>30000</core_mass>
-        <generated_power>1000</generated_power>
+        <nonleakage>0.9</nonleakage>
+        <core_mass>10410</core_mass>
+        <generated_power>1390</generated_power>
     	<interpol_pairs>
 	   <key>BURNUP</key>
 	   <val>33</val>
@@ -103,7 +103,7 @@ Batches: 3
         </interpol_pairs>
         <batches>3</batches>
         <flux_mode>0</flux_mode>
-        <reactor_life>470</reactor_life>
+        <reactor_life>360</reactor_life>
         <burnupcalc_timestep>50</burnupcalc_timestep>
         <CR_fissile>
             <val>902250</val>
@@ -163,11 +163,11 @@ Batches: 3
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3.5</comp>
+      <comp>3.1</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96.5</comp>
+      <comp>96.9</comp>
     </nuclide>
   </recipe>
   
@@ -176,11 +176,11 @@ Batches: 3
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>2.1</comp>
+      <comp>1.5</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>97.9</comp>
+      <comp>98.5</comp>
     </nuclide>
   </recipe>
   
@@ -189,11 +189,11 @@ Batches: 3
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>2.5</comp>
+      <comp>2.4</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>97.5</comp>
+      <comp>97.6</comp>
     </nuclide>
   </recipe>
   
@@ -202,11 +202,11 @@ Batches: 3
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>2.8</comp>
+      <comp>2.95</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>97.2</comp>
+      <comp>97.05</comp>
     </nuclide>
   </recipe>
 

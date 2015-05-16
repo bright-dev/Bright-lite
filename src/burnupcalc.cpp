@@ -532,9 +532,7 @@ double kcalc(fuelBundle &core){
     double dest_tot = 0;
     double pnl = core.pnl;
 
-
-    for(int i = 0; i < N ; i++){cout << core.batch[i].rflux << " ";} cout << endl;
-
+    //for(int i = 0; i < N ; i++){cout << core.batch[i].rflux << " ";} cout << endl;
 
     //finds the index j where fluence is just under target, then interpolates
     //  to find the prod and dest values for each batch
@@ -727,7 +725,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     //assign the batch_fluence to Fg
     for(int i = 0; i < N; i++){
         core.batch[i].Fg = core.batch[i].batch_fluence;
-        //cout << core.batch[i].Fg << "  " << core.batch[i].collapsed_iso.neutron_prod[0] << endl;
+        cout << core.batch[i].Fg << "  " << core.batch[i].collapsed_iso.neutron_prod[0] << endl;
     }
     burnup_1 = core.batch[0].return_BU();
 
@@ -736,7 +734,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
-        //if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
+        if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
 
         //find the normalized relative flux of each batch
         if(mode == 1){
