@@ -268,7 +268,7 @@ void ReactorFacility::Tock() {
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     }
 
-
+    // this is saved and may be used later for steady state calcs during blending
     ss_fluence = fuel_library_.batch[batches-1].batch_fluence;
 
     //convert fuel bundle into materials
@@ -287,7 +287,7 @@ void ReactorFacility::Tock() {
 
   //cycle end update
   //std::cout << " DELTA BU   "<< fuel_library_.batch[0].delta_BU << std::endl;
-  cycle_end_ = ctx->time() + floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
+  cycle_end_ = ctx->time() + floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28.);
   p_time =  (fuel_library_.batch[0].delta_BU*core_mass/generated_power/28)-floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
 
 
@@ -295,6 +295,7 @@ void ReactorFacility::Tock() {
   //if the cycle length is less than 2 the fluence of batches will build up.
   if(cycle_end_ - ctx->time() <= 1){
     std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
+    cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
   }
 
   //increments the number of times the reactor has been refueled.
