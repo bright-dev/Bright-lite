@@ -807,8 +807,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     }
 
     //the oldest batch is index=0
-    for(ii = 1; core.batch[0].collapsed_iso.fluence[ii] < core.batch[0].batch_fluence; ii++){}
-    burnup = intpol(core.batch[0].collapsed_iso.BU[ii-1], core.batch[0].collapsed_iso.BU[ii], core.batch[0].collapsed_iso.fluence[ii-1], core.batch[0].collapsed_iso.fluence[ii], core.batch[0].batch_fluence);
+    burnup = core.batch[0].return_BU();
 
     core.batch[0].delta_BU = burnup - burnup_1;
     core.batch[0].discharge_BU = burnup;

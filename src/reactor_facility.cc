@@ -296,9 +296,10 @@ void ReactorFacility::Tock() {
         BU_next += fuel_library_.batch[i].return_BU();
     }
     delta_BU = BU_next - BU_prev;
+    if(delta_BU < 0){delta_BU = 0;}
 
   //cycle end update
-  //std::cout << " DELTA BU "<<  delta_BU << std::endl;
+  //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
   cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
   p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
 
@@ -342,6 +343,11 @@ void ReactorFacility::Tock() {
   if(shutdown != true && record == true){
       std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  Batch CR: " <<
             fuel_library_.batch[0].discharge_CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+
+        std::cout << " -> U235: " << fuel_library_.batch[0].comp[922350] << " Fissile Pu: " << fuel_library_.batch[0].comp[942390]
+            + fuel_library_.batch[0].comp[942410] << " Total Pu: " << fuel_library_.batch[0].comp[942380] + fuel_library_.batch[0].comp[942390]
+            + fuel_library_.batch[0].comp[942400] + fuel_library_.batch[0].comp[942410] + fuel_library_.batch[0].comp[942420] << std::endl;
+
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")

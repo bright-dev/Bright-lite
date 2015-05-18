@@ -1,10 +1,14 @@
 <!-- 
-1 Source, 1 LWR, 1 Sink 
+1 Source, 1 LWR, 1 Sink  (plus startup)
 Reactor database: standLWR
 Fuel: Uranium, defined startup
 Batches: 3
 
-"time cyclus examples/LWRforward.xml" = real	0m2.240s (2015/02/26)
+This example is a benchmark based on the study
+	'Economics of the Nucleaar Fuel Cycle' by NEA
+	data found for PWR 33 000 MWd/t reactor in Table 7.2
+
+"time cyclus examples/LWRforward.xml" = real	0m3.9s (2015/05/18)
 
 -->
 
@@ -92,19 +96,17 @@ Batches: 3
         <out_commod>uf</out_commod>
         <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>0.9</nonleakage>
+        <nonleakage>0.8989</nonleakage>
         <core_mass>10410</core_mass>
         <generated_power>1390</generated_power>
-    	<interpol_pairs>
-	   <key>BURNUP</key>
-	   <val>33</val>
-   	   <key>ENRICHMENT</key>
-	   <val>3</val>
+    		<interpol_pairs>
+	   			<key>BURNUP</key><val>33</val>
+   	   		<key>ENRICHMENT</key><val>3</val>
         </interpol_pairs>
         <batches>3</batches>
         <flux_mode>0</flux_mode>
         <reactor_life>360</reactor_life>
-        <burnupcalc_timestep>50</burnupcalc_timestep>
+        <burnupcalc_timestep>10</burnupcalc_timestep>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
