@@ -298,7 +298,7 @@ void ReactorFacility::Tock() {
     delta_BU = BU_next - BU_prev;
 
   //cycle end update
-  std::cout << " DELTA BU "<<  delta_BU << std::endl;
+  //std::cout << " DELTA BU "<<  delta_BU << std::endl;
   cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
   p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
 
