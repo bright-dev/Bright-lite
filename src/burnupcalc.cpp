@@ -781,6 +781,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     //update core fluences
     for(int i = 0; i < N; i++){
         core.batch[i].batch_fluence = intpol(core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt), core.batch[i].Fg, kcore_prev, kcore, 1);
+        core.batch[i].Fg = core.batch[i].batch_fluence;
     }
 
     int ii;

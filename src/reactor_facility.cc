@@ -254,6 +254,7 @@ void ReactorFacility::Tock() {
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     CoreBuilder();
 
+    // record the burnup of the core before cycle begins
     double BU_prev = 0;
     double BU_next = 0;
     double delta_BU;
@@ -292,10 +293,11 @@ void ReactorFacility::Tock() {
     inventory.Push(manifest[i]);
   }
 
+    // record burnup of the core after cycle ends
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         BU_next += fuel_library_.batch[i].return_BU();
     }
-    delta_BU = BU_next - BU_prev;
+    delta_BU = (BU_next - BU_prev)/fuel_library_.batch.size();
     if(delta_BU < 0){delta_BU = 0;}
 
   //cycle end update
@@ -323,9 +325,10 @@ void ReactorFacility::Tock() {
         int ii;
         double burnup;
 
-        for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
-        burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << "; ";
+        burnup = fuel_library_.batch[i].return_BU();
+        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << " -> U235: " << fuel_library_.batch[i].comp[922350] << " Fissile Pu: " << fuel_library_.batch[0].comp[942390]
+            + fuel_library_.batch[i].comp[942410] << " Total Pu: " << fuel_library_.batch[i].comp[942380] + fuel_library_.batch[i].comp[942390]
+            + fuel_library_.batch[i].comp[942400] + fuel_library_.batch[i].comp[942410] + fuel_library_.batch[i].comp[942420] << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
@@ -918,7 +921,6 @@ library.*/
 void ReactorFacility::CoreBuilder(){
     //builds the necessary burnup calculation parameters
     // in fuel_library_
-
 
     //test to see if all fuel is fresh
     bool test = false;

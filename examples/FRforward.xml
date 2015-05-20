@@ -56,17 +56,16 @@ Batches: 6
         <out_commod>uf</out_commod>
         <libraries><val>FR50</val></libraries>
         <target_burnup>0</target_burnup>
-        <nonleakage>0.68</nonleakage>
+        <nonleakage>0.868</nonleakage>
         <core_mass>5500.0</core_mass>
         <generated_power>800</generated_power>
-    	<interpol_pairs>
-           <key>BURNUP</key>
-	       <val>42.5</val>
+    		<interpol_pairs>
+           <key>BURNUP</key><val>42.5</val>
         </interpol_pairs>
         <batches>6</batches>
         <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
-	<reactor_life>120</reactor_life>
+				<reactor_life>120</reactor_life>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
