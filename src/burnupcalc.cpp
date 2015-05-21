@@ -553,13 +553,17 @@ double kcalc(fuelBundle &core){
         //cout << " Flux: " << core.batch[i].rflux << endl;
 
         //add the production rate of batch i to total production
-        prod_tot += intpol(core.batch[i].collapsed_iso.neutron_prod[j-1], core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+        prod_tot += core.batch[i].rflux * intpol(core.batch[i].collapsed_iso.neutron_prod[j-1],
+            core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1],
+            core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
 
         //add structural material production of this batch, scaled up using disadvantage factor
         //prod_tot += core.struct_prod * core.batch[i].DA;
 
         //add the destruction rate of batch i to total destruction
-        dest_tot += intpol(core.batch[i].collapsed_iso.neutron_dest[j-1], core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+        dest_tot += core.batch[i].rflux * intpol(core.batch[i].collapsed_iso.neutron_dest[j-1],
+            core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1],
+            core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
     }
 
     return prod_tot * pnl / dest_tot;
@@ -735,7 +739,6 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     //more forward in time until kcore drops under 1
     while(kcore > 1){
         kcore_prev = kcore;
-        //if(kcore != 3.141592){cout << "kcore: " << kcore << endl;}
 
         //find the normalized relative flux of each batch
         if(mode == 1){
@@ -772,6 +775,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
 
         }
         kcore = kcalc(core);
+        //cout << "kcore: " << kcore << endl;
     }
 
     //update CR

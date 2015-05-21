@@ -1,20 +1,20 @@
 <!-- 
 1 Source, 1 LWR, 1 Sink  (plus startup)
-Reactor database: standLWR
+Reactor database: extLWR
 Fuel: Uranium, defined startup
 Batches: 3
 
 This example is a benchmark based on the study
 	'Economics of the Nucleaar Fuel Cycle' by NEA
-	data found for PWR 33 000 MWd/t reactor in Table 7.2
+	data found for PWR 42 500 MWd/t reactor in Table 5.6
 
-"time cyclus examples/LWR33forward.xml" = real	0m3.9s (2015/05/18)
+"time cyclus examples/LWR42forward.xml" = real	0m3.9s (2015/05/18)
 
 -->
 
 <simulation>
   <control>
-    <duration>500</duration>
+    <duration>4</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -33,7 +33,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-				<capacity>50000</capacity>
+				<capacity>500000</capacity>
       </Source>
     </config>
   </facility>
@@ -70,6 +70,17 @@ This example is a benchmark based on the study
       </Source>
     </config>
   </facility>
+
+  <facility>
+    <name>Source4</name>
+    <config>
+      <Source>
+        <commod>freshFuel4</commod>
+        <recipe_name>commod_recipe4</recipe_name>
+				<capacity>35000.0</capacity>
+      </Source>
+    </config>
+  </facility>
   
   <facility>
     <name>Sink</name>
@@ -92,20 +103,21 @@ This example is a benchmark based on the study
             <val>freshFuel1</val>
             <val>freshFuel2</val>
             <val>freshFuel3</val> 
+            <val>freshFuel4</val> 
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>standLWR</val></libraries>
+        <libraries><val>extLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>0.90205</nonleakage>
-        <core_mass>104100</core_mass>
+        <nonleakage>0.9174</nonleakage>
+        <core_mass>112000</core_mass>
         <generated_power>1390</generated_power>
     		<interpol_pairs>
 	   			<key>BURNUP</key><val>33</val>
    	   		<key>ENRICHMENT</key><val>3</val>
         </interpol_pairs>
-        <batches>3</batches>
+        <batches>4</batches>
         <flux_mode>0</flux_mode>
-        <reactor_life>360</reactor_life>
+        <reactor_life>480</reactor_life>
         <burnupcalc_timestep>10</burnupcalc_timestep>
         <DA_mode>1</DA_mode>	
         <CR_fissile>
@@ -147,6 +159,10 @@ This example is a benchmark based on the study
         <entry>
           <prototype>Source3</prototype>
           <number>1</number>
+        </entry>  
+        <entry>
+          <prototype>Source4</prototype>
+          <number>1</number>
         </entry>     
         <entry>
           <prototype>Rx</prototype>
@@ -166,11 +182,11 @@ This example is a benchmark based on the study
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3.1</comp>
+      <comp>3.6</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96.9</comp>
+      <comp>96.4</comp>
     </nuclide>
   </recipe>
   
@@ -179,11 +195,11 @@ This example is a benchmark based on the study
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>1.5</comp>
+      <comp>1.8</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>98.5</comp>
+      <comp>98.2</comp>
     </nuclide>
   </recipe>
   
@@ -192,11 +208,11 @@ This example is a benchmark based on the study
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>2.4</comp>
+      <comp>2.204</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>97.6</comp>
+      <comp>97.796</comp>
     </nuclide>
   </recipe>
   
@@ -205,11 +221,24 @@ This example is a benchmark based on the study
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>2.95</comp>
+      <comp>2.656</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>97.05</comp>
+      <comp>97.344</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe4</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.1</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.9</comp>
     </nuclide>
   </recipe>
 

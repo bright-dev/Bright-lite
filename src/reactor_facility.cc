@@ -975,6 +975,7 @@ void ReactorFacility::batch_reorder(){
         fuel_library_.batch.push_back(temp_fuel.batch[lowest]);
         temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
+
     //std::cout << " End batch_reorder" << std::endl;
 }
 
