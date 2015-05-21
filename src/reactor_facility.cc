@@ -258,9 +258,11 @@ void ReactorFacility::Tock() {
     double BU_prev = 0;
     double BU_next = 0;
     double delta_BU;
+
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         BU_prev += fuel_library_.batch[i].return_BU();
     }
+    BU_prev /= fuel_library_.batch.size();
 
     //pass fuel bundles to burn-up calc
     if(CR_target < 0){
@@ -297,25 +299,27 @@ void ReactorFacility::Tock() {
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         BU_next += fuel_library_.batch[i].return_BU();
     }
+    BU_next /= fuel_library_.batch.size();
+
     delta_BU = (BU_next - BU_prev)/fuel_library_.batch.size();
     if(delta_BU < 0){delta_BU = 0;}
 
-  //cycle end update
-  //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
-  cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
-  p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
+    //cycle end update
+    //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
+    cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
+    p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
 
 
 
-  //if the cycle length is less than 2 the fluence of batches will build up.
-  if(cycle_end_ - ctx->time() <= 1){
-    std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
-    std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
-    cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
-  }
+    //if the cycle length is less than 2 the fluence of batches will build up.
+    if(cycle_end_ - ctx->time() <= 1){
+        std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
+        std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
+        cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
+    }
 
-  //increments the number of times the reactor has been refueled.
-  refuels += 1;
+    //increments the number of times the reactor has been refueled.
+    refuels += 1;
 
   //shutdown check
   if(ctx->time() > start_time_ + reactor_life && record == true){
