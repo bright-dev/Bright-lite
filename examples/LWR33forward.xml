@@ -14,7 +14,7 @@ This example is a benchmark based on the study
 
 <simulation>
   <control>
-    <duration>4820</duration>
+    <duration>400</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
