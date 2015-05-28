@@ -346,7 +346,7 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     N[0] = R[0]/delta;
     NC[0] = N[0];
     NTotal = N[0];
-
+/*
     for(int i = 1; i < region+1; i++){
         N[i] = ceil((R[i] - R[i-1]) / delta);
         NC[i] = NC[i-1] + N[i];
@@ -517,7 +517,7 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     for(int i = 0; i < core.batch.size(); i++){
         core.batch[i].rflux = flux[i];
     }
-
+*/
     return core;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -752,7 +752,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
             core = phicalc_simple(core);
         }else if(mode == 3){
             // UNDER DEVELOPMENT
-            core = phicalc_cylindrical(core);
+            //core = phicalc_cylindrical(core);
         }else if(mode == 0){
             // equal power sharing assumption method
             core = phicalc_eqpow(core, dt);
