@@ -225,11 +225,11 @@ double nusigf_finder(batch_info &batch){
         ii = batch.collapsed_iso.fluence.size() - 1;
     }
 
-    prod = intpol(batch.collapsed_iso.neutron_prod[ii-1], batch.collapsed_iso.neutron_prod[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
-
-
     if(ii == 0){
         prod = batch.collapsed_iso.neutron_prod[0];
+    } else {
+        prod = intpol(batch.collapsed_iso.neutron_prod[ii-1], batch.collapsed_iso.neutron_prod[ii],
+            batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     }
 
     //Nusig_f[cm-1] = prod rate * smear density
@@ -256,10 +256,10 @@ double siga_finder(batch_info &batch){
 
     if(ii == 0){
         dest = batch.collapsed_iso.neutron_dest[0];
+    } else {
+        dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii],
+            batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
     }
-
-
-    dest = intpol(batch.collapsed_iso.neutron_dest[ii-1], batch.collapsed_iso.neutron_dest[ii], batch.collapsed_iso.fluence[ii-1], batch.collapsed_iso.fluence[ii], batch.Fg);
 
     //Sig_a[cm-1] = dest rate * density
     sig_a = dest*0.01097;
@@ -296,6 +296,7 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     R[0] = sqrt(core.fuel_area/region/3.141592);
     for(int i = 1; i < region; i++){
         R[i] = sqrt(core.fuel_area/region/3.141592*(i+1));
+        cout << "R: " << R[i] << endl;
     }
     R[region] = R[region-1] + core.mod_thickness; //this is the moderator region
 
@@ -308,6 +309,7 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
 //    NuSigma_f[1] = 0.0217;
 //    NuSigma_f[2] = 0.0382;
     //assign fuel cross sections
+    cout << "Sigf, Siga:  ";
     for(int i = 0; i < region; i++){
 
         NuSigma_f[i] = nusigf_finder(core.batch[i]);
@@ -318,7 +320,9 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
         D[i] = 1/(Sigma_tr[i]*3.);
         LSquared[i] = D[i]/Sigma_a[i];
 
-    }
+        cout << NuSigma_f[i] << ", " << Sigma_a[i] << " | ";
+
+    } cout << endl;
 
     //assign moderator cross sections
     Sigma_a[region] = 0.0066;// core.mod_Sig_a;
