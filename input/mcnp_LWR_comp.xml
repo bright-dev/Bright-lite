@@ -1,0 +1,207 @@
+<!-- 
+This example is used to compare the flux profile of an LWR
+to results from MCNP6
+-->
+
+<simulation>
+  <control>
+    <duration>2</duration>
+    <startmonth>1</startmonth>
+    <startyear>2000</startyear>
+  </control>
+
+  <archetypes>
+    <spec><lib>agents</lib><name>Source</name></spec>
+    <spec><lib>Brightlite</lib><name>ReactorFacility</name></spec>
+    <spec><lib>agents</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <facility>
+    <name>Source</name>
+    <config>
+      <Source>
+        <commod>freshFuel</commod>
+        <recipe_name>commod_recipe</recipe_name>
+				<capacity>50000</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>freshFuel1</commod>
+        <recipe_name>commod_recipe1</recipe_name>
+				<capacity>35000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source2</name>
+    <config>
+      <Source>
+        <commod>freshFuel2</commod>
+        <recipe_name>commod_recipe2</recipe_name>
+				<capacity>35000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Source3</name>
+    <config>
+      <Source>
+        <commod>freshFuel3</commod>
+        <recipe_name>commod_recipe3</recipe_name>
+				<capacity>35000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+  
+  <facility>
+    <name>Sink</name>
+    <config>
+      <Sink>
+        <in_commods>
+          <val>uf</val>
+        </in_commods>
+        <capacity>1000000.0</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <facility>
+    <name>Rx</name>
+    <config>
+      <ReactorFacility>
+        <in_commods>
+            <val>freshFuel</val> 
+            <val>freshFuel1</val>
+            <val>freshFuel2</val>
+            <val>freshFuel3</val> 
+        </in_commods>
+        <out_commod>uf</out_commod>
+        <libraries><val>standLWR</val></libraries>
+        <target_burnup>0.0</target_burnup>
+        <nonleakage>0.90205</nonleakage>
+        <core_mass>104100</core_mass>
+        <generated_power>1390</generated_power>
+    		<interpol_pairs>
+	   			<key>BURNUP</key><val>33</val>
+   	   		<key>ENRICHMENT</key><val>3</val>
+        </interpol_pairs>
+        <batches>3</batches>
+        <flux_mode>3</flux_mode>
+        <reactor_life>360</reactor_life>
+        <burnupcalc_timestep>100</burnupcalc_timestep>
+        <DA_mode>1</DA_mode>	
+        <CR_fissile>
+            <val>902250</val>
+            <val>902270</val>
+            <val>902290</val>
+            <val>922350</val>
+            <val>942380</val>
+            <val>942390</val>
+            <val>942400</val>
+            <val>942410</val>
+            <val>942420</val>
+            <val>952400</val>
+            <val>952420</val>
+            <val>952440</val>
+        </CR_fissile>
+      </ReactorFacility>
+    </config>
+  </facility>
+
+  <region>
+    <name>SingleRegion</name>
+    <config> <NullRegion/> </config>
+    <institution>
+      <name>SingleInstitution</name>
+      <initialfacilitylist>
+        <entry>
+          <prototype>Source</prototype>
+          <number>1</number>
+        </entry>   
+        <entry>
+          <prototype>Source1</prototype>
+          <number>1</number>
+        </entry> 
+        <entry>
+          <prototype>Source2</prototype>
+          <number>1</number>
+        </entry> 
+        <entry>
+          <prototype>Source3</prototype>
+          <number>1</number>
+        </entry>     
+        <entry>
+          <prototype>Rx</prototype>
+          <number>1</number>
+        </entry>
+        <entry>
+          <prototype>Sink</prototype>
+          <number>1</number>
+        </entry>
+      </initialfacilitylist>
+      <config> <NullInst/> </config>
+    </institution>
+  </region>
+
+  <recipe>
+    <name>commod_recipe</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>3.1</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>96.9</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe1</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>1.5</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>98.5</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe2</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.4</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.6</comp>
+    </nuclide>
+  </recipe>
+  
+  <recipe>
+    <name>commod_recipe3</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>2.95</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>97.05</comp>
+    </nuclide>
+  </recipe>
+
+</simulation>

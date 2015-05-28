@@ -267,8 +267,6 @@ double siga_finder(batch_info &batch){
     return sig_a;
 }
 
-/**
-UNDER DEVELOPMENT
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 fuelBundle phicalc_cylindrical(fuelBundle &core){
@@ -335,10 +333,10 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     }
 
 
-//    cout << "Cross sections in cylindrical calc: " << endl << "Sig_a      Sig_f      R" << endl;
-//    for(int r = 0; r < region+1; r++){
-//        cout << Sigma_a[r] << "  " << NuSigma_f[r] << "  " << R[r] << endl;
-//    }
+    cout << "Compositions in cylindrical calc: " << endl;
+    for(int r = 0; r < region+1; r++){
+        //cout << core.batch[r].comp[922350] << "  ";
+    } cout << endl;
 
     //populate N, number of mesh points in each region
     N[0] = R[0]/delta;
@@ -507,9 +505,9 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
     //normalize the fluxes
     for(r = 0; r < region+1; r++){
         flux[r] /= maxflux;
-        //cout << flux[r] << " ";
+        cout << flux[r] << " ";
     }
-    //cout << endl;
+    cout << endl;
 
 
     for(int i = 0; i < core.batch.size(); i++){
@@ -520,7 +518,6 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-**/
 
 /**
 Finds the criticality of the core using neutron production and destruction rates
@@ -751,7 +748,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
             core = phicalc_simple(core);
         }else if(mode == 3){
             // UNDER DEVELOPMENT
-            //core = phicalc_cylindrical(core);
+            core = phicalc_cylindrical(core);
         }else if(mode == 0){
             // equal power sharing assumption method
             core = phicalc_eqpow(core, dt);
