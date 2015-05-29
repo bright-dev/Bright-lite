@@ -540,7 +540,6 @@ double kcalc(fuelBundle &core){
     int j;
     for(int i = 0; i < N; i++){
 
-
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].Fg){
             //cout << endl << "Maximum fluence error! Batch fluence exceeded max library fluence. (kcalc)" << endl;
             //cout << "  Values on max fluence will be used. Do not trust results." << endl;
@@ -559,12 +558,14 @@ double kcalc(fuelBundle &core){
             core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
 
         //add structural material production of this batch, scaled up using disadvantage factor
-        //prod_tot += core.struct_prod * core.batch[i].DA;
+        prod_tot += core.struct_prod * core.batch[i].DA;
 
         //add the destruction rate of batch i to total destruction
         dest_tot += core.batch[i].rflux * intpol(core.batch[i].collapsed_iso.neutron_dest[j-1],
             core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1],
             core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+
+        dest_tot += core.struct_dest * core.batch[i].DA;
     }
 
     return prod_tot * pnl / dest_tot;

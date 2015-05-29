@@ -147,7 +147,7 @@ void ReactorFacility::Tick() {
         for(int i = 0; i < batches; i++){
             fuel_library_.batch.push_back(empty_batch);
             fuel_library_.batch[i].batch_fluence = 0; //fluence of the batch is set to zero
-            //fuel_library_.batch[i].fraction.push_back(1);//fraction of the batch is set to one
+            fuel_library_.batch[i].DA = 1;
         }/*
         core_ = std::vector<fuelBundle>(batches); //core_ is size of batches, which will be changed
         for(int i = 0; i < core_.size(); i++){
@@ -220,6 +220,7 @@ void ReactorFacility::Tock() {
         for(int i = 0; i < manifest.size() - fuel_library_.batch.size(); i++){
             batch_info temp_batch;
             temp_batch.batch_fluence = 0;
+            temp_batch.DA = 1;
             fuel_library_.batch.push_back(temp_batch);
         }
     }
@@ -939,8 +940,15 @@ void ReactorFacility::CoreBuilder(){
 
         return;
     }
-
-    fuel_library_ = StructReader(fuel_library_);
+    if(struct_mode == 0){
+        fuel_library_.struct_dest = 0;
+        fuel_library_.struct_prod = 0;
+        if(DA_mode != 0){
+            std::cout << "Warning(Agent" << id() << "): DA wont contribute when struct mode (non-fuel contribution) is off." << std::endl;
+        }
+    } else {
+        fuel_library_ = StructReader(fuel_library_);
+    }
     fuel_library_ = CoreCollapse(fuel_library_);
 
     batch_reorder();

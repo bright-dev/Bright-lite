@@ -96,7 +96,7 @@ This example is a benchmark based on the study
         <out_commod>uf</out_commod>
         <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>0.90205</nonleakage>
+        <nonleakage>0.9565</nonleakage>
         <core_mass>104100</core_mass>
         <generated_power>1390</generated_power>
     		<interpol_pairs>
@@ -107,7 +107,7 @@ This example is a benchmark based on the study
         <flux_mode>0</flux_mode>
         <reactor_life>360</reactor_life>
         <burnupcalc_timestep>10</burnupcalc_timestep>
-        <DA_mode>1</DA_mode>	
+        <DA_mode>1</DA_mode>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
