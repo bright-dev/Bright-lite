@@ -33,7 +33,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-				<capacity>50000</capacity>
+	<capacity>50000</capacity>
       </Source>
     </config>
   </facility>
@@ -44,7 +44,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>commod_recipe1</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -55,7 +55,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel2</commod>
         <recipe_name>commod_recipe2</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -66,7 +66,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel3</commod>
         <recipe_name>commod_recipe3</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -99,10 +99,6 @@ This example is a benchmark based on the study
         <nonleakage>0.9565</nonleakage>
         <core_mass>104100</core_mass>
         <generated_power>1390</generated_power>
-    		<interpol_pairs>
-	   			<key>BURNUP</key><val>33</val>
-   	   		<key>ENRICHMENT</key><val>3</val>
-        </interpol_pairs>
         <batches>3</batches>
         <flux_mode>0</flux_mode>
         <reactor_life>360</reactor_life>

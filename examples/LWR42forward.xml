@@ -14,7 +14,7 @@ This example is a benchmark based on the study
 
 <simulation>
   <control>
-    <duration>4</duration>
+    <duration>500</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -33,7 +33,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel</commod>
         <recipe_name>commod_recipe</recipe_name>
-				<capacity>500000</capacity>
+	<capacity>500000</capacity>
       </Source>
     </config>
   </facility>
@@ -44,7 +44,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel1</commod>
         <recipe_name>commod_recipe1</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -55,7 +55,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel2</commod>
         <recipe_name>commod_recipe2</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -66,7 +66,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel3</commod>
         <recipe_name>commod_recipe3</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -77,7 +77,7 @@ This example is a benchmark based on the study
       <Source>
         <commod>freshFuel4</commod>
         <recipe_name>commod_recipe4</recipe_name>
-				<capacity>35000.0</capacity>
+	<capacity>35000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -108,17 +108,13 @@ This example is a benchmark based on the study
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>0.9174</nonleakage>
+        <nonleakage>0.9773</nonleakage>
         <core_mass>112000</core_mass>
         <generated_power>1390</generated_power>
-    		<interpol_pairs>
-	   			<key>BURNUP</key><val>33</val>
-   	   		<key>ENRICHMENT</key><val>3</val>
-        </interpol_pairs>
         <batches>4</batches>
         <flux_mode>0</flux_mode>
         <reactor_life>480</reactor_life>
-        <burnupcalc_timestep>10</burnupcalc_timestep>
+        <burnupcalc_timestep>60</burnupcalc_timestep>
         <DA_mode>1</DA_mode>	
         <CR_fissile>
             <val>902250</val>
