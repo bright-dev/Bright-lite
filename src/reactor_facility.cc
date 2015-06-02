@@ -147,7 +147,7 @@ void ReactorFacility::Tick() {
         for(int i = 0; i < batches; i++){
             fuel_library_.batch.push_back(empty_batch);
             fuel_library_.batch[i].batch_fluence = 0; //fluence of the batch is set to zero
-            //fuel_library_.batch[i].fraction.push_back(1);//fraction of the batch is set to one
+            fuel_library_.batch[i].DA = 1;
         }/*
         core_ = std::vector<fuelBundle>(batches); //core_ is size of batches, which will be changed
         for(int i = 0; i < core_.size(); i++){
@@ -220,6 +220,7 @@ void ReactorFacility::Tock() {
         for(int i = 0; i < manifest.size() - fuel_library_.batch.size(); i++){
             batch_info temp_batch;
             temp_batch.batch_fluence = 0;
+            temp_batch.DA = 1;
             fuel_library_.batch.push_back(temp_batch);
         }
     }
@@ -254,6 +255,16 @@ void ReactorFacility::Tock() {
     //collapse iso's, read struct effects, reorder the fuel batches accordingly
     CoreBuilder();
 
+    // record the burnup of the core before cycle begins
+    double BU_prev = 0;
+    double BU_next = 0;
+    double delta_BU;
+
+    for(int i = 0; i < fuel_library_.batch.size(); i++){
+        BU_prev += fuel_library_.batch[i].return_BU();
+    }
+    BU_prev /= fuel_library_.batch.size();
+
     //pass fuel bundles to burn-up calc
     if(CR_target < 0){
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
@@ -268,7 +279,7 @@ void ReactorFacility::Tock() {
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     }
 
-
+    // this is saved and may be used later for steady state calcs during blending
     ss_fluence = fuel_library_.batch[batches-1].batch_fluence;
 
     //convert fuel bundle into materials
@@ -285,20 +296,31 @@ void ReactorFacility::Tock() {
     inventory.Push(manifest[i]);
   }
 
-  //cycle end update
-  //std::cout << " DELTA BU   "<< fuel_library_.batch[0].delta_BU << std::endl;
-  cycle_end_ = ctx->time() + floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
-  p_time =  (fuel_library_.batch[0].delta_BU*core_mass/generated_power/28)-floor(fuel_library_.batch[0].delta_BU*core_mass/generated_power/28);
+    // record burnup of the core after cycle ends
+    for(int i = 0; i < fuel_library_.batch.size(); i++){
+        BU_next += fuel_library_.batch[i].return_BU();
+    }
+    BU_next /= fuel_library_.batch.size();
+
+    delta_BU = (BU_next - BU_prev)/fuel_library_.batch.size();
+    if(delta_BU < 0){delta_BU = 0;}
+
+    //cycle end update
+    //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
+    cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
+    p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
 
 
 
-  //if the cycle length is less than 2 the fluence of batches will build up.
-  if(cycle_end_ - ctx->time() <= 1){
-    std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
-  }
+    //if the cycle length is less than 2 the fluence of batches will build up.
+    if(cycle_end_ - ctx->time() <= 1){
+        std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
+        std::cout << " --Cycle length will be manually increased for troubleshooting." << std::endl;
+        cycle_end_ += 3; // this is done to help troubleshoot, results from runs where cycle length has to be adjusted shouldnt be trusted
+    }
 
-  //increments the number of times the reactor has been refueled.
-  refuels += 1;
+    //increments the number of times the reactor has been refueled.
+    refuels += 1;
 
   //shutdown check
   if(ctx->time() > start_time_ + reactor_life && record == true){
@@ -308,9 +330,10 @@ void ReactorFacility::Tock() {
         int ii;
         double burnup;
 
-        for(ii = 0; fuel_library_.batch[i].collapsed_iso.fluence[ii] < fuel_library_.batch[i].batch_fluence; ii++){}
-        burnup = intpol(fuel_library_.batch[i].collapsed_iso.BU[ii-1], fuel_library_.batch[i].collapsed_iso.BU[ii], fuel_library_.batch[i].collapsed_iso.fluence[ii-1], fuel_library_.batch[i].collapsed_iso.fluence[ii], fuel_library_.batch[i].batch_fluence);
-        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << "; ";
+        burnup = fuel_library_.batch[i].return_BU();
+        std::cout << " Batch " << i+1 << ": "  << std::setprecision(4) << burnup << " -> U235: " << fuel_library_.batch[i].comp[922350] << " Fissile Pu: " << fuel_library_.batch[0].comp[942390]
+            + fuel_library_.batch[i].comp[942410] << " Total Pu: " << fuel_library_.batch[i].comp[942380] + fuel_library_.batch[i].comp[942390]
+            + fuel_library_.batch[i].comp[942400] + fuel_library_.batch[i].comp[942410] + fuel_library_.batch[i].comp[942420] << std::endl;
         context()->NewDatum("BrightLite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
@@ -328,6 +351,11 @@ void ReactorFacility::Tock() {
   if(shutdown != true && record == true){
       std::cout << ctx->time() << " Agent " << id() << "  BU: "  << std::setprecision(4) << fuel_library_.batch[0].discharge_BU << "  Batch CR: " <<
             fuel_library_.batch[0].discharge_CR << " Cycle: " << cycle_end_ - ctx->time() << std::endl;
+
+        std::cout << " -> U235: " << fuel_library_.batch[0].comp[922350] << " Fissile Pu: " << fuel_library_.batch[0].comp[942390]
+            + fuel_library_.batch[0].comp[942410] << " Total Pu: " << fuel_library_.batch[0].comp[942380] + fuel_library_.batch[0].comp[942390]
+            + fuel_library_.batch[0].comp[942400] + fuel_library_.batch[0].comp[942410] + fuel_library_.batch[0].comp[942420] << std::endl;
+
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
@@ -899,7 +927,6 @@ void ReactorFacility::CoreBuilder(){
     //builds the necessary burnup calculation parameters
     // in fuel_library_
 
-
     //test to see if all fuel is fresh
     bool test = false;
     for(int i = 0; i < fuel_library_.batch.size(); i++){
@@ -913,8 +940,15 @@ void ReactorFacility::CoreBuilder(){
 
         return;
     }
-
-    fuel_library_ = StructReader(fuel_library_);
+    if(struct_mode == 0){
+        fuel_library_.struct_dest = 0;
+        fuel_library_.struct_prod = 0;
+        if(DA_mode != 0){
+            std::cout << "Warning(Agent" << id() << "): DA wont contribute when struct mode (non-fuel contribution) is off." << std::endl;
+        }
+    } else {
+        fuel_library_ = StructReader(fuel_library_);
+    }
     fuel_library_ = CoreCollapse(fuel_library_);
 
     batch_reorder();
@@ -949,6 +983,7 @@ void ReactorFacility::batch_reorder(){
         fuel_library_.batch.push_back(temp_fuel.batch[lowest]);
         temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
+
     //std::cout << " End batch_reorder" << std::endl;
 }
 

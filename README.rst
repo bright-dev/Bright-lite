@@ -55,6 +55,11 @@ To install Bright-lite please follow these instructions.
 This will add the Bright-lite module to the cyclus environment, and allow
 you to use Bright-lite in Cyclus simulations. 
 
+Bright-lite is known to work for the following repository, branch, and commits:
+cyclus: develop e69185292077e40a628c54db6036372ef68f2f18
+cycamore: develop 975714ecb861deaad99fb20405bbed31591388d7
+
+
 ============
 Using Bright-lite
 ============

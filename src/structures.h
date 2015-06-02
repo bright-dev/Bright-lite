@@ -3,8 +3,6 @@
 
 #include <utility>
 
-
-
 struct daughter {
     int name;
     std::vector<double> mass;
@@ -69,6 +67,13 @@ struct batch_info {
     double delta_BU; // used to calculate the cycle length change in BU between cycles
     double discharge_CR; //the discharge conversion ratio
     std::map<int, double> comp; //current composition of batch at this batch_fluence
+    double return_BU(){
+        int ii;
+        for(ii = 0; collapsed_iso.fluence[ii] <= Fg; ii++){}
+        if(ii == 0){return 0;}
+        return collapsed_iso.BU[ii-1] + ((collapsed_iso.BU[ii]-collapsed_iso.BU[ii-1])*
+            (Fg - collapsed_iso.fluence[ii-1])/(collapsed_iso.fluence[ii] - collapsed_iso.fluence[ii-1]));
+    }
 };
 
 struct fuelBundle {

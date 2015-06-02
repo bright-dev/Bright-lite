@@ -22,7 +22,7 @@ fuelBundle StructReader(fuelBundle &core){
 //reads in structural material fractions from input file and adds the total
 //values to core.struct_prod and core.struct_dest
 //only needs to be called once to populate core.struct_prod and dest
-//cout << "Struct reader called \n";
+    //cout << "Struct reader called \n";
     int nucid;
     double fraction;
     double tot_dest = 0;

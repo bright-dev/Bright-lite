@@ -185,15 +185,13 @@ class ReactorFacility : public cyclus::Facility  {
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "userlevel": 0, \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
   #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
                       "Interpolation metric", "Interpolation values"], \
-                      "default": {"BURNUP": 42}, \
-                      "uitype": ["oneOrMore", "string", "double"], \
-                      "userlevel": 2}
+                      "default": {}, \
+                      "uitype": ["oneOrMore", "string", "double"]}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
@@ -282,13 +280,18 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"default": 1, \
                       "userlevel": 2, \
-                      "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
+                      "tooltip": "Flux calculation method. 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
   int flux_mode;
 
   #pragma cyclus var {"default": 0, \
                       "userlevel": 2, \
                       "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
   int DA_mode;
+
+  #pragma cyclus var {"default": 1, \
+                      "userlevel": 2, \
+                      "tooltip": "Non-fuel material effect accounting. 0:Off, 1:On"}
+  int struct_mode;
 
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
@@ -299,8 +302,7 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Time before reactor is shutdown after startup."}
   int reactor_life;
 
-  #pragma cyclus var {"units": "NUCID", \
-                      "userlevel": 3, \
+  #pragma cyclus var {"units": ["NUCID", "NUCID"], \
                       "tooltip": "List of fissile isotopes for conversion ratio calculation."}
   std::vector<std::string> CR_fissile;
 
