@@ -728,7 +728,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
             core = phicalc_simple(core);
         }else if(mode == 3){
             // UNDER DEVELOPMENT
-            core = phicalc_cylindrical(core);
+            //core = phicalc_cylindrical(core);
         }else if(mode == 0){
             // equal power sharing assumption method
             core = phicalc_eqpow(core);
@@ -836,7 +836,7 @@ void burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta) {
             core = phicalc_simple(core);
         }else if(mode == 3){
             //UNDER DEVELOPMENT
-            core = phicalc_cylindrical(core);
+            //core = phicalc_cylindrical(core);
         }else if(mode == 0){
             //equal power sharing assumption
             core = phicalc_eqpow(core);
@@ -1019,7 +1019,7 @@ double SS_burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta, int 
                 //inverse-production flux calculation
                 core = phicalc_simple(core);
             }else if(mode == 3){
-                core = phicalc_cylindrical(core);
+                //core = phicalc_cylindrical(core);
             }else if(mode == 0){
                 core = phicalc_eqpow(core);
             } else {
@@ -1132,7 +1132,7 @@ double SS_burnupcalc_depricated(fuelBundle &core, int mode, int DA_mode, double 
                 //inverse-production flux calculation
                 core = phicalc_simple(core);
             }else if(mode == 3){
-                core = phicalc_cylindrical(core);
+                //core = phicalc_cylindrical(core);
             }else if(mode == 0){
                 core = phicalc_eqpow(core);
             } else {
@@ -1240,7 +1240,7 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
                 //inverse-production flux calculation
                 core = phicalc_simple(core);
             }else if(mode == 3){
-                core = phicalc_cylindrical(core);
+                //core = phicalc_cylindrical(core);
             }else if(mode == 0){
                 core = phicalc_eqpow(core);
             } else {
