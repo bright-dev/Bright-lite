@@ -185,15 +185,13 @@ class ReactorFacility : public cyclus::Facility  {
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "userlevel": 0, \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
   #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
                       "Interpolation metric", "Interpolation values"], \
-                      "default": {"BURNUP": 42}, \
-                      "uitype": ["oneOrMore", "string", "double"], \
-                      "userlevel": 2}
+                      "default": {}, \
+                      "uitype": ["oneOrMore", "string", "double"]}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
@@ -304,8 +302,7 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Time before reactor is shutdown after startup."}
   int reactor_life;
 
-  #pragma cyclus var {"units": "NUCID", \
-                      "userlevel": 3, \
+  #pragma cyclus var {"units": ["NUCID", "NUCID"], \
                       "tooltip": "List of fissile isotopes for conversion ratio calculation."}
   std::vector<std::string> CR_fissile;
 
