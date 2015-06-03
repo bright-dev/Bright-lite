@@ -10,7 +10,7 @@ Batches: 5
 
 <simulation>
   <control>
-    <duration>100</duration>
+    <duration>300</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -116,14 +116,11 @@ Batches: 5
         <out_commod>uf</out_commod>
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>0.0</target_burnup>
-        <nonleakage>1</nonleakage>
-        <core_mass>32000</core_mass>
+        <nonleakage>0.9475</nonleakage>
+        <core_mass>70000</core_mass>
         <generated_power>1000</generated_power>
-    		<interpol_pairs>
-           <key>BURNUP</key><val>42.5</val>
-        </interpol_pairs>
         <batches>5</batches>
-        <flux_mode>2</flux_mode>
+        <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
         <CR_fissile>
             <val>902250</val>
@@ -191,31 +188,31 @@ Batches: 5
     <basis>mass</basis>
 		  <nuclide>
 		    <id>Pu238</id>
-		    <comp>0.0013061269</comp>
+		    <comp>0.002582</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu239</id>
-		    <comp>0.0346846726</comp>
+		    <comp>0.054309</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu240</id>
-		    <comp>0.0133750177</comp>
+		    <comp>0.025865</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu241</id>
-		    <comp>0.011501264</comp>
+		    <comp>0.009135</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>Pu242</id>
-		    <comp>0.0046383735</comp>
+		    <comp>0.007626</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U235</id>
-		    <comp>0.0066442562</comp>
+		    <comp>0.002251</comp>
 		  </nuclide>
 		  <nuclide>
 		    <id>U238</id>
-		    <comp>0.8</comp>
+		    <comp>0.897756</comp>
 		  </nuclide>
   </recipe>
 

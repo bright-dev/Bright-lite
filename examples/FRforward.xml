@@ -10,7 +10,7 @@ Batches: 6
 
 <simulation>
   <control>
-    <duration>200</duration>
+    <duration>50</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -33,6 +33,17 @@ Batches: 6
       </Source>
     </config>
   </facility>
+
+  <facility>
+    <name>Source1</name>
+    <config>
+      <Source>
+        <commod>FRFuel1</commod>
+        <recipe_name>commod_recipe1</recipe_name>
+	<capacity>20000000000.0</capacity>
+      </Source>
+    </config>
+  </facility>
   
   <facility>
     <name>Sink</name>
@@ -51,21 +62,24 @@ Batches: 6
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>FRFuel</val>       
+            <val>FRFuel</val> 
+            <val>FRFuel1</val> 
+            <val>FRFuel1</val> 
+            <val>FRFuel1</val> 
+            <val>FRFuel1</val> 
+            <val>FRFuel1</val> 
+            <val>FRFuel1</val>       
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>FR50</val></libraries>
         <target_burnup>0</target_burnup>
-        <nonleakage>0.868</nonleakage>
-        <core_mass>5500.0</core_mass>
+        <nonleakage>0.99868</nonleakage>
+        <core_mass>9500.0</core_mass>
         <generated_power>800</generated_power>
-    		<interpol_pairs>
-           <key>BURNUP</key><val>42.5</val>
-        </interpol_pairs>
         <batches>6</batches>
         <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
-				<reactor_life>120</reactor_life>
+	<reactor_life>120</reactor_life>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
@@ -92,6 +106,10 @@ Batches: 6
       <initialfacilitylist>
         <entry>
           <prototype>Source</prototype>
+          <number>1</number>
+        </entry> 
+        <entry>
+          <prototype>Source1</prototype>
           <number>1</number>
         </entry>       
         <entry>
@@ -125,6 +143,67 @@ Batches: 6
     <nuclide>
       <id>U238</id>
       <comp>54.36345</comp>
+    </nuclide>
+    <nuclide>
+      <id>NP237</id>
+      <comp>2.15051</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU238</id>
+      <comp>1.0451</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU239</id>
+      <comp>21.74518</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU240</id>
+      <comp>10.26292</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU241</id>
+      <comp>4.84338</comp>
+    </nuclide>
+    <nuclide>
+      <id>PU242</id>
+      <comp>2.99695</comp>
+    </nuclide>
+    <nuclide>
+      <id>AM241</id>
+      <comp>1.53634</comp>
+    </nuclide>
+    <nuclide>
+      <id>AM243</id>
+      <comp>0.68109</comp>
+    </nuclide>
+    <nuclide>
+      <id>CM242</id>
+      <comp>0.00005</comp>
+    </nuclide>
+    <nuclide>
+      <id>CM244</id>
+      <comp>0.23874</comp>
+    </nuclide>
+  </recipe>
+
+  <recipe>
+    <name>commod_recipe1</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U234</id>
+      <comp>0.00003</comp>
+    </nuclide>
+    <nuclide>
+      <id>U235</id>
+      <comp>0.10861</comp>
+    </nuclide>
+    <nuclide>
+      <id>U236</id>
+      <comp>0.00099</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>300</comp>
     </nuclide>
     <nuclide>
       <id>NP237</id>

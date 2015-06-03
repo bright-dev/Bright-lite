@@ -356,6 +356,12 @@ void ReactorFacility::Tock() {
             + fuel_library_.batch[0].comp[942410] << " Total Pu: " << fuel_library_.batch[0].comp[942380] + fuel_library_.batch[0].comp[942390]
             + fuel_library_.batch[0].comp[942400] + fuel_library_.batch[0].comp[942410] + fuel_library_.batch[0].comp[942420] << std::endl;
 
+        std::cout << " U238: " << fuel_library_.batch[0].comp[922380] << " U236: " << fuel_library_.batch[0].comp[922360]
+            << " PU238: " << fuel_library_.batch[0].comp[942380]  << " PU239: " << fuel_library_.batch[0].comp[942390]
+            << " PU240: " << fuel_library_.batch[0].comp[942400]  << " PU241: " << fuel_library_.batch[0].comp[942410] << std::endl
+            << " AM241: " << fuel_library_.batch[0].comp[952410]  << " AM243: " << fuel_library_.batch[0].comp[952430]
+            << " CS135: " << fuel_library_.batch[0].comp[551350]  << " CS137: " << fuel_library_.batch[0].comp[551370] << std::endl;
+
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
       context()->NewDatum("BrightLite_Reactor_Data")
