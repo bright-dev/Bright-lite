@@ -10,7 +10,7 @@ Batches: 6
 
 <simulation>
   <control>
-    <duration>200</duration>
+    <duration>50</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -68,15 +68,14 @@ Batches: 6
             <val>FRFuel1</val> 
             <val>FRFuel</val> 
             <val>FRFuel</val> 
-            <val>FRFuel</val>       
+            <val>FRFuel</val>
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>FR50</val></libraries>
         <target_burnup>0</target_burnup>
         <nonleakage>0.5732</nonleakage>
         <core_mass>9500.0</core_mass>
-        <generated_power>600</generated_power>
-        <batches>6</batches>
+        <generated_power>600</generated_power>batches>
         <flux_mode>1</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
 	<reactor_life>240</reactor_life>

@@ -74,12 +74,6 @@ real	0m3.407s (2015/03/04)
         <nonleakage>0.4883</nonleakage>
         <core_mass>127000.0</core_mass>
         <generated_power>4000.0</generated_power>
-        <interpol_pairs>
-       	   <key>BURNUP</key>
-	   <val>33</val>
-	   <key>ENRICHMENT</key>
-	   <val>3</val>
-        </interpol_pairs>
         <batches>3</batches>
         <outage_time>30</outage_time>
         <flux_mode>0</flux_mode>        
