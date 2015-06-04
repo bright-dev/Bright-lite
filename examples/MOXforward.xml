@@ -10,7 +10,7 @@ Batches: 5
 
 <simulation>
   <control>
-    <duration>300</duration>
+    <duration>330</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
   </control>
@@ -122,6 +122,7 @@ Batches: 5
         <batches>5</batches>
         <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
+	<reactor_life>300</reactor_life>
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
