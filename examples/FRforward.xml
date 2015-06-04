@@ -64,7 +64,7 @@ Batches: 6
         <in_commods>
             <val>FRFuel</val> 
             <val>FRFuel1</val> 
-            <val>FRFuel1</val> 
+            <val>FRFuel</val> 
             <val>FRFuel</val> 
             <val>FRFuel</val> 
             <val>FRFuel</val> 
@@ -73,11 +73,11 @@ Batches: 6
         <out_commod>uf</out_commod>
         <libraries><val>FR50</val></libraries>
         <target_burnup>0</target_burnup>
-        <nonleakage>0.5732</nonleakage>
+        <nonleakage>0.5729</nonleakage>
         <core_mass>15000.0</core_mass>
         <generated_power>600</generated_power>
 	<batches>6</batches>
-        <flux_mode>1</flux_mode>
+        <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
 	<reactor_life>240</reactor_life>
         <CR_fissile>
