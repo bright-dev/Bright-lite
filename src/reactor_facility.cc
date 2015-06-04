@@ -962,7 +962,7 @@ k is discharged first */
 void ReactorFacility::batch_reorder(){
 //collapses each batch first, then orders them
 //only needs to be called once per reactor start
-
+//std::cout << " Begin batch_reorder" << std::endl;
     //begin ordering the batches
     fuelBundle temp_fuel = fuel_library_;
     fuel_library_.batch.clear();
@@ -984,7 +984,7 @@ void ReactorFacility::batch_reorder(){
         temp_fuel.batch.erase(temp_fuel.batch.begin() + lowest);
     }
 
-    //std::cout << " End batch_reorder" << std::endl;
+//std::cout << " End batch_reorder" << std::endl;
 }
 
 

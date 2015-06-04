@@ -546,11 +546,14 @@ double kcalc(fuelBundle &core){
             j = core.batch[i].collapsed_iso.fluence.size() - 1;
         } else {
             //find dicrete point j to interpolate on
-            for(j = 0; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){}
+            for(j = 1; core.batch[i].collapsed_iso.fluence[j] < core.batch[i].Fg; j++){}
         }
-        //cout << " Prod: " << intpol(core.batch[i].collapsed_iso.neutron_prod[j-1], core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
-        //cout << " Dest: " << intpol(core.batch[i].collapsed_iso.neutron_dest[j-1], core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
-        //cout << " Flux: " << core.batch[i].rflux << endl;
+        /*
+        cout << "Fg: " << core.batch[i].Fg << " ";
+        cout << " Prod: " << intpol(core.batch[i].collapsed_iso.neutron_prod[j-1], core.batch[i].collapsed_iso.neutron_prod[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+        cout << " Dest: " << intpol(core.batch[i].collapsed_iso.neutron_dest[j-1], core.batch[i].collapsed_iso.neutron_dest[j], core.batch[i].collapsed_iso.fluence[j-1], core.batch[i].collapsed_iso.fluence[j], core.batch[i].Fg);
+        cout << " Flux: " << core.batch[i].rflux << endl;
+        */
 
         //add the production rate of batch i to total production
         prod_tot += core.batch[i].rflux * intpol(core.batch[i].collapsed_iso.neutron_prod[j-1],
@@ -582,11 +585,10 @@ double CR_batch(fuelBundle &core, int i){
     double CR;
     int ii, ZZ;
 
-    for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
-    if(ii == 0){
-        ii = 1;
-    } else if (ii > core.batch[i].collapsed_iso.fluence.size()-1){
+    if(core.batch[i].Fg > core.batch[i].collapsed_iso.fluence.back()){
         ii = core.batch[i].collapsed_iso.fluence.size()-1;
+    } else {
+        for(ii = 1; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
     }
 
     for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
@@ -647,11 +649,10 @@ double CR_finder(fuelBundle &core){
     int ii, ZZ;
 
     for(int i = 0; i < core.batch.size(); i++){
-        for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
-        if(ii == 0){
-            ii = 1;
-        } else if (ii > core.batch[i].collapsed_iso.fluence.size()-1){
+        if(core.batch[i].Fg > core.batch[i].collapsed_iso.fluence.back()){
             ii = core.batch[i].collapsed_iso.fluence.size()-1;
+        } else {
+            for(ii = 1; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
         }
 
         for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
@@ -733,6 +734,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     for(int i = 0; i < N; i++){
         core.batch[i].Fg = core.batch[i].batch_fluence;
         //cout << core.batch[i].Fg << "  " << core.batch[i].collapsed_iso.neutron_prod[0] << endl;
+        //cout << core.batch[i].collapsed_iso.neutron_prod[1] / core.batch[i].collapsed_iso.neutron_dest[1] << "  ";
     }
     burnup_1 = core.batch[0].return_BU();
 
@@ -793,7 +795,8 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     int ii;
     //update current composition of batches
     for(int i = 0; i < N; i++){
-        core.batch[i].comp.clear();
+        //core.batch[i].comp.clear();
+
         for(ii = 0; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].batch_fluence; ii++){}
 
         if(core.batch[i].collapsed_iso.fluence.back() < core.batch[i].batch_fluence){
@@ -819,7 +822,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     core.batch[0].delta_BU = burnup - burnup_1;
     core.batch[0].discharge_BU = burnup;
     //core.batch[0].CR = CR_numerator(core, 0)/CR_denominator(core, 0);
-
+    //cout << " End of burnupcalc" << endl;
 }
 
 /**
