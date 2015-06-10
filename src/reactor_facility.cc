@@ -181,19 +181,39 @@ void ReactorFacility::Tock() {
     } else if (outage_shutdown == 1){
         // reactor on last month of shutdown
         cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac*efficiency);
+        context()->NewDatum("Brightlite_Reactor_Data")
+        ->AddVal("AgentID", id())
+        ->AddVal("Time", ctx->time())
+        ->AddVal("Power", generated_power*p_frac*efficiency)
+        ->Record();
         outage_shutdown = 0;
     } else {
         if (ctx->time() != cycle_end_) {
             cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*efficiency);
+            context()->NewDatum("Brightlite_Reactor_Data")
+            ->AddVal("AgentID", id())
+            ->AddVal("Time", ctx->time())
+            ->AddVal("Power", generated_power*efficiency)
+            ->Record();
             return;
         } else {
             if(p_time + outage_time < 28.){
                 p_frac = 1. - outage_time/28.;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac*efficiency);
+                context()->NewDatum("Brightlite_Reactor_Data")
+                ->AddVal("AgentID", id())
+                ->AddVal("Time", ctx->time())
+                ->AddVal("Power", generated_power*p_frac*efficiency)
+                ->Record();
             } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
                 p_frac = -1. + (p_time + outage_time)/28.;
                 double x = p_time/28.;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
+                context()->NewDatum("Brightlite_Reactor_Data")
+                ->AddVal("AgentID", id())
+                ->AddVal("Time", ctx->time())
+                ->AddVal("Power", generated_power*x*efficiency)
+                ->Record();
                 outage_shutdown = 1;
                 return;
             } else {
@@ -204,6 +224,11 @@ void ReactorFacility::Tock() {
                 p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
                 double x = p_time/28.;
                 cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
+                context()->NewDatum("Brightlite_Reactor_Data")
+                ->AddVal("AgentID", id())
+                ->AddVal("Time", ctx->time())
+                ->AddVal("Power", generated_power*x*efficiency)
+                ->Record();
                 return;
             }
         }
