@@ -779,8 +779,8 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     return return_amount;
 }
 
-/** Determines the blending fraction for all possible input fuel composition. Works with the
-Bright-lite fuel fabrication facility. This function works for startup batches.*/
+/** Determines the blending fraction for all possible input fuel compositions. Works with the
+Bright-lite fuel fabrication facility. This function is for startup batches.*/
 std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fissle,
                                  cyclus::toolkit::ResourceBuff non_fissle,
                                  std::vector<cyclus::toolkit::ResourceBuff> inventory,
@@ -833,6 +833,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     }
     cyclus::Material::Ptr fissile_mat = cyclus::Material::CreateUntracked(1-mass_frac, fissile_mani[0]->comp());
     fissile_mat->Absorb(mat);
+
     // Starting blending of materials
     double fraction_1 = 1;
     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(1, fissile_mat->comp());
@@ -868,6 +869,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     }
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
+    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
         std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
@@ -918,6 +920,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         }
         inter++;
     }
+    std::cout << " frac: " << fraction << std::endl;
     return_amount.push_back(fraction * (1-mass_frac) * total_mass);
     SS_enrich = fraction;
     ss_fraction = fraction;

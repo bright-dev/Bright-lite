@@ -70,11 +70,11 @@ real	0m3.407s (2015/03/04)
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>33.0</target_burnup>
-        <nonleakage>0.4883</nonleakage>
+        <target_burnup>30</target_burnup>
+        <nonleakage>0.9773</nonleakage>
         <core_mass>127000.0</core_mass>
-        <generated_power>4000.0</generated_power>
-        <batches>3</batches>
+        <generated_power>1390.0</generated_power>
+        <batches>4</batches>
         <outage_time>30</outage_time>
         <flux_mode>0</flux_mode>        
         <tolerance>0.0001</tolerance>
@@ -102,7 +102,7 @@ real	0m3.407s (2015/03/04)
 			<fissle_stream>fissile_stream</fissle_stream>
 			<non_fissle_stream>nfissile_stream</non_fissle_stream>
 			<in_commods>
-				<key>blank</key><val>0.0</val>
+				<item><key>blank</key><val>0.0</val></item>
 			</in_commods>
 			<out_commod>UOX</out_commod>
 		</FuelfabFacility></config>
@@ -138,11 +138,9 @@ real	0m3.407s (2015/03/04)
 		<name>utility</name>
 		<config>
 		<DeployInst>
-			<buildorder>
-			  <prototype>Rx</prototype>
-			  <number>1</number>
-			  <date>50</date>
-			</buildorder>
+			<prototypes><val>Rx</val></prototypes>
+			<build_times><val>50</val></build_times>
+			<n_build><val>1</val></n_build>
 		</DeployInst>
 		</config>
 	</institution>

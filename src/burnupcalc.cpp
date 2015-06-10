@@ -1173,6 +1173,10 @@ double SS_burnupcalc_depricated(fuelBundle &core, int mode, int DA_mode, double 
             //disadvantage calculation
             if(DA_mode == 1){
                 core = DA_calc(core);
+            } else {
+                for(int i = 0; i < N; i++){
+                    core.batch[i].DA = 1;
+                }
             }
 
             for(int i = 0; i < N; i++){

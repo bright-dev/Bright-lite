@@ -108,7 +108,7 @@ Batches: 4
         <flux_mode>0</flux_mode>
         <reactor_life>480</reactor_life>
         <burnupcalc_timestep>60</burnupcalc_timestep>
-        <DA_mode>1</DA_mode>	
+        <DA_mode>0</DA_mode>	
         <CR_fissile>
             <val>902250</val>
             <val>902270</val>
