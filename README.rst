@@ -14,17 +14,16 @@ three modules in the Bright-lite suite.
 
 **Bright-lite Reactor Facility**: A reactor modeling software that uses burnup, criticality, and 
 transmutations matrix curves to determine input and output isotopic compositions. The reactor
-can operate outside of the Bright-lite suite as a reactor however it will no long have start
-up and blending capabilities. 
+can also operate with user-defined fuel compositions, called the "forward" mode. 
 
 **Bright-lite Fuel Fabrication Facility**: A module that communicates directly with the Bright-lite
 Reactor Facility that allows for the reactor facility to access blending functions that will 
 determine the isotopic composition of fuel that the reactor will be using in order to match a
 specific constraint. 
 
-**Bright-lite Reprocessing Facility**: A module that seperates specific isotopes out of a material
+**Bright-lite Reprocessing Facility**: A module that seperates user-defined isotopes out of a material
 that is sent to it. This currently requires an external text file to indicate which isotopes
-should be seperated into which streams. The structure of this text file can be seen here_.
+should be seperated with what efficiency into which streams. The structure of this text file can be seen here_.
 
 Bright-lite works in conjuction with the Cyclus_ Fuel Cycle Simulator. 
 
@@ -44,7 +43,10 @@ The following dependencies will be required in the future
 
 To install Bright-lite please follow these instructions.
 
-1) Clone the Bright-lite repository from github.
+1) Clone the Bright-lite repository from github. 
+
+    git clone **repository url**
+
 2) Change directory into the Bright-lite directory using the following
    command. 
     cd Bright-lite
@@ -55,35 +57,34 @@ To install Bright-lite please follow these instructions.
 This will add the Bright-lite module to the cyclus environment, and allow
 you to use Bright-lite in Cyclus simulations. 
 
-Bright-lite is known to work for the following repository, branch, and commits:
-cyclus: develop e69185292077e40a628c54db6036372ef68f2f18
-cycamore: develop 975714ecb861deaad99fb20405bbed31591388d7
 
 
 ============
 Using Bright-lite
 ============
-Bright-lite requires at least 6 inputs from the users to operate fully. While
-there are several other inputs associated with the Bright-lite module all of 
+Bright-lite reactor requires at least 6 inputs from the users to operate fully. While
+there are several other inputs associated with the module, all of 
 these other inputs come with a default value. 
 
 -----------
 The six required inputs are
 -----------
 
-- **in_commods**: This field is a one or more than indicates that possible sources of 
+- **in_commods**: This field is a one or more that indicates the possible sources of 
   fuel for the reactor. The values in this field should be commodities that exist 
-  inside of the simulation.  
+  inside of the simulation. In order to use Bright-lite in forward mode, set the first
+  source to the steady-state (non-startup) fuel supplier. For forward mode the startup
+  fuels can be set with additional sources.
 - **out_commod**: This field should be filled out with the cyclus commodity that will
   connect the reactor facility to the facility that will be directly handling the 
   waste.
 - **libraries**: This is a one or more field that indicates the Bright-lite library 
-  the reactor will be using. Note: Adding additionally libraries to this list
+  database the reactor will be using. Note: Adding additionally library databases to this list
   will enable the library interpolation_ capabilities in Bright-lite but also
   requires that the user input parameters and values to be interpolated upon. The
   interpolation feature is intended for advanced users. 
-- **target_burnup**: This field indicates to the reactor what the target burnup for the 
-  reactor will be. If this is set to 0, the reactor will operate in forward mode. If 
+- **target_burnup**: This field indicates the target burnup for the 
+  reactor. If this is set to 0, the reactor will operate in forward mode. If 
   this value is not set to zero the Bright-lite reactor must be connected to a
   Bright-lite fuel fabrication facility.
 - **core_mass**: This field indicates the total mass of fuel inside of the core. This mass
@@ -104,10 +105,10 @@ Bright-lite FuelfabFacility.
 ^^^^^^^^^^^^
 Forward Mode
 ^^^^^^^^^^^^
-In forward mode Bright-lite accepts a fuel composition and burns it foward in time to match
-a target. It does this by advancing the fluence of each batch in the core until the target is met.
+In forward mode Bright-lite accepts a fuel composition and burns it. 
+It does this by advancing the fluence of each batch in the core until the target is met (such as k = 1).
 
-Currently forward mode works only with *criticality* and *burnup* targets
+Currently forward mode works only with *criticality* and *burnup* targets.
 
 ^^^^^^^^^^^^
 Blending Mode
@@ -116,7 +117,7 @@ As stated above using the blending function in Bright-lite requires connecting a
 ReactorFacility to a Bright-lite FuelfabFacility. The *in_commods* field of the Bright-lite
 reactor should include all of the fuel fabrication facilities that the reactor can be connected to. 
 
-Currently there are only two blending modes available in Bright-lite. These modes are described by
+Currently there are two blending modes available in Bright-lite. These modes are described by
 a target-constraint pairing. The two available pairs currently are:
  
 1) Burnup - Criticality: The blender will create a fuel that meets a target burnup when criticality is equal to the given constraint. This set of constraints only requires a non negative number to be entered into the *target_burnup* field. 
@@ -124,8 +125,21 @@ a target-constraint pairing. The two available pairs currently are:
 be equal to a number greater than 0 (note that there is no upper bound limit in the code for this this but physically it should not exceed 2). Additionally the *target_burnup* field must be a non negative value for this to work. 
 
 ------------
-Something something results
+Running Example Cases
 ------------
+There are several example cases provided with Bright-lite. The single reactor example cases are:
+
+* LWR, 3 batch, 33 MWd/kg burnup, 3.1 % U-235 fuel (forward mode)
+* LWR, 4 batch, 42 MWd/kg burnup, 3.6 % U-235 fuel (forward mode)
+* LWR, 4 batch, 51 MWd/kg burnup, 4.3 % U-235 fuel (forward mode)
+* LWR, 4 batch, 45 MWd/kg target burnup (blending mode)
+* MOX, 5 batch, 50 MWd/kg burnup (forward mode)
+* MOX, 5 batch, 50 MWd/kg target burnup (blending mode)
+* Fast reactor, 6 batch, 180 MWd/kg burnup (forward mode)
+
+The files can be found in the Bright-lite/examples/ folder. Run the following command to run the 42 MWd/kg burnup example case.
+
+    cyclus Bright-lite/examples/LWR42forward.xml
 
 ------------
 Library Interpolation
