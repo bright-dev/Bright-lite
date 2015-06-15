@@ -306,7 +306,7 @@ void ReactorFacility::Tock() {
     }
     BU_next /= fuel_library_.batch.size();
 
-    delta_BU = (BU_next - BU_prev)/fuel_library_.batch.size();
+    delta_BU = (BU_next - BU_prev);
     if(delta_BU < 0){delta_BU = 0;}
 
     //cycle end update
