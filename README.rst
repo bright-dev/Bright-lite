@@ -52,6 +52,7 @@ To install Bright-lite please follow these instructions.
     cd Bright-lite
    	
 3) Use the following command inside the Bright-lite directory.
+
     python install.py
    	
 This will add the Bright-lite module to the cyclus environment, and allow
