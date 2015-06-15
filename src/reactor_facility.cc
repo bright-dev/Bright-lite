@@ -174,65 +174,7 @@ void ReactorFacility::Tock() {
 
     cyclus::Context* ctx = context();
     // check the state of the reactor and sets up the power output of the reactor for the timestep
-    if(outage_shutdown > 1){
-        //reactor still in outage
-        outage_shutdown--;
-        return;
-    } else if (outage_shutdown == 1){
-        // reactor on last month of shutdown
-        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac*efficiency);
-        context()->NewDatum("Brightlite_Reactor_Data")
-        ->AddVal("AgentID", id())
-        ->AddVal("Time", ctx->time())
-        ->AddVal("Power", generated_power*p_frac*efficiency)
-        ->Record();
-        outage_shutdown = 0;
-    } else {
-        if (ctx->time() != cycle_end_) {
-            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*efficiency);
-            context()->NewDatum("Brightlite_Reactor_Data")
-            ->AddVal("AgentID", id())
-            ->AddVal("Time", ctx->time())
-            ->AddVal("Power", generated_power*efficiency)
-            ->Record();
-            return;
-        } else {
-            if(p_time + outage_time < 28.){
-                p_frac = 1. - outage_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*p_frac*efficiency);
-                context()->NewDatum("Brightlite_Reactor_Data")
-                ->AddVal("AgentID", id())
-                ->AddVal("Time", ctx->time())
-                ->AddVal("Power", generated_power*p_frac*efficiency)
-                ->Record();
-            } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
-                p_frac = -1. + (p_time + outage_time)/28.;
-                double x = p_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
-                context()->NewDatum("Brightlite_Reactor_Data")
-                ->AddVal("AgentID", id())
-                ->AddVal("Time", ctx->time())
-                ->AddVal("Power", generated_power*x*efficiency)
-                ->Record();
-                outage_shutdown = 1;
-                return;
-            } else {
-                outage_shutdown = 2;
-                while (p_time + outage_time > outage_shutdown*28.) {
-                    outage_shutdown++;
-                }
-                p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
-                double x = p_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
-                context()->NewDatum("Brightlite_Reactor_Data")
-                ->AddVal("AgentID", id())
-                ->AddVal("Time", ctx->time())
-                ->AddVal("Power", generated_power*x*efficiency)
-                ->Record();
-                return;
-            }
-        }
-    }
+
 
     // Pop materials out of inventory to create new Bright-lite batches
     std::vector<cyclus::Material::Ptr> manifest;
@@ -289,7 +231,7 @@ void ReactorFacility::Tock() {
         BU_prev += fuel_library_.batch[i].return_BU();
     }
     BU_prev /= fuel_library_.batch.size();
-
+    std::cout << ctx->time() << std::endl;
     //pass fuel bundles to burn-up calc
     if(CR_target < 0){
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
@@ -303,7 +245,7 @@ void ReactorFacility::Tock() {
     } else {
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     }
-
+    std::cout << ctx->time() << std::endl;
     // this is saved and may be used later for steady state calcs during blending
     ss_fluence = fuel_library_.batch[batches-1].batch_fluence;
 
@@ -320,6 +262,43 @@ void ReactorFacility::Tock() {
     manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
     inventory.Push(manifest[i]);
   }
+
+    if(outage_shutdown > 1){
+        //reactor still in outage
+        power_per_time = 0;
+        outage_shutdown--;
+        return;
+    } else if (outage_shutdown == 1){
+        // reactor on last month of shutdown
+        power_per_time = generated_power*p_frac*efficiency;
+        outage_shutdown = 0;
+    } else {
+        if (ctx->time() != cycle_end_) {
+            power_per_time = generated_power*efficiency;
+            return;
+        } else {
+            if(p_time + outage_time < 28.){
+                p_frac = 1. - outage_time/28.;
+                power_per_time = generated_power*p_frac*efficiency;
+            } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
+                p_frac = -1. + (p_time + outage_time)/28.;
+                double x = p_time/28.;
+                power_per_time = generated_power*x*efficiency;
+                outage_shutdown = 1;
+                return;
+            } else {
+                outage_shutdown = 2;
+                while (p_time + outage_time > outage_shutdown*28.) {
+                    outage_shutdown++;
+                }
+                p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
+                double x = p_time/28.;
+                power_per_time = generated_power*x*efficiency;
+                return;
+            }
+        }
+    }
+
 
     // record burnup of the core after cycle ends
     for(int i = 0; i < fuel_library_.batch.size(); i++){
@@ -360,11 +339,13 @@ void ReactorFacility::Tock() {
             // std::cout << " -> U235: " << fuel_library_.batch[i].comp[922350] << " Fissile Pu: " << fuel_library_.batch[0].comp[942390]
             // + fuel_library_.batch[i].comp[942410] << " Total Pu: " << fuel_library_.batch[i].comp[942380] + fuel_library_.batch[i].comp[942390]
             // + fuel_library_.batch[i].comp[942400] + fuel_library_.batch[i].comp[942410] + fuel_library_.batch[i].comp[942420] << std::endl;
+        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
         context()->NewDatum("Brightlite_Reactor_Data")
         ->AddVal("AgentID", id())
         ->AddVal("Time", cycle_end_)
         ->AddVal("Discharge_Fluence", burnup)
         ->AddVal("Batch_No", std::to_string(refuels+i+1))
+        ->AddVal("Power", power_per_time)
         ->AddVal("CR", fuel_library_.CR)
         ->Record();
 
@@ -390,12 +371,14 @@ void ReactorFacility::Tock() {
 */
       //add batch variable to cyclus database
       ///time may need to be fixed by adding cycle length to it
+      cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
       context()->NewDatum("BrightLite_Reactor_Data")
                ->AddVal("AgentID", id())
                ->AddVal("Time", cycle_end_)
                ->AddVal("Discharge_Burnup", fuel_library_.batch[0].discharge_BU)
                ->AddVal("Batch_No", std::to_string(refuels))
                ->AddVal("CR", fuel_library_.batch[0].discharge_CR)
+               ->AddVal("Power", power_per_time)
                ->Record();
    }
 }

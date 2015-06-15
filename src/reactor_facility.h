@@ -340,6 +340,8 @@ class ReactorFacility : public cyclus::Facility  {
   double p_frac = 0;
   int outage_shutdown = 0;
   int steady_state = 0;
+  double burnup_per_time;
+  double power_per_time;
 
 };
 
