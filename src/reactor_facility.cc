@@ -343,7 +343,6 @@ void ReactorFacility::Tock() {
             // + fuel_library_.batch[i].comp[942400] + fuel_library_.batch[i].comp[942410] + fuel_library_.batch[i].comp[942420] << std::endl;
         cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
         cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
-        ->AddVal("Power", power_per_time)
      }
     record = false;
     std::cout << std::endl;
@@ -363,11 +362,10 @@ void ReactorFacility::Tock() {
             << " PU240: " << fuel_library_.batch[0].comp[942400]  << " PU241: " << fuel_library_.batch[0].comp[942410] << std::endl
             << " AM241: " << fuel_library_.batch[0].comp[952410]  << " AM243: " << fuel_library_.batch[0].comp[952430]
             << " CS135: " << fuel_library_.batch[0].comp[551350]  << " CS137: " << fuel_library_.batch[0].comp[551370] << std::endl;
-*/   }
-        cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
-        cyclus::toolkit::RecordTimeSeries("BURNUP", this, fuel_library_.batch[0].discharge_BU);
-      cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
-               ->AddVal("Power", power_per_time)
+*/  }
+    cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
+    cyclus::toolkit::RecordTimeSeries("BURNUP", this, fuel_library_.batch[0].discharge_BU);
+    cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
 }
 
 /** The reactor requests the amount of batches it needs*/
@@ -855,6 +853,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     //Finding the second burnup iterator
     double fraction_2 = 0;
     cyclus::Material::Ptr mat2 = cyclus::Material::CreateUntracked(1, non_fissile_mani[0]->comp());
+    temp_bundle = comp_function(mat2, fuel_library_);
     temp_bundle = comp_function(mat2, fuel_library_);
     double burnup_2;
     if(CR_target > 0){
