@@ -174,10 +174,41 @@ void ReactorFacility::Tock() {
 
     cyclus::Context* ctx = context();
     // check the state of the reactor and sets up the power output of the reactor for the timestep
-    if(ctx->time() > start_time_ + reactor_life){
-
+    if(outage_shutdown > 1){
+        //reactor still in outage
+        power_per_time = 0;
+        outage_shutdown--;
+        return;
+    } else if (outage_shutdown == 1){
+        // reactor on last month of shutdown
+        power_per_time = generated_power*p_frac*efficiency;
+        outage_shutdown = 0;
+    } else {
+        if (ctx->time() != cycle_end_) {
+            power_per_time = generated_power*efficiency;
+            return;
+        } else {
+            if(p_time + outage_time < 28.){
+                p_frac = 1. - outage_time/28.;
+                power_per_time = generated_power*p_frac*efficiency;
+            } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
+                p_frac = -1. + (p_time + outage_time)/28.;
+                double x = p_time/28.;
+                power_per_time = generated_power*x*efficiency;
+                outage_shutdown = 1;
+                return;
+            } else {
+                outage_shutdown = 2;
+                while (p_time + outage_time > outage_shutdown*28.) {
+                    outage_shutdown++;
+                }
+                p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
+                double x = p_time/28.;
+                power_per_time = generated_power*x*efficiency;
+                return;
+            }
+        }
     }
-
     // Pop materials out of inventory to create new Bright-lite batches
     std::vector<cyclus::Material::Ptr> manifest;
     manifest = cyclus::ResCast<cyclus::Material>(inventory.PopN(inventory.count()));
@@ -233,8 +264,8 @@ void ReactorFacility::Tock() {
         BU_prev += fuel_library_.batch[i].return_BU();
     }
     BU_prev /= fuel_library_.batch.size();
-    std::cout << ctx->time() << std::endl;
     //pass fuel bundles to burn-up calc
+
     if(CR_target < 0){
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     } else if (target_burnup > 0){
@@ -247,7 +278,6 @@ void ReactorFacility::Tock() {
     } else {
         burnupcalc(fuel_library_, flux_mode, DA_mode, burnupcalc_timestep);
     }
-    std::cout << ctx->time() << std::endl;
     // this is saved and may be used later for steady state calcs during blending
     ss_fluence = fuel_library_.batch[batches-1].batch_fluence;
 
@@ -264,44 +294,6 @@ void ReactorFacility::Tock() {
     manifest[i]->Transmute(cyclus::Composition::CreateFromMass(out_comp));
     inventory.Push(manifest[i]);
   }
-
-    if(outage_shutdown > 1){
-        //reactor still in outage
-        power_per_time = 0;
-        outage_shutdown--;
-        return;
-    } else if (outage_shutdown == 1){
-        // reactor on last month of shutdown
-        power_per_time = generated_power*p_frac*efficiency;
-        outage_shutdown = 0;
-    } else {
-        if (ctx->time() != cycle_end_) {
-            power_per_time = generated_power*efficiency;
-            return;
-        } else {
-            if(p_time + outage_time < 28.){
-                p_frac = 1. - outage_time/28.;
-                power_per_time = generated_power*p_frac*efficiency;
-            } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
-                p_frac = -1. + (p_time + outage_time)/28.;
-                double x = p_time/28.;
-                power_per_time = generated_power*x*efficiency;
-                outage_shutdown = 1;
-                return;
-            } else {
-                outage_shutdown = 2;
-                while (p_time + outage_time > outage_shutdown*28.) {
-                    outage_shutdown++;
-                }
-                p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
-                double x = p_time/28.;
-                power_per_time = generated_power*x*efficiency;
-                return;
-            }
-        }
-    }
-
-
     // record burnup of the core after cycle ends
     for(int i = 0; i < fuel_library_.batch.size(); i++){
         BU_next += fuel_library_.batch[i].return_BU();
@@ -891,6 +883,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
+    std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
         if(fraction < 0){
             std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
         } else if (fraction > 1){
