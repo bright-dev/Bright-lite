@@ -590,7 +590,6 @@ double CR_batch(fuelBundle &core, int i){
     } else {
         for(ii = 1; core.batch[i].collapsed_iso.fluence[ii] < core.batch[i].Fg; ii++){}
     }
-
     for(int j = 0; j < core.batch[i].collapsed_iso.iso_vector.size(); j++){
         //convert name to mass number
         ZZ = core.batch[i].collapsed_iso.iso_vector[j].name;
@@ -624,7 +623,6 @@ double CR_batch(fuelBundle &core, int i){
     }
     //cout << fissile0 << "  " << fissile1 << "   " << core.batch[i].collapsed_iso.fluence[ii-1] << " " << core.batch[i].collapsed_iso.fluence[ii] << "   " << core.batch[i].Fg << endl;
     fissile = intpol(fissile0, fissile1, core.batch[i].collapsed_iso.fluence[ii-1], core.batch[i].collapsed_iso.fluence[ii], core.batch[i].Fg);
-
     if(FP > 0){
         CR = (FP+fissile-ini_fissile)/FP;
     } else {
@@ -1246,7 +1244,6 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
     int ii = 0;
     double CR_prev = 0;
     int counter = 0;
-
     batch_info temp_batch;
     temp_batch.collapsed_iso = fuel;
     temp_batch.batch_fluence = 0;
@@ -1284,6 +1281,10 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
             //disadvantage calculation
             if(DA_mode == 1){
                 core = DA_calc(core);
+            } else {
+                for(int i = 0; i < N; i++){
+                    core.batch[i].DA = 1;
+                }
             }
 
             for(int i = 0; i < N; i++){
@@ -1293,7 +1294,6 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
             }
 
             burnup = core.batch[0].return_BU();
-
             iter++;
             if(iter == 50){
                 cout << "  Steady-state BU calc taking longer than expected..." << endl;
@@ -1302,14 +1302,15 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
             }
             if(iter > 100){
                 cout << "  SS_burnupcalc_CR exceeds 100 iterations" << endl;
-                cout << "    k: " <<  kcore << "  " << endl;
-                return kcore;
+                cout << "    Burnup: " <<  burnup << "  " << endl;
+                return burnup;
             }
         }
 
         //update core fluences
         for(int i = 0; i < N; i++){
             core.batch[i].batch_fluence = intpol(core.batch[i].Fg - (core.batch[i].rflux * core.base_flux * dt), core.batch[i].Fg, burnup_prev, burnup, target_burnup);
+            core.batch[i].Fg = core.batch[i].batch_fluence;
             //std::cout << "i:" << i << " fluence: " << core.batch[i].batch_fluence << std::endl;
             if(core.batch[i].batch_fluence > core.batch[i].collapsed_iso.fluence.back()){
                 //core.batch[i].batch_fluence > core.batch[i].collapsed_iso.fluence.back() + 1;
@@ -1318,7 +1319,10 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
 
         //calculate CR
         CR = CR_batch(core, 0);
-        if(abs(CR - CR_prev)/CR < 0.01 && counter > N+1){
+        //cout << "CR " << CR << " CR_prev " << CR_prev <<endl;
+        if(CR ==  0 && CR_prev == 0 && counter > N+1){
+            notsteady = false;
+        }else if(abs(CR - CR_prev)/CR < 0.01 && counter > N+1){
             notsteady = false;
         }
         counter++;
