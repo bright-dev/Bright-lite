@@ -117,8 +117,8 @@ Batches: 5
         <libraries><val>PWRMOX</val></libraries>
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.9475</nonleakage>
-        <core_mass>70000</core_mass>
-        <generated_power>1000</generated_power>
+        <core_mass>75000</core_mass>
+        <generated_power>3800</generated_power>
         <batches>5</batches>
         <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>

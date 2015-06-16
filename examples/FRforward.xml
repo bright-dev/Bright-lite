@@ -74,8 +74,8 @@ Batches: 6
         <libraries><val>FR50</val></libraries>
         <target_burnup>0</target_burnup>
         <nonleakage>0.5729</nonleakage>
-        <core_mass>15000.0</core_mass>
-        <generated_power>600</generated_power>
+        <core_mass>23000.0</core_mass>
+        <generated_power>3000</generated_power>
 	<batches>6</batches>
         <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>

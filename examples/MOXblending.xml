@@ -72,10 +72,6 @@ Batches: 5
         <nonleakage>0.91</nonleakage>
         <core_mass>120000</core_mass>
         <generated_power>3000.0</generated_power>
-    	<interpol_pairs>
-            <key>BURNUP</key>
-	    <val>42.5</val>
-        </interpol_pairs>
         <batches>5</batches>
         <flux_mode>0</flux_mode>
         <reactor_life>180</reactor_life>
@@ -105,7 +101,7 @@ Batches: 5
 			<fissle_stream>fissile_stream</fissle_stream>
 			<non_fissle_stream>nfissile_stream</non_fissle_stream>
 			<in_commods>
-				<key>blank</key><val>0.0</val>
+				<item><key>blank</key><val>0.0</val></item>
 			</in_commods>
 			<out_commod>MOX</out_commod>
 		</FuelfabFacility></config>
@@ -142,11 +138,9 @@ Batches: 5
 			<name>utility</name>
 			<config>
 			<DeployInst>
-				<buildorder>
-				  <prototype>Rx</prototype>
-				  <number>1</number>
-				  <date>50</date>
-				</buildorder>
+				  <prototypes><val>Rx</val></prototypes>
+				  <n_build><val>1</val></n_build>
+				  <build_times><val>50</val></build_times>
 			</DeployInst>
 			</config>
 		</institution>
