@@ -54,7 +54,7 @@ void CompOutMat(cyclus::Material &mat1){
     cyclus::CompMap::iterator it;
     //each iso in comp
     for (it = comp.begin(); it != comp.end(); ++it){
-        std::cout<<it->first<< " " << it->second << std::endl;
+        //std::cout<<it->first<< " " << it->second << std::endl;
     }
 }
 
@@ -66,7 +66,7 @@ void CompOut(cyclus::Material::Ptr &mat1){
     cyclus::CompMap::iterator it;
     //each iso in comp
     for (it = comp.begin(); it != comp.end(); ++it){
-        std::cout<<it->first<< " " << it->second << std::endl;
+        ///std::cout<<it->first<< " " << it->second << std::endl;
     }
 }
 
@@ -337,7 +337,7 @@ void ReactorFacility::Tock() {
         cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
      }
     record = false;
-    std::cout << std::endl;
+    //std::cout << std::endl;
   }
 
 
@@ -599,7 +599,7 @@ fuelBundle ReactorFacility::comp_trans(cyclus::Material::Ptr mat1, fuelBundle &f
                 isoInformation temp_iso;
                 temp_iso = temp_bundle.all_iso[j];
                 temp_iso.fraction = it->second;
-                std::cout << "Name: " << it->first << "Amount " << it->second << std::endl;
+                //std::cout << "Name: " << it->first << "Amount " << it->second << std::endl;
                 temp_bundle.batch[temp_bundle.batch.size()-1].iso.push_back(temp_iso);
             }
         }
@@ -817,7 +817,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     }
     cyclus::Material::Ptr fissile_mat = cyclus::Material::CreateUntracked(1-mass_frac, fissile_mani[0]->comp());
     fissile_mat->Absorb(mat);
-    std::cout << "START UP 2" << std::endl;
+
     // Starting blending of materials
     double fraction_1 = 1;
     cyclus::Material::Ptr mat1 = cyclus::Material::CreateUntracked(1, fissile_mat->comp());
@@ -830,7 +830,6 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         burnup_1 = SS_burnupcalc_depricated(temp_bundle, flux_mode, DA_mode, burnupcalc_timestep, batches, ss_fluence);
     }
 
-    std::cout << "BUR1 " << burnup_1 << std::endl;
     /**double CR_temp = CR_target;
     CR_target = 1;
     for(double frac1 = 0.4; frac1 < 0.8; frac1+=0.1){
@@ -856,7 +855,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     }
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
-    std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
+    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
         std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
@@ -866,7 +865,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
     mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
     mat1->Absorb(mat2);
-    std::cout << "Fraction SU " << fraction << std::endl;
+    //std::cout << "Fraction SU " << fraction << std::endl;
     temp_bundle = comp_function(mat1, fuel_library_);
     double burnup_3;
     if(CR_target > 0){
@@ -883,7 +882,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
+    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
         if(fraction < 0){
             std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
         } else if (fraction > 1){
@@ -908,7 +907,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         }
         inter++;
     }
-    std::cout << " frac: " << fraction << std::endl;
+
     return_amount.push_back(fraction * (1-mass_frac) * total_mass);
     SS_enrich = fraction;
     ss_fraction = fraction;
