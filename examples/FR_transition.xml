@@ -96,7 +96,7 @@
         <libraries><val>extLWR</val></libraries>
         <target_burnup>50.0</target_burnup>
         <nonleakage>0.973</nonleakage>
-        <core_mass>127000.0</core_mass>
+        <core_mass>140000.0</core_mass>
         <generated_power>4000.0</generated_power>
         <batches>4</batches>
         <outage_time>30</outage_time>
@@ -128,9 +128,9 @@
 		<libraries><val>FR50</val></libraries>
 		<batches>6</batches>
 		<nonleakage>0.58</nonleakage>
-		<target_burnup>180</target_burnup>
-		<generated_power>3000.0</generated_power>
-		<core_mass>25000</core_mass>
+		<target_burnup>52.62</target_burnup>
+		<generated_power>2000.0</generated_power>
+		<core_mass>45000</core_mass>
 		<burnupcalc_timestep>100</burnupcalc_timestep>
 		<flux_mode>0</flux_mode>
 		<reactor_life>500</reactor_life>
@@ -179,6 +179,6 @@
 	</Sink></config>
 </facility>
 
-<region><name>USA</name><config><NullRegion/></config><institution><initialfacilitylist><entry><prototype>MineU235</prototype><number>1</number></entry><entry><prototype>U238</prototype><number>1</number></entry><entry><prototype>DU</prototype><number>1</number></entry><entry><prototype>DU2</prototype><number>1</number></entry><entry><prototype>LWR Fuel FAb</prototype><number>1</number></entry><entry><prototype>LWR Seperation</prototype><number>1</number></entry><entry><prototype>FR Reprocess</prototype><number>1</number></entry><entry><prototype>SINK</prototype><number>1</number></entry><entry><prototype>FR Fuel Fab</prototype><number>1</number></entry></initialfacilitylist><name>utility</name><config><NullInst/></config></institution><institution><name>utility2</name><config><DeployInst><prototypes><val>LWR</val><val>FRx</val></prototypes><build_times><val>50</val><val>100</val></build_times><n_build><val>2</val><val>1</val></n_build></DeployInst></config></institution></region>
+<region><name>USA</name><config><NullRegion/></config><institution><initialfacilitylist><entry><prototype>MineU235</prototype><number>1</number></entry><entry><prototype>U238</prototype><number>1</number></entry><entry><prototype>DU</prototype><number>1</number></entry><entry><prototype>DU2</prototype><number>1</number></entry><entry><prototype>LWR Fuel FAb</prototype><number>1</number></entry><entry><prototype>LWR Seperation</prototype><number>1</number></entry><entry><prototype>FR Reprocess</prototype><number>1</number></entry><entry><prototype>SINK</prototype><number>1</number></entry><entry><prototype>FR Fuel Fab</prototype><number>1</number></entry></initialfacilitylist><name>utility</name><config><NullInst/></config></institution><institution><name>utility2</name><config><DeployInst><prototypes><val>LWR</val><val>FRx</val></prototypes><build_times><val>50</val><val>300</val></build_times><n_build><val>2</val><val>1</val></n_build></DeployInst></config></institution></region>
 
 <recipe><name>Uranium 238</name><basis>mass</basis><nuclide><id>922380</id><comp>100.0000002</comp></nuclide></recipe><recipe><name>U235</name><basis>mass</basis><nuclide><id>922350</id><comp>100.0000002</comp></nuclide></recipe><recipe><name>DU</name><basis>mass</basis><nuclide><id>922350</id><comp>0.2500002</comp></nuclide><nuclide><id>922380</id><comp>99.7500002</comp></nuclide></recipe></simulation>
