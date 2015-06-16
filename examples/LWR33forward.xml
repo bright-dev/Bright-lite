@@ -98,7 +98,7 @@ This example is a benchmark based on the study
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.9565</nonleakage>
         <core_mass>104100</core_mass>
-        <generated_power>1390</generated_power>
+        <generated_power>4170</generated_power>
         <batches>3</batches>
         <flux_mode>0</flux_mode>
         <reactor_life>360</reactor_life>
