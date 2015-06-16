@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><simulation><control><duration>6000</duration><startmonth>1</startmonth><startyear>0</startyear></control>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><simulation><control><duration>2500</duration><startmonth>1</startmonth><startyear>0</startyear></control>
 
 <archetypes><spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec><spec><lib>agents</lib><name>Source</name></spec><spec><lib>agents</lib><name>Source</name></spec><spec><lib>Brightlite</lib><name>FuelfabFacility</name></spec><spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec><spec><lib>Brightlite</lib><name>ReactorFacility</name></spec><spec><lib>Brightlite</lib><name>ReactorFacility</name></spec><spec><lib>Brightlite</lib><name>ReprocessFacility</name></spec><spec><lib>agents</lib><name>Sink</name></spec><spec><lib>agents</lib><name>NullRegion</name></spec><spec><lib>agents</lib><name>NullInst</name></spec><spec><lib>cycamore</lib><name>DeployInst</name></spec></archetypes>
 
@@ -95,7 +95,7 @@
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
         <target_burnup>50.0</target_burnup>
-        <nonleakage>0.883</nonleakage>
+        <nonleakage>0.9973</nonleakage>
         <core_mass>127000.0</core_mass>
         <generated_power>4000.0</generated_power>
         <batches>3</batches>
@@ -119,7 +119,7 @@
     </config>
   </facility>
 
-<facility><name>FRx</name><config><ReactorFacility><tolerance>0.0010</tolerance><disadv_a>0.40950</disadv_a><disadv_b>0.707490</disadv_b><disadv_mod_siga>0.2220</disadv_mod_siga><disadv_mod_sigs>3.440</disadv_mod_sigs><disadv_fuel_sigs>0.430</disadv_fuel_sigs><out_commod>FR Spent Fuel</out_commod><libraries><val>FR50</val></libraries><batches>6</batches><nonleakage>0.67</nonleakage><max_inv_size>1.000000000000000E+299</max_inv_size><target_burnup>52.63</target_burnup><generated_power>1200.0</generated_power><core_mass>10000</core_mass><efficiency>0.330</efficiency><fuel_area>89197</fuel_area><cylindrical_delta>5</cylindrical_delta><mod_Sig_a>0.02220</mod_Sig_a><mod_Sig_tr>3.460</mod_Sig_tr><mod_Sig_f>0.0</mod_Sig_f><mod_thickness>100</mod_thickness><fuel_Sig_tr>3.940</fuel_Sig_tr><burnupcalc_timestep>100</burnupcalc_timestep><flux_mode>0</flux_mode><DA_mode>0</DA_mode><reactor_life>2060</reactor_life><CR_fissile>  
+<facility><name>FRx</name><config><ReactorFacility><tolerance>0.0010</tolerance><disadv_a>0.40950</disadv_a><disadv_b>0.707490</disadv_b><disadv_mod_siga>0.2220</disadv_mod_siga><disadv_mod_sigs>3.440</disadv_mod_sigs><disadv_fuel_sigs>0.430</disadv_fuel_sigs><out_commod>FR Spent Fuel</out_commod><libraries><val>FR50</val></libraries><batches>6</batches><nonleakage>0.67</nonleakage><max_inv_size>1.000000000000000E+299</max_inv_size><target_burnup>152.63</target_burnup><generated_power>1200.0</generated_power><core_mass>10000</core_mass><efficiency>0.330</efficiency><fuel_area>89197</fuel_area><cylindrical_delta>5</cylindrical_delta><mod_Sig_a>0.02220</mod_Sig_a><mod_Sig_tr>3.460</mod_Sig_tr><mod_Sig_f>0.0</mod_Sig_f><mod_thickness>100</mod_thickness><fuel_Sig_tr>3.940</fuel_Sig_tr><burnupcalc_timestep>100</burnupcalc_timestep><flux_mode>0</flux_mode><DA_mode>0</DA_mode><reactor_life>2060</reactor_life><CR_fissile>  
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>

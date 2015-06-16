@@ -33,7 +33,7 @@ real	0m3.407s (2015/03/04)
       <Source>
         <commod>fissile_stream</commod>
         <recipe_name>U235</recipe_name>
-	<capacity>40000.0</capacity>
+	<capacity>400000.0</capacity>
       </Source>
     </config>
   </facility>
@@ -56,7 +56,7 @@ real	0m3.407s (2015/03/04)
         <in_commods>
           <val>uf</val>
         </in_commods>
-        <capacity>100.0</capacity>
+        <capacity>1000000.0</capacity>
       </Sink>
     </config>
   </facility>
@@ -70,10 +70,10 @@ real	0m3.407s (2015/03/04)
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>30</target_burnup>
-        <nonleakage>0.9773</nonleakage>
+        <target_burnup>50</target_burnup>
+        <nonleakage>0.883</nonleakage>
         <core_mass>127000.0</core_mass>
-        <generated_power>1390.0</generated_power>
+        <generated_power>4212</generated_power>
         <batches>4</batches>
         <outage_time>30</outage_time>
         <flux_mode>0</flux_mode>        
