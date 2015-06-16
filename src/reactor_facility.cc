@@ -935,7 +935,7 @@ void ReactorFacility::CoreBuilder(){
     // if fuel is not fresh, do not reorder
     if(test == true){
         fuel_library_.batch[batches-1] = BatchCollapse(fuel_library_.batch[batches-1]);
-
+        fuel_library_.batch[batches-1].Fg = 0;
         return;
     }
     if(struct_mode == 0){
