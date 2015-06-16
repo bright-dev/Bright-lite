@@ -83,9 +83,9 @@ struct fuelBundle {
     bool libcheck;
     double pnl; //leakage
     double tres; //residence time
-    double base_flux;
-    double base_power;
-    double base_mass;
+    double base_flux; // reactor library database average flux
+    double base_power; // reactor thermal power
+    double base_mass; // reactor  core mass (all batches)
     double target_BU; //target discharge burnup, used for first guess in burnupcalc
     double fuel_area; //[cm2] the total area of the fuel for cylindrical flux calc
     double cylindrical_delta; //the increment used in cylindrical flux calc
@@ -105,8 +105,8 @@ struct fuelBundle {
     double disadv_fuel_sigs; //disadvantage calc fuel Sig s
     double struct_prod; //neutron production rate of structural materials
     double struct_dest; //neutron destruction rate of structural materials
-    double CR_upper;
-    double CR_lower;
+    double CR_upper; // max mass number for CR fission product calculation
+    double CR_lower; // min mass number for CR fission product calculation
     double CR_target; //target CR value
     double CR; //current conversion ratio
     double SS_tolerance; //convergence tolerance for the code

@@ -4,20 +4,16 @@
 using namespace std;
 
 
-/**
-Used to find continuously defined values between discrete variables.
-**/
+/** Used to find continuously defined values between discrete variables. **/
 double intpol(double y0, double y1, double x0, double x1, double x) {
     // linear interpolation function
-//    (x, y) is between (x0, y0) and (x1, y1)
+    //    (x, y) is between (x0, y0) and (x1, y1)
     double y = y0 + (y1 - y0)*(x - x0)/(x1 - x0);
     return y;
 }
 
 
-/**
-Collapses every batch in the core. Used during startup.
-**/
+/** Collapses every batch in the core. Used during startup. **/
 fuelBundle CoreCollapse(fuelBundle &fuel){
     for(int i = 0; i < fuel.batch.size(); i++){
         fuel.batch[i] = BatchCollapse(fuel.batch[i]);
@@ -26,11 +22,8 @@ fuelBundle CoreCollapse(fuelBundle &fuel){
     return fuel;
 }
 
-/**
-Builds the collapsed_iso structure using the information in iso.fraction
-**/
+/** Builds the collapsed_iso structure using the information in iso.fraction **/
 batch_info BatchCollapse(batch_info &batch){
-
     // reads batch.iso.fraction to collapse all the fuel libraries into one
     batch.collapsed_iso = FuelBuilder(batch.iso);
 
@@ -106,10 +99,8 @@ map<int, double> tomass (int ti, double fluence, isoInformation &isoinfo) {
     return out;
 }
 
-/**
-Uses a simple method to determine the relative flux of each batch and
-assigns the value.
-**/
+/** Uses a simple method to determine the relative flux of each batch and
+assigns the value. **/
 fuelBundle phicalc_simple(fuelBundle &core){
 //updates the rflux of each batch in core.batch
 //assumes the flux of a batch is proportional to the inverse neutron prod rate
@@ -152,9 +143,7 @@ fuelBundle phicalc_simple(fuelBundle &core){
 }
 
 
-/**
-Uses the equal power sharing assumption to find the relative flux of each batch
-**/
+/** Uses the equal power sharing assumption to find the relative flux of each batch **/
 fuelBundle phicalc_eqpow(fuelBundle &core, double dt){
     // for the batches to have equal power, their burnup must be the same
     // this function returns relative fluxes instead of directly calculating burnup
@@ -210,9 +199,7 @@ fuelBundle phicalc_eqpow(fuelBundle &core, double dt){
 }
 
 
-/**
-Finds the macroscopic fission cross-section times nu from the neutron production rate
-**/
+/** Finds the macroscopic fission cross-section times nu from the neutron production rate **/
 double nusigf_finder(batch_info &batch){
     double Nusig_f;
     int ii;
@@ -238,9 +225,7 @@ double nusigf_finder(batch_info &batch){
     return Nusig_f;
 }
 
-/**
-Finds the mascroscopic absorbtion cross-section from the neutron destruction rate
-**/
+/** Finds the mascroscopic absorbtion cross-section from the neutron destruction rate **/
 double siga_finder(batch_info &batch){
 //returns the macroscopic cross section at fluence Fg
     double sig_a;
@@ -268,7 +253,7 @@ double siga_finder(batch_info &batch){
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////
+/** Under development, avoid using **/
 fuelBundle phicalc_cylindrical(fuelBundle &core){
 //cout << "cylindrical" << endl<<endl<<endl<<endl<<endl;
 
@@ -520,12 +505,10 @@ fuelBundle phicalc_cylindrical(fuelBundle &core){
 */
     return core;
 }
-/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/**
-Finds the criticality of the core using neutron production and destruction rates
-**/
+
+/** Finds the criticality of the core using neutron production and destruction rates **/
 double kcalc(fuelBundle &core){
     //uses the fluence values in core.batch.Fg to calculate the core criticality
     int N = core.batch.size();
@@ -574,9 +557,7 @@ double kcalc(fuelBundle &core){
     return prod_tot * pnl / dest_tot;
 }
 
-/**
-Finds the conversion ratio (based on user inputted isotopes) of the batch
-**/
+/** Finds the conversion ratio (based on user inputted isotopes) of the batch **/
 double CR_batch(fuelBundle &core, int i){
     //i is the batch number starting from zero
     double FP = 0, FP0 = 0, FP1 = 0;
@@ -636,9 +617,7 @@ double CR_batch(fuelBundle &core, int i){
     return CR;
 }
 
-/**
-Finds the conversion ratio (based on user inputted isotopes) of the entire core
-**/
+/** Finds the conversion ratio (based on user inputted isotopes) of the entire core **/
 double CR_finder(fuelBundle &core){
     double FP = 0, FP0 = 0, FP1 = 0;
     double fissile = 0, fissile0 = 0, fissile1 = 0;
@@ -704,9 +683,7 @@ double CR_finder(fuelBundle &core){
     return CR;
 }
 
-/**
-Increases fluence until k drops under 1
-**/
+/** Increases fluence until k drops under 1 **/
 void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
@@ -719,7 +696,6 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     double kcore, kcore_prev;
     double y0, y1;
     double burnup = 0, burnup_1 = 0;
-
 /*
     cout << "burnupcalc starting neutron prods: " << core.batch[0].collapsed_iso.neutron_prod[0] << " " << core.batch[1].collapsed_iso.neutron_prod[0] << " " << core.batch[2].collapsed_iso.neutron_prod[0]  << endl;
     cout << "   " << core.batch[0].collapsed_iso.BU[1] << " " << core.batch[1].collapsed_iso.BU[1] << " " << core.batch[2].collapsed_iso.BU[1]  << endl;
@@ -727,7 +703,6 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     cout << "     " << dt << endl;
     cout << " " << core.batch[0].batch_fluence << " " << core.batch[1].batch_fluence << " " << core.batch[2].batch_fluence  << endl;
 */
-
     //assign the batch_fluence to Fg
     for(int i = 0; i < N; i++){
         core.batch[i].Fg = core.batch[i].batch_fluence;
@@ -767,9 +742,6 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
             core = DA_calc(core);
         }
 
-        //CR calculation
-        //cout << CR_numerator(core, 5)/CR_denominator(core, 5) << " ";
-
         //update fluences
         for(int i = 0; i < N; i++){
             //cout << "flux: " << core.batch[i].rflux << endl;
@@ -777,7 +749,6 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
 
         }
         kcore = kcalc(core);
-        //cout << "kcore: " << kcore << endl;
     }
 
     //update CR
@@ -823,9 +794,7 @@ void burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta) {
     //cout << " End of burnupcalc" << endl;
 }
 
-/**
-Increases fluence until burnup target is met
-**/
+/** Increases fluence until burnup target is met **/
 void burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta) {
     //this function only uses the COLLAPSED_ISO of each BATCH in the structure CORE
     //all factors that contribute to a change in neutron prod/dest rates have to be factored
@@ -837,7 +806,6 @@ void burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta) {
     double y0, y1;
     double burnup = 0, burnup_1 = 0, burnup_prev;
     double target_burnup = core.target_BU;
-
 
     //assign the batch_fluence to Fg
     for(int i = 0; i < N; i++){
@@ -917,9 +885,7 @@ void burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta) {
     core.batch[0].discharge_BU = burnup;
 }
 
-/**
-Fuel disadvantage calculation
-**/
+/** Fuel disadvantage calculation **/
 fuelBundle DA_calc(fuelBundle &fuel){
 // calculates the flux within each batch in fuelBundle
 // DA = phi_thermal_Mod / phi_thermal_Fuel
@@ -946,7 +912,6 @@ fuelBundle DA_calc(fuelBundle &fuel){
     double x, y, z; // calculated equivalent dimensions
     double F, E; // lattice functions
     double f; // flux of fuel divided by total flux(fuel+moderator)
-
 
     //moderator
     Sig_tM = Sig_aM + Sig_sM;
@@ -999,9 +964,7 @@ fuelBundle DA_calc(fuelBundle &fuel){
     return fuel;
 }
 
-/**
-Finds the steady state fluence of the given fuel by reloading core until k is stable
-**/
+/** Finds the steady state fluence of the given fuel by reloading core until k is stable **/
 double SS_burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
     //THE FINAL BATCH IS THE OLDEST ONE - this convension changes in burupcalc
@@ -1090,7 +1053,7 @@ double SS_burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta, int 
         }
         counter++;
         if(counter > 50){
-            cout << "Interations exceeded in SS_Burnupcalc core may not reach equalibrium" << endl;
+            cout << "Iterations exceeded in SS_Burnupcalc core may not reach equilibrium" << endl;
             return kcore;
         }
 
@@ -1112,9 +1075,7 @@ double SS_burnupcalc(fuelBundle &core, int mode, int DA_mode, double delta, int 
     return kcore;
 }
 
-/**
-Finds the steady state BU within the tolerance
-**/
+/** Finds the steady state BU within the tolerance **/
 double SS_burnupcalc_depricated(fuelBundle &core, int mode, int DA_mode, double delta, int N, double ss_fluence){
     //used to find the steady state burnup of the given fuel
     //N:number of batches; delta: burnup time advancement in days; PNL: nonleakage; base_flux: flux of library
@@ -1225,9 +1186,7 @@ double SS_burnupcalc_depricated(fuelBundle &core, int mode, int DA_mode, double 
     return burnup;
 }
 
-/**
-Finds the fluence for stable CR for a given BU
-**/
+/** Finds the fluence for stable CR for a given BU **/
 double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, int N, double ss_fluence, double target_burnup){
     //used to find the steady state CR of the given fuel
     //N:number of batches; delta: time advancement in days; PNL: nonleakage; base_flux: flux of library
@@ -1342,10 +1301,7 @@ double SS_burnupcalc_CR(fuelBundle &core, int mode, int DA_mode, double delta, i
     return CR;
 }
 
-
-/**
-Used to interpolate reactor databases
-**/
+/** Used to interpolate reactor databases **/
 fuelBundle lib_interpol(fuelBundle &input_fuel){
     vector<fuelBundle> fuel_pairs;
     for (int i = 0; i < input_fuel.interpol_libs.size(); i++){
