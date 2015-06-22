@@ -332,6 +332,11 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "The maximum number of cycles. Reactor is shutdown before this number is exceeded."}
   double max_cycles;
 
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 0, \
+                      "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
+  double cycle_length;
+
 
  private:
   bool shutdown;
@@ -347,7 +352,6 @@ class ReactorFacility : public cyclus::Facility  {
   int steady_state = 0;
   double burnup_per_time;
   double power_per_time;
-  int cycle = 0;
 
 };
 
