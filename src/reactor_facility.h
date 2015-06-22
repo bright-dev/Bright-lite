@@ -342,6 +342,7 @@ class ReactorFacility : public cyclus::Facility  {
   int steady_state = 0;
   double burnup_per_time;
   double power_per_time;
+  int cycle = 0;
 
 };
 
