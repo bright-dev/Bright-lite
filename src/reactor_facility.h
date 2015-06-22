@@ -327,6 +327,11 @@ class ReactorFacility : public cyclus::Facility  {
                       "label": "Outage Period"}
   double outage_time;
 
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 100, \
+                      "tooltip": "The maximum number of cycles. Reactor is shutdown before this number is exceeded."}
+  double max_cycles;
+
 
  private:
   bool shutdown;

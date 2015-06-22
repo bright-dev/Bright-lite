@@ -322,7 +322,7 @@ void ReactorFacility::Tock() {
     refuels += 1;
 
   //shutdown check
-  if(ctx->time() > start_time_ + reactor_life && record == true){
+  if( (ctx->time() > start_time_ + reactor_life && record == true) || (cycle >= max_cycles) ){
     shutdown = true;
     std::cout << ctx->time() << " Agent " << id() << " shutdown after " << cycle << " cycles. Core CR: " << fuel_library_.CR << "  BU's: " << std::endl;
      for(int i = 0; i < fuel_library_.batch.size(); i++){
