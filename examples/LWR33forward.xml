@@ -104,6 +104,7 @@ This example is a benchmark based on the study
         <flux_mode>0</flux_mode>
         <reactor_life>360</reactor_life>
         <burnupcalc_timestep>10</burnupcalc_timestep>
+        <outage_time>120</outage_time>
         <DA_mode>1</DA_mode>
         <CR_fissile>
             <val>902250</val>

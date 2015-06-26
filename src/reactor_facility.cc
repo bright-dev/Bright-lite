@@ -176,8 +176,8 @@ void ReactorFacility::Tock() {
     // check the state of the reactor and sets up the power output of the reactor for the timestep
     if(outage_shutdown > 1){
         //reactor still in outage
-        power_per_time = 0;
         outage_shutdown--;
+        cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, 0);
         return;
     } else if (outage_shutdown == 1){
         // reactor on last month of shutdown
@@ -185,26 +185,27 @@ void ReactorFacility::Tock() {
         outage_shutdown = 0;
     } else {
         if (ctx->time() != cycle_end_) {
-            power_per_time = generated_power*efficiency;
+            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*efficiency);
             return;
         } else {
             if(p_time + outage_time < 28.){
                 p_frac = 1. - outage_time/28.;
                 power_per_time = generated_power*p_frac*efficiency;
             } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
-                p_frac = -1. + (p_time + outage_time)/28.;
+                p_frac = 2-(p_time + outage_time)/28.;
                 double x = p_time/28.;
-                power_per_time = generated_power*x*efficiency;
                 outage_shutdown = 1;
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
                 return;
             } else {
                 outage_shutdown = 2;
                 while (p_time + outage_time > outage_shutdown*28.) {
                     outage_shutdown++;
                 }
-                p_frac = 1 - outage_shutdown + (p_time+outage_time)/28.;
+                p_frac = outage_shutdown-(p_time + outage_time)/28.;
+                outage_shutdown--;
                 double x = p_time/28.;
-                power_per_time = generated_power*x*efficiency;
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
                 return;
             }
         }
@@ -306,7 +307,7 @@ void ReactorFacility::Tock() {
     //cycle end update
     //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
     cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
-    p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
+    p_time =  28. * ((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
 
 
 
