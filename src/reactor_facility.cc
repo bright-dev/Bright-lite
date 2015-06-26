@@ -308,7 +308,7 @@ void ReactorFacility::Tock() {
     //cycle end update
     if(cycle_length > 0){
         cycle_end_ = ctx->time() + cycle_length;
-    p_time =  28. * ((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
+        p_time =  28. * ((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
         //if the cycle length is less than 2 the fluence of batches will build up.
         if(cycle_end_ - ctx->time() < 1){
             std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
@@ -319,7 +319,7 @@ void ReactorFacility::Tock() {
     } else {
         //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
         cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
-        p_time =  (delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28);
+        p_time =  28*((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
     }
 
 
