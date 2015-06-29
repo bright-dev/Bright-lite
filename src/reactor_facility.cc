@@ -864,9 +864,12 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
-        std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+        std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction << " setting fraction to 0." <<std::endl;
+        fraction = 0;
+
     } else if (fraction > 1){
-        std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+        std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction << " setting fraction to 1."<<std::endl;
+        fraction = 1;
     }
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
     mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
@@ -890,9 +893,12 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
         if(fraction < 0){
-            std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+            std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction << " setting fraction to 0." <<std::endl;
+            fraction = 0;
+
         } else if (fraction > 1){
-            std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+            std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction << " setting fraction to 1."<<std::endl;
+            fraction = 1;
         }
         mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
         mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
