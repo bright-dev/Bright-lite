@@ -181,21 +181,21 @@ void ReactorFacility::Tock() {
         return;
     } else if (outage_shutdown == 1){
         // reactor on last month of shutdown
-        power_per_time = generated_power*p_frac*efficiency;
+        power_per_time = generated_power*p_frac;
         outage_shutdown = 0;
     } else {
         if (ctx->time() != cycle_end_) {
-            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*efficiency);
+            cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power);
             return;
         } else {
             if(p_time + outage_time < 28.){
                 p_frac = 1. - outage_time/28.;
-                power_per_time = generated_power*p_frac*efficiency;
+                power_per_time = generated_power*p_frac;
             } else if(p_time + outage_time >= 28. && p_time + outage_time < 56.){
                 p_frac = 2-(p_time + outage_time)/28.;
                 double x = p_time/28.;
                 outage_shutdown = 1;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x);
                 return;
             } else {
                 outage_shutdown = 2;
@@ -205,7 +205,7 @@ void ReactorFacility::Tock() {
                 p_frac = outage_shutdown-(p_time + outage_time)/28.;
                 outage_shutdown--;
                 double x = p_time/28.;
-                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x*efficiency);
+                cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, generated_power*x);
                 return;
             }
         }
@@ -308,7 +308,7 @@ void ReactorFacility::Tock() {
     //cycle end update
     if(cycle_length > 0){
         cycle_end_ = ctx->time() + cycle_length;
-        p_time =  28. * ((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
+        p_time =  28. * ((delta_BU*core_mass/(generated_power/efficiency)/28)-floor(delta_BU*core_mass/(generated_power/efficiency)/28));
         //if the cycle length is less than 2 the fluence of batches will build up.
         if(cycle_end_ - ctx->time() < 1){
             std::cout << "---Warning, " << libraries[0] << " reactor cycle length too short. Do not trust results." << std::endl;
@@ -318,8 +318,8 @@ void ReactorFacility::Tock() {
 
     } else {
         //std::cout << " DELTA BU "<<  delta_BU << "  BU_next: " << BU_next << "  BU_prev: " << BU_prev << std::endl;
-        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/generated_power/28.);
-        p_time =  28*((delta_BU*core_mass/generated_power/28)-floor(delta_BU*core_mass/generated_power/28));
+        cycle_end_ = ctx->time() + floor(delta_BU*core_mass/(generated_power/efficiency)/28.);
+        p_time =  28*((delta_BU*core_mass/(generated_power/efficiency)/28)-floor(delta_BU*core_mass/(generated_power/efficiency)/28));
     }
 
 
@@ -711,9 +711,11 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
-        std::cout << "WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+        std::cout << "REFUEL WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+        fraction = 0;
     } else if (fraction > 1){
         std::cout << "REFUEL WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+        fraction = 1;
     }
     mat1 = cyclus::Material::CreateUntracked(fraction, fissile_mat->comp());
     mat2 = cyclus::Material::CreateUntracked(1-fraction, non_fissile_mani[0]->comp());
@@ -735,9 +737,11 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
         if(fraction < 0){
-            std::cout << "WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+            std::cout << "REFUEL WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
+            fraction = 0;
         } else if (fraction > 1){
             std::cout << "REFUEL WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
+            fraction = 1;
         }
         //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
         //std::cout << "fraction " << fraction << std::endl;

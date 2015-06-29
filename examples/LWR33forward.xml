@@ -97,14 +97,13 @@ This example is a benchmark based on the study
         <libraries><val>standLWR</val></libraries>
         <target_burnup>0.0</target_burnup>
         <nonleakage>0.9565</nonleakage>
-        <core_mass>104100</core_mass>
-        <generated_power>4020</generated_power>
+        <core_mass>135000</core_mass>
+        <generated_power>1390</generated_power>
 	<efficiency>.34577</efficiency>
         <batches>3</batches>
         <flux_mode>0</flux_mode>
         <reactor_life>360</reactor_life>
         <burnupcalc_timestep>10</burnupcalc_timestep>
-        <outage_time>120</outage_time>
         <DA_mode>1</DA_mode>
         <CR_fissile>
             <val>902250</val>

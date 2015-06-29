@@ -73,7 +73,7 @@ real	0m3.407s (2015/03/04)
         <target_burnup>50</target_burnup>
         <nonleakage>0.883</nonleakage>
         <core_mass>127000.0</core_mass>
-        <generated_power>4212</generated_power>
+        <generated_power>1390</generated_power>
         <batches>4</batches>
         <outage_time>30</outage_time>
         <flux_mode>0</flux_mode>        
