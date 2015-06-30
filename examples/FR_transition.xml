@@ -128,7 +128,7 @@
 		<out_commod>FR Spent Fuel</out_commod>
 		<libraries><val>FR50</val></libraries>
 		<batches>6</batches>
-		<nonleakage>0.94</nonleakage>
+		<nonleakage>0.42</nonleakage>
 		<target_burnup>52.62</target_burnup>
 		<generated_power>650.0</generated_power>
 		<core_mass>45000</core_mass>

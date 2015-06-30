@@ -865,12 +865,11 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     }
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
-    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
+    std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
         std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction << " setting fraction to 0." <<std::endl;
         fraction = 0;
-
     } else if (fraction > 1){
         std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction << " setting fraction to 1."<<std::endl;
         fraction = 1;
@@ -895,7 +894,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
+        std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
         if(fraction < 0){
             std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction << " setting fraction to 0." <<std::endl;
             fraction = 0;
