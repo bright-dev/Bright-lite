@@ -104,14 +104,13 @@ namespace reprocess {
                }
                /*for(mani_it = temp_comp.begin(); mani_it != temp_comp.end(); ++mani_it){
                     std::cout << mani_it->first << " amount " << mani_it->second << std::endl;
-               }
+               }*/
 
-               for(mani_it = mani_comp.begin(); mani_it != mani_comp.end(); ++mani_it){
+               /*for(mani_it = mani_comp.begin(); mani_it != mani_comp.end(); ++mani_it){
                     std::cout << mani_it->first << " amount " << mani_it->second << std::endl;
                }*/
                //Puts the extracted material in the corresponding out_inventory
-               //std::cout << "TOTAL MASS "<<tot_mass << std::endl;
-               //std::cout << manifest[m]->quantity() << std::endl;
+               //std::cout << "TOTAL MASS "<<tot_mass << " mani_quantity " manifest[m]->quantity() << std::endl;
                cyclus::Resource::Ptr resource = cyclus::ResCast<cyclus::Resource>(manifest[m]->ExtractComp(tot_mass, cyclus::Composition::CreateFromMass(temp_comp)));
                //std::cout << tot_mass << std::endl;
                out_inventory[o].Push(resource);

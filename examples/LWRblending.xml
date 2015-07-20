@@ -50,6 +50,17 @@ real	0m3.407s (2015/03/04)
   </facility>
 
   <facility>
+    <name>DU_Source</name>
+    <config>
+      <Source>
+        <commod>DU</commod>
+        <recipe_name>DU</recipe_name>
+	<capacity>200000.0</capacity>
+      </Source>
+    </config>
+  </facility>
+
+  <facility>
     <name>Sink</name>
     <config>
       <Sink>
@@ -70,8 +81,8 @@ real	0m3.407s (2015/03/04)
         </in_commods>
         <out_commod>uf</out_commod>
         <libraries><val>extLWR</val></libraries>
-        <target_burnup>50</target_burnup>
-        <nonleakage>0.883</nonleakage>
+        <target_burnup>51</target_burnup>
+        <nonleakage>0.983</nonleakage>
         <core_mass>127000.0</core_mass>
         <generated_power>4212</generated_power>
         <batches>4</batches>
@@ -102,7 +113,7 @@ real	0m3.407s (2015/03/04)
 			<fissle_stream>fissile_stream</fissle_stream>
 			<non_fissle_stream>nfissile_stream</non_fissle_stream>
 			<in_commods>
-				<item><key>blank</key><val>0.0</val></item>
+				<item><key>DU</key><val>0.8</val></item>
 			</in_commods>
 			<out_commod>UOX</out_commod>
 		</FuelfabFacility></config>
@@ -121,6 +132,10 @@ real	0m3.407s (2015/03/04)
         </entry>     
         <entry>
           <prototype>NFissile_Source</prototype>
+          <number>1</number>
+        </entry>   
+        <entry>
+          <prototype>DU_Source</prototype>
           <number>1</number>
         </entry>   
         <entry>
@@ -161,6 +176,18 @@ real	0m3.407s (2015/03/04)
     <nuclide>
       <id>U238</id>
       <comp>1</comp>
+    </nuclide>
+  </recipe>
+  <recipe>
+    <name>DU</name>
+    <basis>mass</basis>
+    <nuclide>
+      <id>U235</id>
+      <comp>0.25</comp>
+    </nuclide>
+    <nuclide>
+      <id>U238</id>
+      <comp>99.75</comp>
     </nuclide>
   </recipe>
   

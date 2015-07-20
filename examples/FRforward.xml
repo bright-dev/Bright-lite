@@ -62,37 +62,28 @@ Batches: 6
     <config>
       <ReactorFacility>
         <in_commods>
-            <val>FRFuel</val> 
             <val>FRFuel1</val> 
-            <val>FRFuel</val> 
-            <val>FRFuel</val> 
-            <val>FRFuel</val> 
-            <val>FRFuel</val> 
-            <val>FRFuel</val>
         </in_commods>
         <out_commod>uf</out_commod>
-        <libraries><val>FR50</val></libraries>
+        <libraries><val>FR50m</val></libraries>
         <target_burnup>0</target_burnup>
-        <nonleakage>0.5729</nonleakage>
+        <nonleakage>0.6399</nonleakage>
         <core_mass>23000.0</core_mass>
-        <generated_power>3000</generated_power>
+        <generated_power>2500</generated_power>
 	<batches>6</batches>
         <flux_mode>0</flux_mode>
         <burnupcalc_timestep>100</burnupcalc_timestep>
 	<reactor_life>240</reactor_life>
         <CR_fissile>
-            <val>902250</val>
-            <val>902270</val>
-            <val>902290</val>
-            <val>922350</val>
             <val>942380</val>
             <val>942390</val>
             <val>942400</val>
             <val>942410</val>
             <val>942420</val>
-            <val>952400</val>
-            <val>952420</val>
-            <val>952440</val>
+            <val>952410</val>
+            <val>952430</val>
+            <val>962420</val>
+            <val>962440</val>
         </CR_fissile>
       </ReactorFacility>
     </config>
@@ -129,60 +120,56 @@ Batches: 6
     <name>commod_recipe</name>
     <basis>mass</basis>
     <nuclide>
-      <id>U234</id>
-      <comp>0.00003</comp>
-    </nuclide>
-    <nuclide>
       <id>U235</id>
-      <comp>0.10861</comp>
+      <comp>0.000354</comp>
     </nuclide>
     <nuclide>
       <id>U236</id>
-      <comp>0.00099</comp>
+      <comp>0.000305</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>54.36345</comp>
+      <comp>0.861</comp>
     </nuclide>
     <nuclide>
       <id>NP237</id>
-      <comp>2.15051</comp>
+      <comp>0.00088</comp>
     </nuclide>
     <nuclide>
       <id>PU238</id>
-      <comp>1.0451</comp>
+      <comp>0.0015</comp>
     </nuclide>
     <nuclide>
       <id>PU239</id>
-      <comp>21.74518</comp>
+      <comp>0.0886</comp>
     </nuclide>
     <nuclide>
       <id>PU240</id>
-      <comp>10.26292</comp>
+      <comp>0.0366</comp>
     </nuclide>
     <nuclide>
       <id>PU241</id>
-      <comp>4.84338</comp>
+      <comp>0.00443</comp>
     </nuclide>
     <nuclide>
       <id>PU242</id>
-      <comp>2.99695</comp>
+      <comp>0.00305</comp>
     </nuclide>
     <nuclide>
       <id>AM241</id>
-      <comp>1.53634</comp>
+      <comp>0.00192</comp>
     </nuclide>
     <nuclide>
       <id>AM243</id>
-      <comp>0.68109</comp>
+      <comp>0.000833</comp>
     </nuclide>
     <nuclide>
       <id>CM242</id>
-      <comp>0.00005</comp>
+      <comp>0.0000144</comp>
     </nuclide>
     <nuclide>
       <id>CM244</id>
-      <comp>0.23874</comp>
+      <comp>0.000487</comp>
     </nuclide>
   </recipe>
 
@@ -191,59 +178,55 @@ Batches: 6
     <basis>mass</basis>
     <nuclide>
       <id>U234</id>
-      <comp>0.00003</comp>
+      <comp>0.00112</comp>
     </nuclide>
     <nuclide>
       <id>U235</id>
-      <comp>0.10861</comp>
+      <comp>0.000508</comp>
     </nuclide>
     <nuclide>
       <id>U236</id>
-      <comp>0.00099</comp>
+      <comp>0.000548</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>300</comp>
-    </nuclide>
-    <nuclide>
-      <id>NP237</id>
-      <comp>2.15051</comp>
+      <comp>0.664</comp>
     </nuclide>
     <nuclide>
       <id>PU238</id>
-      <comp>1.0451</comp>
+      <comp>.0111</comp>
     </nuclide>
     <nuclide>
       <id>PU239</id>
-      <comp>21.74518</comp>
+      <comp>0.129</comp>
     </nuclide>
     <nuclide>
       <id>PU240</id>
-      <comp>10.26292</comp>
+      <comp>0.103</comp>
     </nuclide>
     <nuclide>
       <id>PU241</id>
-      <comp>4.84338</comp>
+      <comp>0.0217</comp>
     </nuclide>
     <nuclide>
       <id>PU242</id>
-      <comp>2.99695</comp>
+      <comp>0.0314</comp>
     </nuclide>
     <nuclide>
       <id>AM241</id>
-      <comp>1.53634</comp>
+      <comp>0.0106</comp>
     </nuclide>
     <nuclide>
       <id>AM243</id>
-      <comp>0.68109</comp>
+      <comp>0.0101</comp>
     </nuclide>
     <nuclide>
       <id>CM242</id>
-      <comp>0.00005</comp>
+      <comp>0.0000757</comp>
     </nuclide>
     <nuclide>
       <id>CM244</id>
-      <comp>0.23874</comp>
+      <comp>0.00676</comp>
     </nuclide>
   </recipe>
 

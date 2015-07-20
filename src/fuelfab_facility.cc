@@ -33,14 +33,16 @@ namespace fuelfab {
                 inventory.push_back(resource);
             }
         }//outputs whats inside the facility
-        //std::cout << "FuelFab Inventory:" << std::endl;
+        /*std::cout << "FuelFab " <<id() << " Inventory:" << std::endl;
+        std::cout << "Fissile " << fissle_inv.quantity() << std::endl;
+        std::cout << "Non Fissile " << non_fissle_inv.quantity() << std::endl;
         for(int i = 0; i < inventory.size(); i++){
             //sets max inventory at startup
             if(inventory[i].count() == 0){
                 inventory[i].set_capacity(maximum_storage/inventory.size());
             }
 
-            //std::cout << "  " << i+1 << ": " << inventory[i].quantity() << std::endl;
+            std::cout << "  " << i+1 << ": " << inventory[i].quantity() << std::endl;
             /*if(inventory[i].count() != 0){
                 std::vector<cyclus::Material::Ptr> manifest;
                 manifest = cyclus::ResCast<cyclus::Material>(inventory[i].PopN(inventory[i].count()));
@@ -51,8 +53,8 @@ namespace fuelfab {
                 comp = manifest[0]->comp()->mass();
 
                 inventory[i].PushAll(manifest);
-            }*/
-        }
+            }
+        }*/
         //std::cout << "Fissile Inv: " << fissle_inv.quantity() <<std::endl;
     }
 
@@ -283,7 +285,8 @@ namespace fuelfab {
                                 }
                                 j++;
                             }
-                            nlimit = reactor->core_mass/reactor->batches-offer->quantity();
+                            nlimit = (reactor->core_mass/reactor->batches)-offer->quantity();
+                            std::cout << "nlimit "<< nlimit << " offer " << offer->quantity() << std::endl;
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
@@ -321,7 +324,8 @@ namespace fuelfab {
                                 }
                                 j++;
                             }
-                            nlimit = reactor->core_mass/reactor->batches-offer->quantity();
+                            nlimit = (reactor->core_mass/reactor->batches)-offer->quantity();
+                            std::cout << "nlimit "<< nlimit << " offer " << offer->quantity() << std::endl;
                             manifest = cyclus::ResCast<Material>(non_fissle_inv.PopQty(nlimit));
                             for(int i = 0; i < manifest.size(); i++){
                                 offer->Absorb(manifest[i]->ExtractComp(manifest[i]->quantity(), manifest[i]->comp()));
