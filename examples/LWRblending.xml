@@ -113,7 +113,7 @@ real	0m3.407s (2015/03/04)
 			<fissle_stream>fissile_stream</fissle_stream>
 			<non_fissle_stream>nfissile_stream</non_fissle_stream>
 			<in_commods>
-				<item><key>DU</key><val>0.8</val></item>
+				<item><key>DU</key><val>0.961</val></item>
 			</in_commods>
 			<out_commod>UOX</out_commod>
 		</FuelfabFacility></config>
