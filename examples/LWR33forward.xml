@@ -163,11 +163,11 @@ This example is a benchmark based on the study
     <basis>mass</basis>
     <nuclide>
       <id>U235</id>
-      <comp>3.1</comp>
+      <comp>3.0</comp>
     </nuclide>
     <nuclide>
       <id>U238</id>
-      <comp>96.9</comp>
+      <comp>97.0</comp>
     </nuclide>
   </recipe>
   

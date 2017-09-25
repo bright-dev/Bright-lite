@@ -31,7 +31,7 @@ bool stream_check(cyclus::Material::Ptr &mat1, cyclus::Material::Ptr &previous_m
         check1 = false;
         for(id = comp_old.begin(); id != comp_old.end(); ++id){
             if(it->first == id->first){
-                diffs.push_back(std::pow(it->second - id->first, 2));
+                diffs.push_back(std::pow(it->second - id->second, 2));
                 check1 = true;
             }
         }
@@ -42,7 +42,8 @@ bool stream_check(cyclus::Material::Ptr &mat1, cyclus::Material::Ptr &previous_m
         sum += diffs[i];
     }
     double rms = std::sqrt(sum/diffs.size());
-    if (rms >= 0.2){return false;}
+    //std::cout << "RMS for reactor is: " << rms << std::endl;
+    if (rms >= 0.001){return false;}
     else {return true;}
 }
 
@@ -635,6 +636,7 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     double mass_frac = 0.;
 
     //turn inventories to vectors of materials
+    double fissile_mass = fissle.quantity();
     std::vector<cyclus::Material::Ptr> fissile_mani = cyclus::ResCast<cyclus::Material>(fissle.PopN(fissle.count()));
     std::vector<cyclus::Material::Ptr> non_fissile_mani = cyclus::ResCast<cyclus::Material>(non_fissle.PopN(non_fissle.count()));
     std::vector<std::vector<cyclus::Material::Ptr> > materials;
@@ -711,8 +713,7 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
     /// TODO Reactor catch for extrapolation
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
-        std::cout << "REFUEL WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
-        fraction = 0;
+        std::cout << "WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
     } else if (fraction > 1){
         std::cout << "REFUEL WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
         fraction = 1;
@@ -737,11 +738,9 @@ std::vector<double> ReactorFacility::blend_next(cyclus::toolkit::ResourceBuff fi
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
         if(fraction < 0){
-            std::cout << "REFUEL WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
-            fraction = 0;
+            std::cout << "WARNING: The blending fraction is negative. Fraction = " << fraction <<std::endl;
         } else if (fraction > 1){
             std::cout << "REFUEL WARNING: The blending fraction is greater than 1 at " << fraction <<std::endl;
-            fraction = 1;
         }
         //std::cout <<  "fraction_1 "<<fraction_1 << " fraction_2 " << fraction_2 << " burnup_1 " << burnup_1 << " burnup_2 " << burnup_2 << std::endl;
         //std::cout << "fraction " << fraction << std::endl;
@@ -865,11 +864,12 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
     }
     //Finding the third burnup iterator
     /// TODO Reactor catch for extrapolation
-    std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
+    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
     double fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
     if(fraction < 0){
         std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction << " setting fraction to 0." <<std::endl;
         fraction = 0;
+
     } else if (fraction > 1){
         std::cout << "START UP WARNING: The blending fraction is greater than 1 at " << fraction << " setting fraction to 1."<<std::endl;
         fraction = 1;
@@ -894,7 +894,7 @@ std::vector<double> ReactorFacility::start_up(cyclus::toolkit::ResourceBuff fiss
         burnup_1 = burnup_2;
         burnup_2 = burnup_3;
         fraction = (fraction_1) + (measure - burnup_1)*((fraction_1 - fraction_2)/(burnup_1 - burnup_2));
-        std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
+    //std::cout << " BU1:" << burnup_1 << " BU2:" << burnup_2 << " frac1:" << fraction_1 << " frac2:" << fraction_2 << std::endl;
         if(fraction < 0){
             std::cout << "START UP WARNING: The blending fraction is negative. Fraction = " << fraction << " setting fraction to 0." <<std::endl;
             fraction = 0;

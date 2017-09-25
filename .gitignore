@@ -6,4 +6,8 @@ build
 *.o
 *~
 *.sqlite
+*.INP
 *.orig
+*.In~
+*.INP~
+*.INP
