@@ -38,10 +38,6 @@
 #   test_driver : (optional) the custom test driver to use with unit tests,
 #                 or NONE
 #
-# The CYCLUS_CUSTOM_HEADERS variable can optionally be set to contain one or
-# more (space separated) header files before calling the USE_CYCLUS
-# macro to add shared headers used by the archetype library being built.
-#
 # The following vars are updated.
 #
 # CYCLUS_LIBRARIES   : updated to include <lib_root>_LIB
@@ -87,28 +83,12 @@ MACRO(USE_CYCLUS lib_root src_root)
         SET(INCL_ARGS "${INCL_ARGS}:${DIR}")
     ENDFOREACH(DIR ${DIRS})
 
-
     # set cpp path
     IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         SET(PREPROCESSOR "--cpp-path=clang++")
     ELSE()
         SET(PREPROCESSOR "--cpp-path=cpp")
     ENDIF()
-
-    # copy custom headers
-    FOREACH(fname ${CYCLUS_CUSTOM_HEADERS})
-        SET(src "${CMAKE_CURRENT_SOURCE_DIR}/${fname}")
-        SET(dst "${BUILD_DIR}/${fname}")
-        MESSAGE(STATUS "Copying ${src} to ${dst}.")
-        EXECUTE_PROCESS(COMMAND "cp" "${src}" "${dst}")
-        ADD_CUSTOM_COMMAND(
-            OUTPUT "${dst}"
-            COMMAND "cp" "${src}" "${dst}"
-            DEPENDS "${src}"
-            COMMENT "Copying ${src} to ${dst}."
-            )
-    ENDFOREACH()
-    MESSAGE("dstcustomheaders: ${CYCLUS_CUSTOM_HEADERS}")
 
     # process header
     SET(ORIG "--pass3-use-orig")
@@ -122,11 +102,7 @@ MACRO(USE_CYCLUS lib_root src_root)
     # not sure if needed..
     IF(NOT EXISTS ${CCOUT})
         MESSAGE(STATUS "Executing ${CYCPP} ${CCIN} ${PREPROCESSOR} ${CCFLAG} ${ORIG} ${INCL_ARGS}")
-        EXECUTE_PROCESS(COMMAND ${CYCPP} ${CCIN} ${PREPROCESSOR} ${CCFLAG}
-                        ${ORIG} ${INCL_ARGS} RESULT_VARIABLE res_var)
-        IF(NOT "${res_var}" STREQUAL "0")
-            message(FATAL_ERROR "cycpp failed on '${CCIN}' with exit code '${res_var}'")
-        ENDIF()
+        EXECUTE_PROCESS(COMMAND ${CYCPP} ${CCIN} ${PREPROCESSOR} ${CCFLAG} ${ORIG} ${INCL_ARGS})
     ENDIF(NOT EXISTS ${CCOUT})
     SET(
         "${lib_root}_CC"
@@ -137,13 +113,7 @@ MACRO(USE_CYCLUS lib_root src_root)
         # not sure if we still need this...
         IF(NOT EXISTS ${HOUT})
             MESSAGE(STATUS "Executing ${CYCPP} ${HIN} ${PREPROCESSOR} ${HFLAG} ${ORIG} ${INCL_ARGS}")
-            EXECUTE_PROCESS(COMMAND ${CYCPP} ${HIN} ${PREPROCESSOR} ${HFLAG} ${ORIG} ${INCL_ARGS}
-                            RESULT_VARIABLE res_var)
-
-            IF(NOT "${res_var}" STREQUAL "0")
-                message(FATAL_ERROR "archetype preprocessing failed for ${HIN}, res_var = '${res_var}'")
-            ENDIF()
-
+            EXECUTE_PROCESS(COMMAND ${CYCPP} ${HIN} ${PREPROCESSOR} ${HFLAG} ${ORIG} ${INCL_ARGS})
         ENDIF(NOT EXISTS ${HOUT})
         ADD_CUSTOM_COMMAND(
             OUTPUT ${CCOUT}
@@ -153,7 +123,6 @@ MACRO(USE_CYCLUS lib_root src_root)
             DEPENDS ${HIN}
             DEPENDS ${CCIN}
             DEPENDS ${CYCPP}
-            DEPENDS ${CYCLUS_CUSTOM_HEADERS}
             COMMENT "Executing ${CYCPP} ${HIN} ${PREPROCESSOR} ${HFLAG} ${ORIG} ${INCL_ARGS}"
             COMMENT "Executing ${CYCPP} ${CCIN} ${PREPROCESSOR} ${CCFLAG} ${ORIG} ${INCL_ARGS}"
             )
@@ -168,7 +137,6 @@ MACRO(USE_CYCLUS lib_root src_root)
             COMMAND ${CYCPP} ${CCIN} ${PREPROCESSOR} ${CCFLAG} ${ORIG} ${INCL_ARGS}
             DEPENDS ${CCIN}
             DEPENDS ${CYCPP}
-            DEPENDS ${CYCLUS_CUSTOM_HEADERS}
             COMMENT "Executing ${CYCPP} ${CCIN} ${PREPROCESSOR} ${CCFLAG} ${ORIG} ${INCL_ARGS}"
             )
     ENDIF(EXISTS "${HIN}")
@@ -193,7 +161,6 @@ MACRO(USE_CYCLUS lib_root src_root)
                 DEPENDS ${CCIN}
                 DEPENDS ${HTIN}
                 DEPENDS ${CCTIN}
-                DEPENDS ${CYCLUS_CUSTOM_HEADERS}
                 COMMENT "Copying ${HTIN} to ${HTOUT}."
                 COMMENT "Copying ${CCTIN} to ${CCTOUT}."
                 )
@@ -209,7 +176,6 @@ MACRO(USE_CYCLUS lib_root src_root)
             COMMAND ${CMD} ${CCTIN} ${CCTOUT}
             DEPENDS ${CCTIN}
             DEPENDS ${CCIN}
-            DEPENDS ${CYCLUS_CUSTOM_HEADERS}
             COMMENT "Copying ${CCTIN} to ${CCTOUT}."
             )
         SET("${lib_root}_TEST_CC" "${${lib_root}_TEST_CC}" "${CCOUT}" "${CCTOUT}"
@@ -228,11 +194,11 @@ MACRO(INSTALL_CYCLUS_STANDALONE lib_root src_root lib_dir)
     SET("${lib_root}_TEST_LIB" "" CACHE INTERNAL "Agent test library alias." FORCE)
 
     # check if a test driver was provided, otherwise use the default
-    IF(${ARGC} GREATER 3 AND NOT "${ARGV4}" STREQUAL "")
+    IF(${ARGC} GREATER 3)
         SET(DRIVER "${ARGV4}")
-    ELSE(${ARGC} GREATER 3  AND NOT "${ARGV4}" STREQUAL "")
+    ELSE(${ARGC} GREATER 3)
         SET(DRIVER "${CYCLUS_DEFAULT_TEST_DRIVER}")
-    ENDIF(${ARGC} GREATER 3  AND NOT "${ARGV4}" STREQUAL "")
+    ENDIF(${ARGC} GREATER 3)
 
     USE_CYCLUS("${lib_root}" "${src_root}")
     INSTALL_CYCLUS_MODULE("${lib_root}" "${lib_dir}" ${DRIVER})
@@ -247,11 +213,11 @@ MACRO(INSTALL_CYCLUS_MODULE lib_root lib_dir)
     SET(INST_DIR "${lib_dir}")
 
     # check if a test driver was provided, otherwise use the default
-    IF(${ARGC} GREATER 2 AND NOT "${ARGV2}" STREQUAL "")
+    IF(${ARGC} GREATER 2)
         SET(DRIVER "${ARGV2}")
-    ELSE(${ARGC} GREATER 2 AND NOT "${ARGV2}" STREQUAL "")
+    ELSE(${ARGC} GREATER 2)
         SET(DRIVER "${CYCLUS_DEFAULT_TEST_DRIVER}")
-    ENDIF(${ARGC} GREATER 2 AND NOT "${ARGV2}" STREQUAL "")
+    ENDIF(${ARGC} GREATER 2)
 
     INSTALL_AGENT_LIB_("${LIB_NAME}" "${LIB_SRC}" "${LIB_H}" "${INST_DIR}")
     INSTALL_AGENT_TESTS_("${LIB_NAME}" "${TEST_SRC}" "${TEST_H}" "${DRIVER}" "${INST_DIR}")
@@ -272,9 +238,21 @@ MACRO(INSTALL_AGENT_LIB_ lib_name lib_src lib_h inst_dir)
         )
     SET(${lib_name}_LIB ${lib_name} CACHE INTERNAL "Agent library alias." FORCE)
 
+    # install headers
+    IF(NOT "${lib_h}" STREQUAL "")
+        INSTALL(FILES ${lib_h} DESTINATION include/cyclus COMPONENT "${lib_name}")
+    ENDIF(NOT "${lib_h}" STREQUAL "")
 ENDMACRO()
 
 MACRO(INSTALL_AGENT_TESTS_ lib_name test_src test_h driver inst_dir)
+    # install test header
+    IF(NOT "${test_h}" STREQUAL "")
+        INSTALL(
+            FILES ${test_h}
+            DESTINATION include/cyclus/${inst_dir}
+            COMPONENT ${lib_name}
+            )
+    ENDIF(NOT "${test_h}" STREQUAL "")
 
     # build & install test impl
     IF(NOT "${test_src}" STREQUAL "" AND NOT "${driver}" STREQUAL "NONE")
