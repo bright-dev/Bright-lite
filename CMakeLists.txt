@@ -51,9 +51,9 @@ SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 # when building, don't use the install RPATH already
 # (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/cyclus")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
@@ -62,25 +62,51 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # the RPATH to be used when installing, but only if it's not a system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/cyclus")
+    GET_FILENAME_COMPONENT(cxxCompilerRoot ${CMAKE_CXX_COMPILER} DIRECTORY)
+    GET_FILENAME_COMPONENT(cxxCompilerRoot ${cxxCompilerRoot} DIRECTORY)
+    IF (NOT "${CMAKE_INSTALL_RPATH}" STREQUAL "${cxxCompilerRoot}")
+        SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${cxxCompilerRoot}/lib:${cxxCompilerRoot}/lib/cyclus")
+    ENDIF (NOT "${CMAKE_INSTALL_RPATH}" STREQUAL "${cxxCompilerRoot}")
 ENDIF("${isSystemDir}" STREQUAL "-1")
+MESSAGE("-- CMAKE_INSTALL_RPATH: ${CMAKE_INSTALL_RPATH}")
 
 # Tell CMake where the modules are
 SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_DIR}/share/cmake-2.8/Modules")
 SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${REACTOR_SOURCE_DIR}/cmake )
 MESSAGE("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
 
+
+##############################################################################################
+################################### begin find libraries #####################################
+##############################################################################################
+
+if (NOT DEPS_ROOT_DIR)
+    get_filename_component(compdir ${CMAKE_CXX_COMPILER} DIRECTORY)
+    get_filename_component(DEPS_ROOT_DIR ${compdir} DIRECTORY)
+endif (NOT DEPS_ROOT_DIR)
+SET(DEPS_HINTS HINTS "${DEPS_ROOT_DIR}")
+SET(DEPS_BIN_HINTS ${DEPS_HINTS} "${DEPS_ROOT_DIR}/bin")
+SET(DEPS_LIB_HINTS ${DEPS_HINTS} "${DEPS_ROOT_DIR}/lib")
+SET(DEPS_INCLUDE_HINTS HINTS "${DEPS_ROOT_DIR}/include")
+MESSAGE("-- Dependency Root Dir (DEPS_ROOT_DIR): ${DEPS_ROOT_DIR}")
+MESSAGE("-- Dependency Hints (DEPS_HINTS): ${DEPS_HINTS}")
+MESSAGE("-- Dependency Binary Hints (DEPS_BIN_HINTS): ${DEPS_BIN_HINTS}")
+MESSAGE("-- Dependency Library Hints (DEPS_LIB_HINTS): ${DEPS_LIB_HINTS}")
+MESSAGE("-- Dependency Include Hints (DEPS_INCLUDE_HINTS): ${DEPS_INCLUDE_HINTS}")
+
 # Include macros
 INCLUDE(UseCyclus)
 
 # Find cyclus
-FIND_PACKAGE( Cyclus REQUIRED )
+FIND_PACKAGE( Cyclus REQUIRED)
 SET(REACTOR_INCLUDE_DIRS ${REACTOR_INCLUDE_DIRS} ${CYCLUS_CORE_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${CYCLUS_CORE_LIBRARIES})
 
 # Find LibXML++ and dependencies
 FIND_PACKAGE( LibXML++ REQUIRED )
-SET(REACTOR_INCLUDE_DIRS ${REACTOR_INCLUDE_DIRS} ${LibXML++_INCLUDE_DIR} ${Glibmm_INCLUDE_DIRS} ${LibXML++Config_INCLUDE_DIR})
+SET(REACTOR_INCLUDE_DIRS ${REACTOR_INCLUDE_DIRS} ${LibXML++_INCLUDE_DIR}
+                         ${Glibmm_INCLUDE_DIRS} ${LibXML++Config_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${LibXML++_LIBRARIES})
 MESSAGE("--LIBS: ${LIBS}")
 
@@ -89,25 +115,50 @@ MESSAGE("--LD_LIBRARY_PATH: $ENV{LD_LIBRARY_PATH}")
 # Include the boost header files, system, and filesystem libraries
 SET(Boost_USE_STATIC_LIBS       OFF)
 SET(Boost_USE_STATIC_RUNTIME    OFF)
-FIND_PACKAGE( Boost COMPONENTS filesystem system REQUIRED)
+if (DEPS_ROOT_DIR)
+  SET(BOOST_ROOT "${DEPS_ROOT_DIR}")
+  SET(BOOST_INCLUDEDIR "${DEPS_INCLUDE_HINTS}")
+endif (DEPS_ROOT_DIR)
+FIND_PACKAGE( Boost COMPONENTS program_options filesystem system serialization REQUIRED)
 SET(REACTOR_INCLUDE_DIRS ${REACTOR_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
-SET(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
+MESSAGE("--    Boost Root: ${Boost_ROOT}")
+MESSAGE("--    Boost Include directory: ${Boost_INCLUDE_DIR}")
+MESSAGE("--    Boost Library directories: ${Boost_LIBRARY_DIRS}")
+SET(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+MESSAGE("--    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
 SET(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
+MESSAGE("--    Boost System location: ${Boost_SYSTEM_LIBRARY}")
+SET(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
+MESSAGE("--    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
+SET(LIBS ${LIBS} ${Boost_SERIALIZATION_LIBRARY})
+MESSAGE("--    Boost Serialization location: ${Boost_SERIALIZATION_LIBRARY}")
 
 # find lapack and link to it
 FIND_PACKAGE( LAPACK REQUIRED )
 set(LIBS ${LIBS} ${LAPACK_LIBRARIES})
-MESSAGE("\tFound LAPACK Libraries: ${LAPACK_LIBRARIES}")
+MESSAGE("-- Found LAPACK Linker Flags: ${LAPACK_LINKER_FLAGS}")
+MESSAGE("-- Found LAPACK Libraries: ${LAPACK_LIBRARIES}")
+MESSAGE("-- Found BLAS Libraries: ${BLAS_LIBRARIES}")
 
 # Find HDF5
-FIND_PACKAGE( HDF5 REQUIRED)
+# Find HDF5
+FIND_PACKAGE(HDF5 REQUIRED COMPONENTS HL)
 ADD_DEFINITIONS(${HDF5_DEFINITIONS})
-set(LIBS ${LIBS} ${HDF5_LIBRARIES} )
+SET(REACTOR_INCLUDE_DIRS ${REACTOR_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+set(LIBS ${LIBS} ${HDF5_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
+MESSAGE("--    HDF5 Root: ${HDF5_ROOT}")
+MESSAGE("--    HDF5 Include directory: ${HDF5_INCLUDE_DIR}")
+MESSAGE("--    HDF5 Library directories: ${HDF5_LIBRARY_DIRS}")
+MESSAGE("--    HDF5 Libraries: ${HDF5_C_LIBRARIES}")
+MESSAGE("--    HDF5 High Level Libraries: ${HDF5_C_HL_LIBRARIES}")
 
 # find coin and link to it
 FIND_PACKAGE( COIN REQUIRED )
-set(LIBS ${LIBS} ${COIN_LIBRARIES})
 SET(REACTOR_INCLUDE_DIRS ${REACTOR_INCLUDE_DIRS} ${COIN_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${COIN_LIBRARIES})
+MESSAGE("--    COIN Root: ${COIN_ROOT}")
+MESSAGE("--    COIN Include directories: ${COIN_INCLUDE_DIRS}")
+MESSAGE("--    COIN Libraries: ${COIN_LIBRARIES}")
 
 # include all the directories we just found
 INCLUDE_DIRECTORIES(${REACTOR_INCLUDE_DIRS})
