@@ -233,7 +233,7 @@ vector<nonActinide> NonActinideReader(string file_name){
                 iss1 >> iso >> sng >> sn2n >> snp >> sngx >> sn2nx >> yyn;
                 na_iso.name = atoi(iso.c_str());
                 na_iso.sng = sng;
-                na_iso.sn2n = sn2n;.uin
+                na_iso.sn2n = sn2n;
                 na_iso.snp = snp;
                 na_iso.sngx = sngx;
                 na_iso.sn2nx = sn2nx;
