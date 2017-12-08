@@ -340,8 +340,8 @@ void ReactorFacility::Tock() {
             // std::cout << " -> U235: " << fuel_library_.batch[i].comp[922350] << " Fissile Pu: " << fuel_library_.batch[0].comp[942390]
             // + fuel_library_.batch[i].comp[942410] << " Total Pu: " << fuel_library_.batch[i].comp[942380] + fuel_library_.batch[i].comp[942390]
             // + fuel_library_.batch[i].comp[942400] + fuel_library_.batch[i].comp[942410] + fuel_library_.batch[i].comp[942420] << std::endl;
-        cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
-        cyclus::toolkit::RecordTimeSeries("BURNUP", this, burnup);
+        cyclus::toolkit::RecordTimeSeries<double>("CR", this, fuel_library_.CR);
+        cyclus::toolkit::RecordTimeSeries<double>("Burnup", this, burnup);
      }
     record = false;
     //std::cout << std::endl;
@@ -362,8 +362,8 @@ void ReactorFacility::Tock() {
             << " AM241: " << fuel_library_.batch[0].comp[952410]  << " AM243: " << fuel_library_.batch[0].comp[952430]
             << " CS135: " << fuel_library_.batch[0].comp[551350]  << " CS137: " << fuel_library_.batch[0].comp[551370] << std::endl;
 */  }
-    cyclus::toolkit::RecordTimeSeries("CR", this, fuel_library_.CR);
-    cyclus::toolkit::RecordTimeSeries("BURNUP", this, fuel_library_.batch[0].discharge_BU);
+    cyclus::toolkit::RecordTimeSeries<double>("CR", this, fuel_library_.CR);
+    cyclus::toolkit::RecordTimeSeries<double>("Burnup", this, fuel_library_.batch[0].discharge_BU);
     cyclus::toolkit::RecordTimeSeries<cyclus::toolkit::POWER>(this, power_per_time);
 }
 
