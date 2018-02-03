@@ -1,130 +1,316 @@
-.. _hello_world:
+.. _Cyclus: http://www.fuelcycle.org/
+.. _Eigen: http://eigen.tuxfamily.org/index.php?title=Main_Page
 
-Hello, Cyclus!
-==============
-This pages walks you through a very simple hello world example using 
-|cyclus| agents.  First make sure that you have the dependencies installed, 
-namely |Cyclus|, CMake, and a recent version of Python (2.7 or 3.3+).
+*****************************
+Welcome New Bright-lite User!
+*****************************
+Bright-lite is a collection of modules for the Cyclus_ Fuel Cycle Simulator 
+that allow for medium fidelity reactor modeling. There are currently 
+three modules in the Bright-lite suite. 
 
-First, you need to get the ``cycstub`` code.  Cycstub is a skeleton code base 
-that you can use to quick-start new |cyclus| module development projects.
-You can grab cycstub either by using git to 
-`clone the repository <https://github.com/cyclus/cycstub.git>`_ or by 
-`downloading the zip file <https://github.com/cyclus/cycstub/archive/develop.zip>`_.
-Let's put this code in a ``tutorial`` directory and go into it.
+- Bright-lite Reactor Facility
+- Bright-lite Fuel Fabrication Facility
+- Bright-lite Reprocessing Facility
 
-**Getting cycstub via git:**
+**Bright-lite Reactor Facility**: A reactor modeling software that uses burnup, criticality, and 
+transmutations matrix curves to determine input and output isotopic compositions. The reactor
+can also operate with user-defined fuel compositions, called the "forward" mode. 
 
-.. code-block:: bash
+**Bright-lite Fuel Fabrication Facility**: A module that communicates directly with the Bright-lite
+Reactor Facility that allows for the reactor facility to access blending functions that will 
+determine the isotopic composition of fuel that the reactor will be using in order to match a
+specific constraint. 
 
-    $ git clone https://github.com/cyclus/cycstub.git tutorial
-    $ cd tutorial
+**Bright-lite Reprocessing Facility**: A module that seperates user-defined isotopes out of a material
+that is sent to it. This currently requires an external text file to indicate which isotopes
+should be seperated with what efficiency into which streams. The structure of this text file can be seen here_.
 
-**Getting cycstub via zip:**
+Bright-lite works in conjuction with the Cyclus_ Fuel Cycle Simulator. 
 
-.. code-block:: bash
+Bright-lite is currently only being actively supported for Ubuntu.
 
-    $ curl -L https://api.github.com/repos/cyclus/cycstub/zipball > tutorial.zip
-    $ unzip tutorial.zip
-    $ mv cyclus-cycstub-* tutorial
-    $ cd tutorial
+============
+Installation
+============
+To use Bright-lite first you need to install it. Currently Bright-lite has
+the following dependencies. 
+
+- Cyclus_ Fuel Cycle Simulator
+
+The following dependencies will be required in the future
+
+- Eigen_
+
+To install Bright-lite please follow these instructions.
+
+1) Clone the Bright-lite repository from github. 
+
+    git clone **repository url**
+
+2) Change directory into the Bright-lite directory using the following
+   command. 
+    cd Bright-lite
+   	
+3) Use the following command inside the Bright-lite directory.
+
+    python install.py
+   	
+This will add the Bright-lite module to the cyclus environment, and allow
+you to use Bright-lite in Cyclus simulations. 
+
+
+
+============
+Using Bright-lite
+============
+Bright-lite reactor requires at least 6 inputs from the users to operate fully. While
+there are several other inputs associated with the module, all of 
+these other inputs come with a default value. 
+
+-----------
+The six required inputs are
+-----------
+
+- **in_commods**: This field is a one or more that indicates the possible sources of 
+  fuel for the reactor. The values in this field should be commodities that exist 
+  inside of the simulation. In order to use Bright-lite in forward mode, set the first
+  source to the steady-state (non-startup) fuel supplier. For forward mode the startup
+  fuels can be set with additional sources.
+- **out_commod**: This field should be filled out with the cyclus commodity that will
+  connect the reactor facility to the facility that will be directly handling the 
+  waste.
+- **libraries**: This is a one or more field that indicates the Bright-lite library 
+  database the reactor will be using. Note: Adding additionally library databases to this list
+  will enable the library interpolation_ capabilities in Bright-lite but also
+  requires that the user input parameters and values to be interpolated upon. The
+  interpolation feature is intended for advanced users. 
+- **target_burnup**: This field indicates the target burnup for the 
+  reactor. If this is set to 0, the reactor will operate in forward mode. If 
+  this value is not set to zero the Bright-lite reactor must be connected to a
+  Bright-lite fuel fabrication facility.
+- **core_mass**: This field indicates the total mass of fuel inside of the core. This mass
+  does not include structural components, it is only the mass of fuel to be burned.
+- **generated_power**: This indicates the total thermal generating power of the core. 
+  The electrical generated_power will be this value times the effiency of the reactor
+  (a input set to default at 33% but is user adjustable).
+
+-----------
+Operational Modes
+-----------
+Bright-lite has two operational modes. The mode is indicated using inputs to the 
+Bright-lite reactor module. Forward mode is chosen by setting the reactor *target_burnup*
+mode to be equal to 0. Blending mode requires the *target_burnup* field to be a non negative
+value. Additionally, blending mode requires the Bright-lite ReactorFacility to be connected to a
+Bright-lite FuelfabFacility. 
+ 
+^^^^^^^^^^^^
+Forward Mode
+^^^^^^^^^^^^
+In forward mode Bright-lite accepts a fuel composition and burns it. 
+It does this by advancing the fluence of each batch in the core until the target is met (such as k = 1).
+
+Currently forward mode works only with *criticality* and *burnup* targets.
+
+^^^^^^^^^^^^
+Blending Mode
+^^^^^^^^^^^^
+As stated above using the blending function in Bright-lite requires connecting a Bright-lite
+ReactorFacility to a Bright-lite FuelfabFacility. The *in_commods* field of the Bright-lite
+reactor should include all of the fuel fabrication facilities that the reactor can be connected to. 
+
+Currently there are two blending modes available in Bright-lite. These modes are described by
+a target-constraint pairing. The two available pairs currently are:
+ 
+1) Burnup - Criticality: The blender will create a fuel that meets a target burnup when criticality is equal to the given constraint. This set of constraints only requires a non negative number to be entered into the *target_burnup* field. 
+2) Burnup - Conversion Ratio: The blender will create a fuel that meets a target burnup when conversion ratio is equal to the given constraint. This is achieved by setting the *CR_target* input field of the reactor to 
+be equal to a number greater than 0 (note that there is no upper bound limit in the code for this this but physically it should not exceed 2). Additionally the *target_burnup* field must be a non negative value for this to work. 
+
+------------
+Running Example Cases
+------------
+There are several example cases provided with Bright-lite. The single reactor example cases are:
+
+* LWR, 3 batch, 33 MWd/kg burnup, 3.1 % U-235 fuel (forward mode)
+* LWR, 4 batch, 42 MWd/kg burnup, 3.6 % U-235 fuel (forward mode)
+* LWR, 4 batch, 51 MWd/kg burnup, 4.3 % U-235 fuel (forward mode)
+* LWR, 4 batch, 45 MWd/kg target burnup (blending mode)
+* MOX, 5 batch, 50 MWd/kg burnup (forward mode)
+* MOX, 5 batch, 50 MWd/kg target burnup (blending mode)
+* Fast reactor, 6 batch, 180 MWd/kg burnup (forward mode)
+
+The files can be found in the Bright-lite/examples/ folder. Run the following command to run the 42 MWd/kg burnup example case.
+
+    cyclus Bright-lite/examples/LWR42forward.xml
+
+------------
+Library Interpolation
+------------
+.. _interpolation:
+
+The libraries_ used in Bright-lite are often associated with several parameters. For example
+an LWR reactor library might have parameters for burnup, and enrichment. If as a user, you
+require a different value for these parameters there are two possible methods for obtaining it
+First, a new library can be generated externally from Bright-lite using tools available (XSGEN
+for example). It is also possible to create a dynamic library that matches your desired parameters
+using Bright-lite's built in library interpolation tool.
+
+This tool is used using two key components in the Bright-lite input schema.
+
+**libraries** 
+- To enable library interpolation here simple add more than one library to the field. This is done simply by adding another val to the input field. That is...::
+  
+  <val>extLWR</val>
+  
+represents a reactor library using just the *extLWR* library. However by adding another library::
+  
+  <val>extLWR</val>
+  <val>lowLWR</val>
+  
+Bright-lite will make a new library based on the interpolation pairs and the values inside of 
+these two libraries.
+ 
+**interpolation_pairs**
+Once two or more libraries have been selected at least one interpolation pair will need to be added. 
+An interpolation pair is a <"Parameter", Value> pair. The parameter represents a common parameter 
+shared by the libraries, and the value is the target value for the new dynamic library in that 
+parameter. 
+
+For example, there may be two LWR libraries that fit into an LWR library suite. 
+
+- Reactor 1
+ - Burnup: 50 MWd/kgIHM
+ - Enrichment: 5% U235
+- Reactor 2
+ - Burnup: 30 MWd/kgIHM
+ - Enrichment: 3.3% U235
+ 
+If a new library with the following parameters is desired
+
+- Dynamic Reactor
+ - Burnup: 40 MWd/kgIHM
+ - Enrichment: 4% U235
+
+The following xml should be added to the reactor archetype.
+::
+
+ <libraries>
+  <val>Reactor 1</val>
+  <val>Reactor 2</val>
+ </libraries>
+ <interpolation_pairs>
+  <key>BURNUP</key>
+  <val>40</val>
+  <key>ENRICHMENT</key>
+  <val>4</val>
+ </interpolation_pairs>
+
+------------
+Available Libraries
+------------
+.. _libraries:
+
+Recommended Libraries
+
+- lowLWR - A standard PWR library.
+ - Enrichment: 2.2 %U235
+ - Burnup: 20 MWd/kgIHM
+ - PNL: 0.903
+ - Batches: 3
+
+- standLWR
+ - Enrichment: 3.3 %U235
+ - Burnup: 33 MWd/kgIHM
+ - PNL:0.911 
+ - Batches: 3
+
+- extLWR
+ - Enrichment: 5% U235
+ - Burnup: 50 MWd/kgIHM
+ - PNL: 0.883
+ - Batches: 3
+
+- BWRMOX
+ - Burnup:
+ - PNL:
+ - Batches: 
+ 
+- PWRMOX
+ - Burnup:
+ - PNL:
+ - Batches:
+
+- DUPIC
+ - Burnup:
+ - PNL:
+ - Batches:
+ 
+- FR25
+ - Burnup:
+ - Conversion Ratio: 0.25
+ - PNL:
+ - Batches:
+ 
+- FR25MOX
+ - Burnup:
+ - Conversion Ratio: 0.25:
+ - PNL:
+ - Batches:
+ 
+- FR50
+ - Burnup:
+ - Conversion Ratio: 0.5:
+ - PNL:
+ - Batches:
+ 
+- MOXMA
+ - Burnup:
+ - PNL:
+ - Batches:
+ 
+Additional Libraries
+
+- E5_50
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+- E5_60
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+- E7_100
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+- E9_100
+ - Enrichment
+ - Burnup
+ - PNL
+ - Batches
+ 
+------------
+Format of Reprocessing Plant Text File
+------------
+.. _here:
+::
+
+	BEGIN
+	isotope1n fraction1n 
+	isotope2n fraction2n 
+	... 
+	isotopeN fractionN 
+	END 
+	BEGIN 
+	isotope1k fraction1k	 
+	isotope2k fraction2k 	 
+	... 	 
+	isotopeK fractionK 	 
+	END
 
 ------------
 
-Since cycstub is a template project everything is named ``stub``. We need to
-change this to reflect the name we want our new project to be called -
-``tutorial`` here.  Cycstub comes with a renaming tool to do just this! From
-the command line, run Python in the following way:
-
-.. code-block:: bash
-
-    tutorial $ python rename.py tutorial
-
-------------
-
-Let's now change the behavior of the TutorialFacility's ``Tick()`` &
-``Tock()`` member functions to print "Hello" and "World" respectively.  To do
-this, please open up the :file:`src/tutorial_facility.cc` file in your
-favorite text editor (vim, emacs, gedit, `notepad++ <http://exofrills.org>`_).
-Change the original functions to look like:
-
-**Original Tick() and Tock() in src/tutorial_facility.cc:**
-
-.. code-block:: c++
-
-    void TutorialFacility::Tick() {}
-
-    void TutorialFacility::Tock() {}
-
-**New Tick() and Tock() in src/tutorial_facility.cc:**
-
-.. code-block:: c++
-
-    void TutorialFacility::Tick() {std::cout << "Hello, ";}
-
-    void TutorialFacility::Tock() {std::cout << "World!\n";}
-
-------------
-
-Now that we have altered the behavior of the TutorialFacility, let's compile and 
-install the ``tutorial`` project.  This done with the install.py script.
-The install script puts the project into your cyclus userspace, 
-``${HOME}/.local/lib/cyclus``.
-
-.. code-block:: bash
-
-    tutorial $ python install.py
-
-------------
-
-Let's run |cyclus| with the TutorialFacility! In the input directory there is
-an :file:`example.xml`. Running |cyclus| on this file with the command
-``cyclus input/example.xml`` should produce the following output.
-
-.. code-block:: bash
-
-    tutorial $ cyclus input/example.xml
-                  :                                                               
-              .CL:CC CC             _Q     _Q  _Q_Q    _Q    _Q              _Q   
-            CC;CCCCCCCC:C;         /_\)   /_\)/_/\\)  /_\)  /_\)            /_\)  
-            CCCCCCCCCCCCCl       __O|/O___O|/O_OO|/O__O|/O__O|/O____________O|/O__
-         CCCCCCf     iCCCLCC     /////////////////////////////////////////////////
-         iCCCt  ;;;;;.  CCCC                                                      
-        CCCC  ;;;;;;;;;. CClL.                          c                         
-       CCCC ,;;       ;;: CCCC  ;                   : CCCCi                       
-        CCC ;;         ;;  CC   ;;:                CCC`   `C;                     
-      lCCC ;;              CCCC  ;;;:             :CC .;;. C;   ;    :   ;  :;;   
-      CCCC ;.              CCCC    ;;;,           CC ;    ; Ci  ;    :   ;  :  ;  
-       iCC :;               CC       ;;;,        ;C ;       CC  ;    :   ; .      
-      CCCi ;;               CCC        ;;;.      .C ;       tf  ;    :   ;  ;.    
-      CCC  ;;               CCC          ;;;;;;; fC :       lC  ;    :   ;    ;:  
-       iCf ;;               CC         :;;:      tC ;       CC  ;    :   ;     ;  
-      fCCC :;              LCCf      ;;;:         LC :.  ,: C   ;    ;   ; ;   ;  
-      CCCC  ;;             CCCC    ;;;:           CCi `;;` CC.  ;;;; :;.;.  ; ,;  
-        CCl ;;             CC    ;;;;              CCC    CCL                     
-       tCCC  ;;        ;; CCCL  ;;;                  tCCCCC.                      
-        CCCC  ;;     :;; CCCCf  ;                     ,L                          
-         lCCC   ;;;;;;  CCCL                                                      
-         CCCCCC  :;;  fCCCCC                                                      
-          . CCCC     CCCC .                                                       
-           .CCCCCCCCCCCCCi                                                        
-              iCCCCCLCf                                                           
-               .  C. ,                                                            
-                  :                                                               
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-    Hello, World!
-
-    Status: Cyclus run successful!
-    Output location: cyclus.sqlite
-    Simulation ID: 0ae730e0-a9a8-4576-afaa-d1db6399d5a2
-
-If you look in the input file you'll see that the simulation duration was set
-to 10.  This is why "Hello, World!" is printed ten times.

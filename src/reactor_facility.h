@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <cmath>
 
 #include "cyclus.h"
 #include "burnupcalc.h"
@@ -108,19 +109,20 @@ class ReactorFacility : public cyclus::Facility  {
 
   double burnup_test(cyclus::Material::Ptr new_batch);
 
-  fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
+  fuelBundle comp_function(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_);
 
-  fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle fuel_library_);
+  fuelBundle comp_trans(cyclus::Material::Ptr mat1, fuelBundle &fuel_library_);
 
-  double blend_next(cyclus::toolkit::ResourceBuff fissle,
+  std::vector<double> blend_next(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                    std::map<std::string, double> incommods);
 
-  double start_up(cyclus::toolkit::ResourceBuff fissle,
+  std::vector<double> start_up(cyclus::toolkit::ResourceBuff fissle,
                                    cyclus::toolkit::ResourceBuff non_fissle,
                                    std::vector<cyclus::toolkit::ResourceBuff> inventory,
                                    std::map<std::string, double> incommods);
+
   int refuels;
 
   void CoreBuilder();
@@ -128,6 +130,7 @@ class ReactorFacility : public cyclus::Facility  {
 
   double SS_enrich;
   double ss_fraction;
+  cyclus::Material::Ptr previous_mat;
 
   #pragma cyclus var {"default": 0.01, \
                       "userlevel": 3, \
@@ -182,15 +185,13 @@ class ReactorFacility : public cyclus::Facility  {
   std::string out_commod;
 
   #pragma cyclus var {"tooltip": "reactor libraries to load", \
-                      "userlevel": 0, \
                       "doc": "the reactor's burnup & criticality behavior to use"}
   std::vector<std::string> libraries;
 
   #pragma cyclus var {"tooltip": ["interpolation pairs used for the library", \
                       "Interpolation metric", "Interpolation values"], \
-                      "default": {"BURNUP": 42}, \
-                      "uitype": ["oneOrMore", "string", "double"], \
-                      "userlevel": 2}
+                      "default": {}, \
+                      "uitype": ["oneOrMore", "string", "double"]}
   std::map<std::string, double> interpol_pairs;
 
   #pragma cyclus var {"tooltip": "number of batches", \
@@ -216,9 +217,8 @@ class ReactorFacility : public cyclus::Facility  {
                       "units": "MWd/kgIHM"}
   double target_burnup;
 
-  #pragma cyclus var {"default": 1000.0, \
-                      "units": "MWe", \
-                      "userlevel": 2, \
+  #pragma cyclus var {"units": "MWe", \
+                      "userlevel": 0, \
                       "tooltip": "Electrical production."}
   double generated_power;
 
@@ -280,13 +280,18 @@ class ReactorFacility : public cyclus::Facility  {
 
   #pragma cyclus var {"default": 1, \
                       "userlevel": 2, \
-                      "tooltip": "Flux calculation method. 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
+                      "tooltip": "Flux calculation method. 0: Equal Power Share, 1:Uniform, 2:Inv.Neut.Prod, 3:Cylindrical"}
   int flux_mode;
 
   #pragma cyclus var {"default": 0, \
                       "userlevel": 2, \
                       "tooltip": "Disadvantage calculation. 0:Off, 1:On"}
   int DA_mode;
+
+  #pragma cyclus var {"default": 1, \
+                      "userlevel": 2, \
+                      "tooltip": "Non-fuel material effect accounting. 0:Off, 1:On"}
+  int struct_mode;
 
   #pragma cyclus var {"capacity": "max_inv_size"}
   cyclus::toolkit::ResourceBuff inventory;
@@ -297,8 +302,7 @@ class ReactorFacility : public cyclus::Facility  {
                       "tooltip": "Time before reactor is shutdown after startup."}
   int reactor_life;
 
-  #pragma cyclus var {"units": "NUCID", \
-                      "userlevel": 3, \
+  #pragma cyclus var {"units": ["NUCID", "NUCID"], \
                       "tooltip": "List of fissile isotopes for conversion ratio calculation."}
   std::vector<std::string> CR_fissile;
 
@@ -323,6 +327,16 @@ class ReactorFacility : public cyclus::Facility  {
                       "label": "Outage Period"}
   double outage_time;
 
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 100, \
+                      "tooltip": "The maximum number of cycles. Reactor is shutdown before this number is exceeded."}
+  double max_cycles;
+
+  #pragma cyclus var {"userlevel": 3, \
+                      "default": 0, \
+                      "tooltip": "If a positive number is entered the calculated cycle length will be replaced by this value."}
+  double cycle_length;
+
 
  private:
   bool shutdown;
@@ -336,6 +350,8 @@ class ReactorFacility : public cyclus::Facility  {
   double p_frac = 0;
   int outage_shutdown = 0;
   int steady_state = 0;
+  double burnup_per_time;
+  double power_per_time;
 
 };
 

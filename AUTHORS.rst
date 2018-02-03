@@ -1,11 +1,9 @@
 Repository Authors
 ==================
 
-The following people (in alphabetical order) have committed to the Cycstub repository:
+The following people (in alphabetical order) have committed to the Bright-lite repository:
 
-* Robert Carlsen
-* Royal Elmore
-* Matthew Gidden
-* Katy Huff
-* Anthony Scopatz
-* Paul P.H. Wilson
+* Cem B.
+* Robert Flanagan
+* Dr. Erich Schneider
+* Dr. Anthony Scopatz

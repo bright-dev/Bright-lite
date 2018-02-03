@@ -3,8 +3,6 @@
 
 #include <utility>
 
-
-
 struct daughter {
     int name;
     std::vector<double> mass;
@@ -66,8 +64,16 @@ struct batch_info {
     double rflux; //relative flux of batch
     double DA; //thermal disadvantage, phi_M/phi_F
     double discharge_BU; //the discharge burnup of the batch
+    double delta_BU; // used to calculate the cycle length change in BU between cycles
     double discharge_CR; //the discharge conversion ratio
     std::map<int, double> comp; //current composition of batch at this batch_fluence
+    double return_BU(){
+        int ii;
+        for(ii = 0; collapsed_iso.fluence[ii] <= Fg; ii++){}
+        if(ii == 0){return 0;}
+        return collapsed_iso.BU[ii-1] + ((collapsed_iso.BU[ii]-collapsed_iso.BU[ii-1])*
+            (Fg - collapsed_iso.fluence[ii-1])/(collapsed_iso.fluence[ii] - collapsed_iso.fluence[ii-1]));
+    }
 };
 
 struct fuelBundle {
@@ -77,9 +83,9 @@ struct fuelBundle {
     bool libcheck;
     double pnl; //leakage
     double tres; //residence time
-    double base_flux;
-    double base_power;
-    double base_mass;
+    double base_flux; // reactor library database average flux
+    double base_power; // reactor thermal power
+    double base_mass; // reactor  core mass (all batches)
     double target_BU; //target discharge burnup, used for first guess in burnupcalc
     double fuel_area; //[cm2] the total area of the fuel for cylindrical flux calc
     double cylindrical_delta; //the increment used in cylindrical flux calc
@@ -99,8 +105,8 @@ struct fuelBundle {
     double disadv_fuel_sigs; //disadvantage calc fuel Sig s
     double struct_prod; //neutron production rate of structural materials
     double struct_dest; //neutron destruction rate of structural materials
-    double CR_upper;
-    double CR_lower;
+    double CR_upper; // max mass number for CR fission product calculation
+    double CR_lower; // min mass number for CR fission product calculation
     double CR_target; //target CR value
     double CR; //current conversion ratio
     double SS_tolerance; //convergence tolerance for the code
